@@ -20,4 +20,18 @@ public class Contype {
     public void setContype(String contype) {
         this.contype = contype == null ? null : contype.trim();
     }
+
+	@Override
+	public String toString() {
+		return "Contype [id=" + id + ", contype=" + contype + "]";
+	}
+
+	public Contype(Integer id, String contype) {
+		super();
+		this.id = id;
+		this.contype = contype;
+	}
+    
+    public Contype() {
+	}
 }

@@ -1,5 +1,7 @@
 package com.pdsu.scs.bean;
 
+import java.util.Arrays;
+
 public class WebInformation {
     private Integer id;
 
@@ -60,4 +62,23 @@ public class WebInformation {
     public void setWebData(byte[] webData) {
         this.webData = webData;
     }
+
+	public WebInformation(Integer id, String title, Integer uid, Integer contype, String subTime, byte[] webData) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.uid = uid;
+		this.contype = contype;
+		this.subTime = subTime;
+		this.webData = webData;
+	}
+
+	@Override
+	public String toString() {
+		return "WebInformation [id=" + id + ", title=" + title + ", uid=" + uid + ", contype=" + contype + ", subTime="
+				+ subTime + ", webData=" + Arrays.toString(webData) + "]";
+	}
+    
+    public WebInformation() {
+	}
 }

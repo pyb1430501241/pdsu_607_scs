@@ -30,4 +30,19 @@ public class WebFile {
     public void setFilePath(String filePath) {
         this.filePath = filePath == null ? null : filePath.trim();
     }
+
+	@Override
+	public String toString() {
+		return "WebFile [id=" + id + ", uid=" + uid + ", filePath=" + filePath + "]";
+	}
+
+	public WebFile(Integer id, Integer uid, String filePath) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.filePath = filePath;
+	}
+    
+    public WebFile() {
+	}
 }

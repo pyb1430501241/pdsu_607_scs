@@ -50,4 +50,22 @@ public class PenaltyRecord {
     public void setDutation(String dutation) {
         this.dutation = dutation == null ? null : dutation.trim();
     }
+
+	@Override
+	public String toString() {
+		return "PenaltyRecord [id=" + id + ", uid=" + uid + ", reasons=" + reasons + ", time=" + time + ", dutation="
+				+ dutation + "]";
+	}
+
+	public PenaltyRecord(Integer id, Integer uid, String reasons, String time, String dutation) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.reasons = reasons;
+		this.time = time;
+		this.dutation = dutation;
+	}
+    
+    public PenaltyRecord() {
+	}
 }

@@ -40,4 +40,20 @@ public class VisitInformation {
     public void setWid(Integer wid) {
         this.wid = wid;
     }
+
+	public VisitInformation(Integer id, Integer vid, Integer sid, Integer wid) {
+		super();
+		this.id = id;
+		this.vid = vid;
+		this.sid = sid;
+		this.wid = wid;
+	}
+
+	@Override
+	public String toString() {
+		return "VisitInformation [id=" + id + ", vid=" + vid + ", sid=" + sid + ", wid=" + wid + "]";
+	}
+    
+    public VisitInformation() {
+	}
 }

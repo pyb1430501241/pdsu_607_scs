@@ -30,4 +30,19 @@ public class MyLike {
     public void setLikeId(Integer likeId) {
         this.likeId = likeId;
     }
+
+	@Override
+	public String toString() {
+		return "MyLike [id=" + id + ", uid=" + uid + ", likeId=" + likeId + "]";
+	}
+
+	public MyLike(Integer id, Integer uid, Integer likeId) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.likeId = likeId;
+	}
+    
+    public MyLike() {
+	}
 }

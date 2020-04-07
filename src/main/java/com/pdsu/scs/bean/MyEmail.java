@@ -30,4 +30,19 @@ public class MyEmail {
     public void setEmail(String email) {
         this.email = email == null ? null : email.trim();
     }
+
+	public MyEmail(Integer id, Integer uid, String email) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.email = email;
+	}
+
+    @Override
+	public String toString() {
+		return "MyEmail [id=" + id + ", uid=" + uid + ", email=" + email + "]";
+	}
+
+	public MyEmail() {
+	}
 }

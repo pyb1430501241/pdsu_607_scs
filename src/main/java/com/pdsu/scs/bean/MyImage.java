@@ -30,4 +30,19 @@ public class MyImage {
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath == null ? null : imagePath.trim();
     }
+
+	@Override
+	public String toString() {
+		return "MyImage [id=" + id + ", uid=" + uid + ", imagePath=" + imagePath + "]";
+	}
+
+	public MyImage(Integer id, Integer uid, String imagePath) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.imagePath = imagePath;
+	}
+    
+    public MyImage() {
+	}
 }

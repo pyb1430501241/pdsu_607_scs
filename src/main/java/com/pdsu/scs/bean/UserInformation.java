@@ -80,4 +80,27 @@ public class UserInformation {
     public void setAccountStatus(Integer accountStatus) {
         this.accountStatus = accountStatus;
     }
+
+	@Override
+	public String toString() {
+		return "UserInformation [id=" + id + ", uid=" + uid + ", password=" + password + ", username=" + username
+				+ ", college=" + college + ", clazz=" + clazz + ", time=" + time + ", accountStatus=" + accountStatus
+				+ "]";
+	}
+
+	public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
+			String time, Integer accountStatus) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.password = password;
+		this.username = username;
+		this.college = college;
+		this.clazz = clazz;
+		this.time = time;
+		this.accountStatus = accountStatus;
+	}
+    
+    public UserInformation() {
+	}
 }

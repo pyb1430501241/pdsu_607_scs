@@ -61,6 +61,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Override
 	public List<UserInformation> selectUsersByUid(Integer uid) {
 		List<Integer> likeids = myLikeService.selectLikeIdByUid(uid);
+		if(likeids.size() == 0) {
+			return null;
+		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidIn(likeids);
@@ -70,6 +73,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Override
 	public List<UserInformation> selectUsersByLikeId(Integer likeId) {
 		List<Integer> uids = myLikeService.selectLikeIdByUid(likeId);
+		if(uids.size() == 0) {
+			return null;
+		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidIn(uids);

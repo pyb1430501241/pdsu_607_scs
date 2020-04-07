@@ -40,4 +40,22 @@ public class MyCollection {
     public void setBid(Integer bid) {
         this.bid = bid;
     }
+    
+    public MyCollection() {
+	}
+
+	public MyCollection(Integer id, Integer uid, Integer wid, Integer bid) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.wid = wid;
+		this.bid = bid;
+	}
+
+	@Override
+	public String toString() {
+		return "MyCollection [id=" + id + ", uid=" + uid + ", wid=" + wid + ", bid=" + bid + "]";
+	}
+    
+    
 }
