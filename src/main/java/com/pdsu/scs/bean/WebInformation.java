@@ -14,8 +14,30 @@ public class WebInformation {
     private String subTime;
 
     private byte[] webData;
+    
+    private String webDataString;
+    
+    public WebInformation(Integer id, String title, Integer uid, Integer contype, String subTime, byte[] webData,
+			String webDataString) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.uid = uid;
+		this.contype = contype;
+		this.subTime = subTime;
+		this.webData = webData;
+		this.webDataString = webDataString;
+	}
 
-    public Integer getId() {
+	public String getWebDataString() {
+		return webDataString;
+	}
+
+	public void setWebDataString(String webDataString) {
+		this.webDataString = webDataString;
+	}
+
+	public Integer getId() {
         return id;
     }
 
@@ -76,7 +98,7 @@ public class WebInformation {
 	@Override
 	public String toString() {
 		return "WebInformation [id=" + id + ", title=" + title + ", uid=" + uid + ", contype=" + contype + ", subTime="
-				+ subTime + ", webData=" + Arrays.toString(webData) + "]";
+				+ subTime + ", webData=" + Arrays.toString(webData) + ", webDataString=" + webDataString + "]";
 	}
     
     public WebInformation() {

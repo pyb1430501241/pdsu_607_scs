@@ -21,7 +21,6 @@
 		<property name="jdbcUrl" value="${db.url}"></property>
 		<property name="driverClass" value="${db.driver}"></property>
 	</bean>
-	
 	<!-- MyBatis 和 Spring 整合 -->
 	<bean id = "sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<property name="dataSource" ref="dataSource"></property>
