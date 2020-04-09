@@ -20,5 +20,7 @@ public interface UserInformationService {
 	
 	//根据学号查询其粉丝信息
 	public List<UserInformation> selectUsersByLikeId(Integer likeId);
+
+	public List<UserInformation> selectUsersByUids(List<Integer> uids);
 	
 }

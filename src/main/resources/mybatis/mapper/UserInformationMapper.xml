@@ -255,4 +255,14 @@
       account_status = #{accountStatus,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+  
+  <select id="selectUsersByUids" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"></include>
+  		from db_user_information 
+  			<where>
+				<foreach collection="uids" item="uid" separator="or">
+					uid = #{uid}
+				</foreach>  				
+  			</where>
+  </select>
 </mapper>

@@ -27,4 +27,6 @@ public interface UserInformationMapper {
     int updateByPrimaryKeySelective(UserInformation record);
 
     int updateByPrimaryKey(UserInformation record);
+
+	List<UserInformation> selectUsersByUids(@Param("uids")List<Integer> uids);
 }

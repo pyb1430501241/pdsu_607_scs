@@ -14,7 +14,6 @@
 		
 	</div>
 	
-<%-- 	<a href="${APP_PATH}/blob/${list.}"></a> --%>
 	<script type="text/javascript">
 		
 		$(function() {
@@ -23,7 +22,7 @@
 				url		: "${APP_PATH}/blob/getWebindex",
 				success : function(result) {
 					console.log(result);
-					$.each(result.map.weblist,function(index,web){
+					$.each(result.map.webList,function(index,web){
 						var hr = $("<a></a>").append(web.title).attr("href","${APP_PATH}/blob/b"+web.id);
 						hr.appendTo("#test");
 						var br = $("<br>");

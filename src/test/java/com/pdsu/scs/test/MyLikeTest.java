@@ -32,5 +32,5 @@ public class MyLikeTest {
 		
 		System.out.println("我关注的人的信息: " + userInformationService.selectUsersByLikeId(181360241));
 	}
-
+	
 }

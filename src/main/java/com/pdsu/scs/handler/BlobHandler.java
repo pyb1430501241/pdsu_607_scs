@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.pdsu.scs.bean.Result;
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.WebInformationService;
@@ -45,14 +46,14 @@ public class BlobHandler {
 	public Result getWebForIndex() {
 		try {
 			//获取按时间排序的投稿
-			List<WebInformation> list = webInformationService.selectWebInformationOrderByTimetest();
+			List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
 			//根据投稿的投稿人uid获取这些投稿人的信息
 			List<Integer> uids = new ArrayList<Integer>();
-			for(WebInformation w : list) {
+			for(WebInformation w : webList) {
 				uids.add(w.getUid());
 			}
-			
-			return Result.success().add("weblist", list);
+			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
+			return Result.success().add("webList", webList).add("userList", userList);
 		}catch (Exception e) {
 			return Result.fail();
 		}
@@ -61,7 +62,6 @@ public class BlobHandler {
 	@ResponseBody
 	@RequestMapping("/blob")
 	public Result toblob(@RequestParam(value = "id", required = false)Integer id) {
-		System.out.println(id);
 		try {
 			WebInformation web = webInformationService.selectById(id);
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
