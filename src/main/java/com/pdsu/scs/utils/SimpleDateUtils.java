@@ -1,5 +1,7 @@
 package com.pdsu.scs.utils;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -13,4 +15,23 @@ public class SimpleDateUtils {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 	}
 	
+	/**
+	 * 返回一段时间的差值
+	 * @param startDate 开始的时间
+	 * @param endDate   结束的时间
+	 * @return
+	 */
+	public static long getSimpleDateDifference(String startDate, String endDate) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		long diff = -1;
+		try {
+			Date start = dateFormat.parse(startDate);
+			Date end = dateFormat.parse(endDate);
+			diff = (end.getTime() - start.getTime())/1000;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return diff;
+	}
 }

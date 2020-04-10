@@ -27,7 +27,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Autowired
 	private MyLikeMapper myLikeMapper;
 	
-	/*
+	/**
 	 * 插入一个用户信息
 	 */
 	@Override
@@ -42,7 +42,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		return false;
 	}
 
-	/*
+	/**
 	 * 删除一个用户信息
 	 */
 	@Override
@@ -56,7 +56,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		return false;
 	}
 
-	/*
+	/**
 	 * 根据用户的uid查询用户信息
 	 */
 	@Override
@@ -67,7 +67,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		return userInformationMapper.selectByExample(example).get(0);
 	}
 	
-	/*
+	/**
 	 * 根据一个用户的uid查询其所有关注人的信息
 	 */
 	@Override
@@ -82,7 +82,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		return userInformationMapper.selectByExample(example);
 	}
 	
-	/*
+	/**
 	 * 根据一个用户的uid查询一个用户所有粉丝的信息
 	 */
 	@Override

@@ -13,5 +13,7 @@ public interface WebInformationService {
 	public WebInformation selectById(Integer id);
 	
 	public List<WebInformation> selectWebInformationOrderByTimetest();
+
+	public List<WebInformation> selectWebInformationsByUid(Integer uid);
 	
 }

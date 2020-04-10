@@ -12,7 +12,6 @@
 
 	<div id = "test"></div>
 	<script type="text/javascript">
-	
 		$(function() {
 			var t = ${id};
 			$.ajax({
@@ -22,12 +21,17 @@
 				success : function(result) {
 					console.log(result);
 					var s = result.map.web.webDataString;
-					var t = $("<a><a>").append(s);
+					var t = $("<a></a>").append(s);
 					t.appendTo("#test");
+					$("<br>").appendTo("#test");
+					$.each(result.map.weblist,function(index,item){
+						$("<a></a>").append(item.title).appendTo("#test");
+						$("<br>").appendTo("#test");
+					});
+					$("<a></a>").append(result.map.author.username).appendTo("#test");
 				}
 			});
 		});
-	
 	</script>
 </body>
 </html>

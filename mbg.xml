@@ -35,8 +35,7 @@
             <property name="enableSubPackages" value="true"/>
         <!-- 指定表, 以及表对应的 bean -->
         </javaClientGenerator>
-        <!-- <table tableName="tbl_emp" domainObjectName="Employee"></table> -->
-        <table tableName="db_account_status" domainObjectName="AccountStatus"></table>
+ 		<table tableName="db_account_status" domainObjectName="AccountStatus"></table>
         <table tableName="db_contype" domainObjectName="Contype"></table>
         <table tableName="db_my_collection" domainObjectName="MyCollection"></table>
         <table tableName="db_my_email" domainObjectName="MyEmail"></table>
@@ -48,5 +47,7 @@
         <table tableName="db_web_information" domainObjectName="WebInformation"></table>
         <table tableName="db_web_file" domainObjectName="WebFile"></table>
         <table tableName="db_visit_information" domainObjectName="VisitInformation"></table>
+        <table tableName="db_web_thumbs" domainObjectName="WebThumbs"></table>
+        <table tableName="db_web_heat" domainObjectName="WebHeat"></table>
     </context>
 </generatorConfiguration>
