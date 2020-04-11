@@ -6,8 +6,9 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 public interface WebThumbsMapper {
-    long countByExample(WebThumbsExample example);
 
+    long countByExample(WebThumbsExample example);
+	
     int deleteByExample(WebThumbsExample example);
 
     int deleteByPrimaryKey(Integer id);
@@ -27,4 +28,5 @@ public interface WebThumbsMapper {
     int updateByPrimaryKeySelective(WebThumbs record);
 
     int updateByPrimaryKey(WebThumbs record);
+
 }

@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 实名
+ * @author Admin
+ *
+ */
 public class RealName {
     private Integer id;
 

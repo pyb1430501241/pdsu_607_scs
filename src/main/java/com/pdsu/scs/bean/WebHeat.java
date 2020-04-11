@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 文章热度
+ * @author Admin
+ *
+ */
 public class WebHeat {
     private Integer id;
 

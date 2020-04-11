@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.pdsu.scs.bean.UserInformation;
 
+/**
+ * 与用户信息相关的方法
+ * @author Admin
+ *
+ */
 public interface UserInformationService {
 	
 	//增加用户
@@ -21,6 +26,7 @@ public interface UserInformationService {
 	//根据学号查询其粉丝信息
 	public List<UserInformation> selectUsersByLikeId(Integer likeId);
 
+	//根据一组学号获取一组学生信息
 	public List<UserInformation> selectUsersByUids(List<Integer> uids);
 	
 }

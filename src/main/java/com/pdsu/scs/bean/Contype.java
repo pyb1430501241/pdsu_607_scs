@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 文章类型
+ * @author Admin
+ *
+ */
 public class Contype {
     private Integer id;
 

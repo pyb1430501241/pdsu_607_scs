@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 账号状态
+ * @author Admin
+ *
+ */
 public class AccountStatus {
     private Integer id;
 

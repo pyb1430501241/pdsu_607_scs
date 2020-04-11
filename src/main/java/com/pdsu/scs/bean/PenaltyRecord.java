@@ -1,5 +1,9 @@
 package com.pdsu.scs.bean;
-
+/**
+ * 处罚信息
+ * @author Admin
+ *
+ */
 public class PenaltyRecord {
     private Integer id;
 

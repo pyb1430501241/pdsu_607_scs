@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 用户信息
+ * @author Admin
+ *
+ */
 public class UserInformation {
     private Integer id;
 
@@ -16,8 +21,32 @@ public class UserInformation {
     private String time;
 
     private Integer accountStatus;
+    
+    private String imgpath;
+    
+    public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
+			String time, Integer accountStatus, String imgpath) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.password = password;
+		this.username = username;
+		this.college = college;
+		this.clazz = clazz;
+		this.time = time;
+		this.accountStatus = accountStatus;
+		this.imgpath = imgpath;
+	}
 
-    public Integer getId() {
+	public String getImgpath() {
+		return imgpath;
+	}
+
+	public void setImgpath(String imgpath) {
+		this.imgpath = imgpath;
+	}
+
+	public Integer getId() {
         return id;
     }
 
@@ -85,7 +114,7 @@ public class UserInformation {
 	public String toString() {
 		return "UserInformation [id=" + id + ", uid=" + uid + ", password=" + password + ", username=" + username
 				+ ", college=" + college + ", clazz=" + clazz + ", time=" + time + ", accountStatus=" + accountStatus
-				+ "]";
+				+ ", imgpath=" + imgpath + "]";
 	}
 
 	public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,

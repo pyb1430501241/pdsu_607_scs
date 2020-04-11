@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 访问相关
+ * @author Admin
+ *
+ */
 public class VisitInformation {
     private Integer id;
 

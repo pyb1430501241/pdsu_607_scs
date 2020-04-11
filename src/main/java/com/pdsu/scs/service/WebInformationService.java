@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.pdsu.scs.bean.WebInformation;
 
+/**
+ * 与网页相关的方法
+ * @author Admin
+ *
+ */
 public interface WebInformationService {
 
 	public boolean insert(WebInformation information);

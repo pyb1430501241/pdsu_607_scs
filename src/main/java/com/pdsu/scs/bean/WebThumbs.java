@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 点赞相关
+ * @author Admin
+ *
+ */
 public class WebThumbs {
     private Integer id;
 

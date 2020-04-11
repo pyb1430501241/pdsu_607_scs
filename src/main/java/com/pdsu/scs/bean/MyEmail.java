@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 邮箱
+ * @author Admin
+ *
+ */
 public class MyEmail {
     private Integer id;
 

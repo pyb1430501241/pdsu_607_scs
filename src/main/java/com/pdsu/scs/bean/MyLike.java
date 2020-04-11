@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 关注
+ * @author Admin
+ *
+ */
 public class MyLike {
     private Integer id;
 

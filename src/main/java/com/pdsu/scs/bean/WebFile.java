@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 文件下载
+ * @author Admin
+ *
+ */
 public class WebFile {
     private Integer id;
 

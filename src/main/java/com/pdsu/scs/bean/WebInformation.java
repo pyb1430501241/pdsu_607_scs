@@ -2,6 +2,11 @@ package com.pdsu.scs.bean;
 
 import java.util.Arrays;
 
+/**
+ * 博客信息
+ * @author Admin
+ *
+ */
 public class WebInformation {
     private Integer id;
 

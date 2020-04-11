@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 头像
+ * @author Admin
+ *
+ */
 public class MyImage {
     private Integer id;
 

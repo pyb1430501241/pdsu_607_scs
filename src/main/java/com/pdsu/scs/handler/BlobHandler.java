@@ -11,11 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.WebInformationService;
+import com.pdsu.scs.service.WebThumbsService;
 
 @RequestMapping("/blob")
 @Controller
@@ -26,6 +29,12 @@ public class BlobHandler {
 	
 	@Autowired
 	private UserInformationService userInformationService;
+	
+	@Autowired
+	private WebThumbsService webThubmsService;
+	
+	@Autowired
+	private MyImageService myInageService;
 	
 	/**
 	 * 转发到网站首页
@@ -62,11 +71,29 @@ public class BlobHandler {
 			List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
 			//根据投稿的投稿人uid获取这些投稿人的信息
 			List<Integer> uids = new ArrayList<Integer>();
+			List<Integer> webids = new ArrayList<Integer>();
 			for(WebInformation w : webList) {
 				uids.add(w.getUid());
+				webids.add(w.getId());
 			}
 			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
-			return Result.success().add("webList", webList).add("userList", userList);
+			List<MyImage> imgpaths = myInageService.selectImagePathByUids(uids);
+			//密码置为 null, 并添加头像地址
+			for(UserInformation user : userList) {
+				UserInformation t  = user;
+				t.setPassword(null);
+				for(MyImage m : imgpaths) {
+					if(user.getUid().equals(m.getUid())) {
+						t.setImgpath(m.getImagePath());
+					}
+				}
+			}
+			//获取文章的点赞数
+			List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
+			//获取文章阅读量
+			
+			return Result.success().add("webList", webList).add("userList", userList)
+				   .add("thumbsList", thumbsList);
 		}catch (Exception e) {
 			return Result.fail();
 		}
@@ -109,7 +136,7 @@ public class BlobHandler {
 	}
 	
 	/**
-	 * 处理收藏请求, 作者的学由前端获取, 关注人学号从session里获取
+	 * 处理关注请求, 作者的学由前端获取, 关注人学号从session里获取
 	 * 
 	 * @param uid  作者的学号
 	 * @return

@@ -3,6 +3,11 @@ package com.pdsu.scs.bean;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 处理AJAX请求
+ * @author Admin
+ *
+ */
 public class Result {
 	
 	private Integer code;

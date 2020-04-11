@@ -1,5 +1,10 @@
 package com.pdsu.scs.bean;
 
+/**
+ * 收藏
+ * @author Admin
+ *
+ */
 public class MyCollection {
     private Integer id;
 
