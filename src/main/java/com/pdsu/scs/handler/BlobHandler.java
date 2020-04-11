@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.UserInformationService;
+import com.pdsu.scs.service.VisitInformationService;
 import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebThumbsService;
 
@@ -35,6 +38,9 @@ public class BlobHandler {
 	
 	@Autowired
 	private MyImageService myInageService;
+	
+	@Autowired
+	private VisitInformationService visitInformationService;
 	
 	/**
 	 * 转发到网站首页
@@ -91,10 +97,14 @@ public class BlobHandler {
 			//获取文章的点赞数
 			List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
 			//获取文章阅读量
-			
-			return Result.success().add("webList", webList).add("userList", userList)
+			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
+			return Result.success()
+				   .add("webList", webList)
+				   .add("userList", userList)
+				   .add("visitList", visitList)
 				   .add("thumbsList", thumbsList);
 		}catch (Exception e) {
+			e.printStackTrace();
 			return Result.fail();
 		}
 	}
@@ -106,13 +116,20 @@ public class BlobHandler {
 	 */
 	@ResponseBody
 	@RequestMapping("/blob")
-	public Result toblob(@RequestParam(value = "id", required = false)Integer id) {
+	public Result toblob(@RequestParam(value = "id", required = false)Integer id
+			, HttpSession session) {
 		try {
 			WebInformation web = webInformationService.selectById(id);
 			Integer uid = web.getUid();
 			UserInformation author = userInformationService.selectByUid(uid);
 			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
+			UserInformation user = (UserInformation) session.getAttribute("user");
+			if(user == null) {
+				user = new UserInformation();
+				user.setUid(181360226);
+			}
+			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
 			return Result.success().add("web", web).add("webList", webList)
 				   .add("author", author);
 		}catch (Exception e) {

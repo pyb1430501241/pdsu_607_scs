@@ -208,4 +208,12 @@
       dutation = #{dutation,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
+  
+  <select id="selectPenaltyRecordByUid" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"></include>
+  		from db_penalty_record
+  			<where>
+  				uid = #{uid}
+  			</where>
+  </select>
 </mapper>

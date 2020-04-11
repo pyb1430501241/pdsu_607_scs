@@ -26,5 +26,4 @@ public class MyImageServiceImpl implements MyImageService {
 		List<MyImage> list = myImageMapper.selectByExample(example);
 		return list;
 	}
-	
 }

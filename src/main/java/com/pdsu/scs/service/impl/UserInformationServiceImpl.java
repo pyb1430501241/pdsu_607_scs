@@ -33,6 +33,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Override
 	public boolean inset(UserInformation information) {
 		Integer uid = information.getUid();
+		if(countByUid(uid) != 0) {
+			return false;
+		}
 		String password = information.getPassword();
 		password = HashUtils.getPasswordHash(uid, password);
 		information.setPassword(password);
@@ -103,5 +106,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Override
 	public List<UserInformation> selectUsersByUids(List<Integer> uids) {
 		return userInformationMapper.selectUsersByUids(uids);
+	}
+
+	@Override
+	public long countByUid(Integer uid) {
+		UserInformationExample example = new UserInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		return userInformationMapper.countByExample(example);
 	}
 }

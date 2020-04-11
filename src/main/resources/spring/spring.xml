@@ -58,7 +58,6 @@
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
 	</aop:config>
 	
-	
 	<!-- 配置 shiro -->
 	<!-- 配置 cacheManager -->
 	<bean id = "cacheManager" class= "org.apache.shiro.cache.ehcache.EhCacheManager">
@@ -70,11 +69,12 @@
 		<property name="cacheManager" ref="cacheManager"></property>
 		<!-- 多 realm -->
 		<property name="authenticator" ref="authenticator"></property>
-		<property name="realms">
+	<!-- 	<property name="realms">
 			<list>
 				<ref bean="jdbcRealm"/>
 			</list>
-		</property>
+		</property> -->
+		<property name="realm" ref="jdbcRealm"></property>
 	</bean>
 	
 	<!-- 配置认证器 -->
@@ -112,5 +112,7 @@
 	 
 	 <bean id = "shiroFilter" class = "org.apache.shiro.spring.web.ShiroFilterFactoryBean">
 	  	<property name="securityManager" ref="securityManager"></property>
+	  	<property name="loginUrl" value="/WEB-INF/jsp/login.jsp"></property>
+	  	<property name="successUrl" value="/WEB-INF/jsp/blob/index.jsp"></property>
 	  </bean>
 </beans>

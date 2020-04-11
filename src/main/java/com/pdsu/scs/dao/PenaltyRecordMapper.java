@@ -27,4 +27,6 @@ public interface PenaltyRecordMapper {
     int updateByPrimaryKeySelective(PenaltyRecord record);
 
     int updateByPrimaryKey(PenaltyRecord record);
+
+	PenaltyRecord selectPenaltyRecordByUid(@Param("uid")Integer uid);
 }

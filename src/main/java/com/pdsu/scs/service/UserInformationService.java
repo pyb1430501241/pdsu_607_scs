@@ -28,5 +28,8 @@ public interface UserInformationService {
 
 	//根据一组学号获取一组学生信息
 	public List<UserInformation> selectUsersByUids(List<Integer> uids);
+
+	//查询是否有此账号
+	public long countByUid(Integer uid);
 	
 }
