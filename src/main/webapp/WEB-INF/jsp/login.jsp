@@ -9,7 +9,7 @@
 <body>
 	
 	<form action="${APP_PATH}/loginAjax">
-		Username :<input type="text" name="username"/>
+		Username :<input type="text" name="uid"/>
 		<br>
 		Password :<input type="text" name="password"/>
 		<br>

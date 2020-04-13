@@ -107,12 +107,29 @@ public class UserInformationServiceImpl implements UserInformationService {
 	public List<UserInformation> selectUsersByUids(List<Integer> uids) {
 		return userInformationMapper.selectUsersByUids(uids);
 	}
-
+	
+	/**
+	 * 查询是否有此账号
+	 */
 	@Override
 	public long countByUid(Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		return userInformationMapper.countByExample(example);
+	}
+	
+	/**
+	 * 修改密码
+	 */
+	@Override
+	public boolean ModifyThePassword(Integer uid, String password) {
+		UserInformation user = selectByUid(uid);
+		user.setPassword(HashUtils.getPasswordHash(uid, password));
+		UserInformationExample example = new UserInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		int updateByExample = userInformationMapper.updateByExample(user, example);
+		return updateByExample == 0 ? false : true;
 	}
 }

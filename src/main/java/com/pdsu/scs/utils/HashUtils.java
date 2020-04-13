@@ -14,7 +14,7 @@ public class HashUtils {
 		
 		SimpleHash simpleHash = new SimpleHash("MD5", password, uid+"", 2);
 		
-		return simpleHash.toString().substring(0, 20);
+		return simpleHash.toString();
 	}
 	
 }

@@ -58,61 +58,60 @@
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
 	</aop:config>
 	
-	<!-- 配置 shiro -->
+	<!-- 配置 shiro  -->
+	<!-- ================================================================================== -->
 	<!-- 配置 cacheManager -->
-	<bean id = "cacheManager" class= "org.apache.shiro.cache.ehcache.EhCacheManager">
+	<bean id = "cacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
 		<property name="cacheManagerConfigFile" value="classpath:shiro/ehcache.xml"></property>
-	</bean>
-	
-	<!-- 配置 SecurityManager -->
-	<bean id  = "securityManager" class = "org.apache.shiro.web.mgt.DefaultWebSecurityManager">
-		<property name="cacheManager" ref="cacheManager"></property>
-		<!-- 多 realm -->
-		<property name="authenticator" ref="authenticator"></property>
-	<!-- 	<property name="realms">
-			<list>
-				<ref bean="jdbcRealm"/>
-			</list>
-		</property> -->
-		<property name="realm" ref="jdbcRealm"></property>
-	</bean>
-	
+	</bean>	
 	<!-- 配置认证器 -->
 	<bean id = "authenticator" class = "org.apache.shiro.authc.pam.ModularRealmAuthenticator">
 		<property name="authenticationStrategy">
 			<bean class = "org.apache.shiro.authc.pam.AllSuccessfulStrategy"></bean>
 		</property>
 	</bean>
-	<!-- 
-		配置 realm
-			目前方法为直接配置实现了 Realm 接口的 bean
-	 -->
-	<bean id = "jdbcRealm" class = "com.pdsu.scs.shiro.LoginRealm">
+	<!-- 配置 Realm -->
+	<bean id = "loginRealm" class = "com.pdsu.scs.shiro.LoginRealm">
 		<property name="credentialsMatcher">
 			<bean class = "org.apache.shiro.authc.credential.HashedCredentialsMatcher">
-				<!-- 指定加密算法 -->
 				<property name="hashAlgorithmName" value="MD5"></property>
-				<!-- 指定加密次数 -->
 				<property name="hashIterations" value="2"></property>
 			</bean>
 		</property>
 	</bean>
-	<!-- 
-		配置 LifecycleBeanPostProcessor, 可以自动的调用配置在 Spring IOC 容器中的 shiro bean 的生命周期方法
-	  -->
+	<!-- 配置 securityManager -->
+	<bean id = "securityManager" class = "org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="cacheManager" ref="cacheManager"></property>
+		<property name="realm" ref="loginRealm"></property>
+	</bean>
+	<!-- 配置 LifecycleBeanPostProcessor, 可以自动的调用配置在 Spring IOC 容器中的 shiro bean 生命周期方法 -->
 	<bean id = "lifecycleBeanPostProcessor" class = "org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean>
+	<!-- 启用 Spring IOC 容器中的 Shiro 的注解, 但必须在配置了LifecycleBeanPostProcessor 之后才可以使用 -->
+	<bean class = "org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+		depends-on="lifecycleBeanPostProcessor"></bean>
+	<bean class = "org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager"></property>
+	</bean>
 	<!-- 
-		启用 IOC 容器中的 shiro 的注解, 但必须在配置了 LifecycleBeanPostProcessor 之后才可使用
+	 	配置 ShiroFilter
+	 	id 必须和 web.xml 文件中配置的 DelegatingFilterProxy 的 filter-name 一致
 	 -->
-	 <bean class = "org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
-	 	depends-on="lifecycleBeanPostProcessor"></bean>
-	 <bean class = "org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
-	 	<property name="securityManager" ref="securityManager"></property>
-	 </bean>
-	 
-	 <bean id = "shiroFilter" class = "org.apache.shiro.spring.web.ShiroFilterFactoryBean">
-	  	<property name="securityManager" ref="securityManager"></property>
-	  	<property name="loginUrl" value="/WEB-INF/jsp/login.jsp"></property>
-	  	<property name="successUrl" value="/WEB-INF/jsp/blob/index.jsp"></property>
-	  </bean>
+	<bean id = "shiroFilter" class = "org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<property name="securityManager" ref="securityManager"></property>
+		<!-- 登录页面 -->
+		<property name="loginUrl" value="/login"></property>
+		<!-- 成功页面 -->
+		<property name="successUrl" value="/blob/index"></property>
+		<!-- 过滤器 -->
+		<property name="filterChainDefinitions">
+			<value>
+				/js/** = anon
+				/img/**= anon
+				/loginAjax = anon
+				/blob/index = anon
+				/** = authc
+			</value>
+		</property>
+	</bean>
+	<!-- ================================================================================== -->	
 </beans>
