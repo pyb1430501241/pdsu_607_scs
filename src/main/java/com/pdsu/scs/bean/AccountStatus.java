@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 账号状态
  * @author Admin
  *
  */
-public class AccountStatus {
-    private Integer id;
+public class AccountStatus implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private String status;
 

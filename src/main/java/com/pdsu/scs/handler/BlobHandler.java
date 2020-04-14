@@ -1,11 +1,13 @@
 package com.pdsu.scs.handler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.activiti.engine.impl.util.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -98,11 +100,9 @@ public class BlobHandler {
 			List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
 			//获取文章阅读量
 			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-			return Result.success()
-				   .add("webList", webList)
-				   .add("userList", userList)
-				   .add("visitList", visitList)
-				   .add("thumbsList", thumbsList);
+			return Result.success().add("webList", webList)
+					.add("userList", userList).add("visitList", visitList)
+					.add("thumbsList", thumbsList);
 		}catch (Exception e) {
 			e.printStackTrace();
 			return Result.fail();
@@ -119,19 +119,37 @@ public class BlobHandler {
 	public Result toblob(@RequestParam(value = "id", required = false)Integer id
 			, HttpSession session) {
 		try {
+			//获取博客页面信息
 			WebInformation web = webInformationService.selectById(id);
 			Integer uid = web.getUid();
+			//查询作者信息
 			UserInformation author = userInformationService.selectByUid(uid);
+			//获取作者头像
+			author.setImgpath(myInageService.selectImagePathByUid(uid).getImagePath());
+			//密码置空
+			author.setPassword(null);
+			//查询作者其余文章
 			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
+			//把 byte字节码转化为 String
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
+			//从Session里获取当前登录用户
 			UserInformation user = (UserInformation) session.getAttribute("user");
+			//如果没有用户登录
 			if(user == null) {
 				user = new UserInformation();
+				//默认访问人为 181360226
 				user.setUid(181360226);
 			}
+			//添加一个访问记录
 			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
+			//获取网页访问量
+			Integer visits = visitInformationService.selectvisitByWebId(web.getId());
+			//获取网页点赞数
+			
+			//获取网页收藏量
 			return Result.success().add("web", web).add("webList", webList)
-				   .add("author", author);
+				   .add("author", author)
+				   .add("visits", visits);
 		}catch (Exception e) {
 			return Result.fail();
 		}

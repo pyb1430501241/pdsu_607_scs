@@ -26,4 +26,12 @@ public class MyImageServiceImpl implements MyImageService {
 		List<MyImage> list = myImageMapper.selectByExample(example);
 		return list;
 	}
+
+	@Override
+	public MyImage selectImagePathByUid(Integer uid) {
+		MyImageExample example = new MyImageExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		return myImageMapper.selectByExample(example).size() == 0 ? new MyImage(uid, "01.png") : myImageMapper.selectByExample(example).get(0);
+	}
 }

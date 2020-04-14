@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 文章热度
  * @author Admin
  *
  */
-public class WebHeat {
-    private Integer id;
+public class WebHeat implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer webid;
 

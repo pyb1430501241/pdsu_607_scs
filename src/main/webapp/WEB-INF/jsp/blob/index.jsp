@@ -10,19 +10,20 @@
 <body>
 	<h4>Bolb Index</h4>
 	
+	<h1>${user.username}</h1>
+	
 	<div id = "test">
-		
+	
 	</div>
 	
 	<script type="text/javascript">
-		
 		$(function() {
 			$.ajax({
 				type	: "POST",
 				url		: "${APP_PATH}/blob/getWebindex",
 				success : function(result) {
 					console.log(result);
-					$.each(result.map.webList,function(index,web){
+					$.each(result.json.webList,function(index,web){
 						var hr = $("<a></a>").append(web.title).attr("href","${APP_PATH}/blob/b"+web.id);
 						hr.appendTo("#test");
 						var br = $("<br>");

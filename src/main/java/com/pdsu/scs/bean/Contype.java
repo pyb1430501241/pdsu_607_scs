@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 文章类型
  * @author Admin
  *
  */
-public class Contype {
-    private Integer id;
+public class Contype  implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private String contype;
 

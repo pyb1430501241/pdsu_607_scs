@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 文件下载
  * @author Admin
  *
  */
-public class WebFile {
-    private Integer id;
+public class WebFile implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer uid;
 

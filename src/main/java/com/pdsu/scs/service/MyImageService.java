@@ -13,5 +13,8 @@ public interface MyImageService {
 	
 	//根据一组学号来获取一组头像地址
 	public List<MyImage> selectImagePathByUids(List<Integer> uids);
+
+	//根据学号来获取头像地址
+	public MyImage selectImagePathByUid(Integer uid);
 	
 }

@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 头像
  * @author Admin
  *
  */
-public class MyImage {
-    private Integer id;
+public class MyImage implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer uid;
 
@@ -50,4 +57,8 @@ public class MyImage {
     
     public MyImage() {
 	}
+    
+    public MyImage(Integer uid, String imagePath){
+    	this(null,uid,imagePath);
+    }
 }

@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 邮箱
  * @author Admin
  *
  */
-public class MyEmail {
-    private Integer id;
+public class MyEmail implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer uid;
 

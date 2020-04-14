@@ -1,12 +1,20 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 收藏
  * @author Admin
  *
  */
-public class MyCollection {
-    private Integer id;
+public class MyCollection implements Serializable {
+	
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer uid;
 

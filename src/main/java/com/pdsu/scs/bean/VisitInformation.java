@@ -1,12 +1,19 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 访问相关
  * @author Admin
  *
  */
-public class VisitInformation {
-    private Integer id;
+public class VisitInformation implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer vid;
 

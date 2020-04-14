@@ -1,11 +1,19 @@
 package com.pdsu.scs.bean;
+
+import java.io.Serializable;
+
 /**
  * 处罚信息
  * @author Admin
  *
  */
-public class PenaltyRecord {
-    private Integer id;
+public class PenaltyRecord implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private Integer uid;
 

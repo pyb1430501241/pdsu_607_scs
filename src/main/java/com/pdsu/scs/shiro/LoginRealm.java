@@ -11,7 +11,6 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.pdsu.scs.Exception.UserExpection;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.service.UserInformationService;
 
@@ -20,28 +19,27 @@ public class LoginRealm extends AuthorizingRealm{
 	@Autowired
 	private UserInformationService userInformationService;
 	
+	/**
+	 * 登录认证
+	 */
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(
 			AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken uptoken = (UsernamePasswordToken) token;
 		Integer uid = Integer.parseInt(uptoken.getUsername());
+		//查询是否有此账号
 		if(userInformationService.countByUid(uid) == 0) {
-			throw new UserExpection("用户名不存在");
+			return null;
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
 		System.out.println(user.getAccountStatus());
-		if(user.getAccountStatus() == 2) {
-			throw new UserExpection("账号被冻结");
-		}else if(user.getAccountStatus() == 3) {
-			throw new UserExpection("账号被封禁");
-		}else if(user.getAccountStatus() == 4) {
-			throw new UserExpection("账号不存在");
+		if(user.getAccountStatus() != 1) {
+			return null;
 		}
-		Object principal = uid;
 		Object credentials = user.getPassword();
 		String realmName = getName();
 		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");
-		return new SimpleAuthenticationInfo(principal, credentials, credentialsSalt, realmName);
+		return new SimpleAuthenticationInfo(user, credentials, credentialsSalt, realmName);
 	}
 	
 	@Override

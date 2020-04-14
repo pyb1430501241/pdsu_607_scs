@@ -109,6 +109,7 @@
 				/img/**= anon
 				/loginAjax = anon
 				/blob/index = anon
+				/blob/getWebindex = anon
 				/** = authc
 			</value>
 		</property>

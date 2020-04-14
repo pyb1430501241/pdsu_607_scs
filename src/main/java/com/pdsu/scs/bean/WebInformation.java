@@ -1,5 +1,6 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -7,8 +8,13 @@ import java.util.Arrays;
  * @author Admin
  *
  */
-public class WebInformation {
-    private Integer id;
+public class WebInformation implements Serializable{
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private Integer id;
 
     private String title;
 

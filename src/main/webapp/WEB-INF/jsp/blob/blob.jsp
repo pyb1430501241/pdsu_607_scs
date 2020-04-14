@@ -20,15 +20,16 @@
 				data : "id="+t,
 				success : function(result) {
 					console.log(result);
-					var s = result.map.web.webDataString;
+					var s = result.json.web.webDataString;
 					var t = $("<a></a>").append(s);
 					t.appendTo("#test");
 					$("<br>").appendTo("#test");
-					$.each(result.map.weblist,function(index,item){
+					$.each(result.json.weblist,function(index,item){
 						$("<a></a>").append(item.title).appendTo("#test");
 						$("<br>").appendTo("#test");
 					});
-					$("<a></a>").append(result.map.author.username).appendTo("#test");
+					
+					$("<a></a>").append(result.json.author.username).appendTo("#test");
 				}
 			});
 		});
