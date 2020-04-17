@@ -19,14 +19,13 @@
 		function login() {
 			var uid = $("#uid").val();
 			var password = $("#password").val();
-			console.log(uid);
-			console.log(password);
 			$.ajax({
 				type : "POST",
 				url  : "${APP_PATH}/loginAjax",
 				data : "uid="+uid+"&password="+password,
 				success : function(result) {
 					if(result.json.code == 200){
+						alert(result.sessionId);
 						window.location.href="${APP_PATH}/blob/index";
 					}else{
 						

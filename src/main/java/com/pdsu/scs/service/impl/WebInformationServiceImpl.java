@@ -61,6 +61,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 			byte [] b = webInformation.getWebData();
 			try {
 				web.setWebDataString(new String(b,"utf-8"));
+				web.setWebData(null);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

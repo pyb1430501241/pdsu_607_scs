@@ -32,10 +32,6 @@ public class LoginRealm extends AuthorizingRealm{
 			return null;
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
-		System.out.println(user.getAccountStatus());
-		if(user.getAccountStatus() != 1) {
-			return null;
-		}
 		Object credentials = user.getPassword();
 		String realmName = getName();
 		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");

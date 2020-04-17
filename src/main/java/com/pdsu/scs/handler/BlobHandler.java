@@ -7,7 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.activiti.engine.impl.util.json.JSONObject;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +24,8 @@ import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.VisitInformationService;
 import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebThumbsService;
+import com.pdsu.scs.utils.ShiroUtils;
+import com.pdsu.scs.utils.SimpleDateUtils;
 
 @RequestMapping("/blob")
 @Controller
@@ -116,8 +118,7 @@ public class BlobHandler {
 	 */
 	@ResponseBody
 	@RequestMapping("/blob")
-	public Result toblob(@RequestParam(value = "id", required = false)Integer id
-			, HttpSession session) {
+	public Result toblob(@RequestParam(value = "id", required = false)Integer id) {
 		try {
 			//获取博客页面信息
 			WebInformation web = webInformationService.selectById(id);
@@ -133,7 +134,7 @@ public class BlobHandler {
 			//把 byte字节码转化为 String
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
 			//从Session里获取当前登录用户
-			UserInformation user = (UserInformation) session.getAttribute("user");
+			UserInformation user = ShiroUtils.getUser();
 			//如果没有用户登录
 			if(user == null) {
 				user = new UserInformation();

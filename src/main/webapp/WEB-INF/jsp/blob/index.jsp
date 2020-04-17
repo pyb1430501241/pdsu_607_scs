@@ -10,8 +10,6 @@
 <body>
 	<h4>Bolb Index</h4>
 	
-	<h1>${user.username}</h1>
-	
 	<div id = "test">
 	
 	</div>

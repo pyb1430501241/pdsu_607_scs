@@ -1,6 +1,9 @@
 package com.pdsu.scs.bean;
 
-import net.sf.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.activiti.engine.impl.util.json.JSONObject;
 
 /**
  * 处理AJAX请求
@@ -34,13 +37,13 @@ public class Result{
 	/**
 	 * 
 	 */
-	private JSONObject json = new JSONObject();
+	private Map<String, Object> json = new HashMap<String, Object>();
 	
-	public JSONObject getJson() {
+	public Map<String, Object> getJson() {
 		return json;
 	}
 
-	public void setJson(JSONObject json) {
+	public void setJson(Map<String, Object> json) {
 		this.json = json;
 	}
 
@@ -59,7 +62,7 @@ public class Result{
 	}
 	
 	public Result add(String key, Object value) {
-		this.json.accumulate(key, value);
+		this.json.put(key, value);
 		return this;
 	}
 }
