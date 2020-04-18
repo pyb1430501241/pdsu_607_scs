@@ -25,7 +25,7 @@
 				data : "uid="+uid+"&password="+password,
 				success : function(result) {
 					if(result.json.code == 200){
-						alert(result.sessionId);
+						alert(result.json.sessionId);
 						window.location.href="${APP_PATH}/blob/index";
 					}else{
 						

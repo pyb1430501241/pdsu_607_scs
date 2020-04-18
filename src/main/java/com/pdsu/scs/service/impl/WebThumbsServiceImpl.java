@@ -21,12 +21,17 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	public List<Integer> selectThumbssForWebId(List<Integer> webids) {
 		List<Integer> thumbss = new ArrayList<Integer>();
 		for(Integer webid : webids) {
-			WebThumbsExample example = new WebThumbsExample();
-			Criteria criteria = example.createCriteria();
-			criteria.andWebidEqualTo(webid);
-			thumbss.add((int)(webThumbsMapper.countByExample(example)));
+			thumbss.add(selectThumbsForWebId(webid));
 		}
 		return thumbss;
+	}
+
+	@Override
+	public Integer selectThumbsForWebId(Integer webid) {
+		WebThumbsExample example = new WebThumbsExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andWebidEqualTo(webid);
+		return (int) webThumbsMapper.countByExample(example);
 	}
 
 }

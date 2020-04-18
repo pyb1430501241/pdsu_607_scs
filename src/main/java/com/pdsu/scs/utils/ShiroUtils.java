@@ -15,18 +15,18 @@ import com.pdsu.scs.bean.UserInformation;
 
 public class ShiroUtils {
 
-	public static UserInformation getUser() {
+	public static UserInformation getUserInformation() {
 		  //从shiro的session中取出activeUser
         Subject subject = SecurityUtils.getSubject();
         //取出身份信息
-        UserInformation activeUser = (UserInformation) subject.getPrincipal();
-        if(activeUser!=null){
+        UserInformation userInformation = (UserInformation) subject.getPrincipal();
+        if(userInformation!=null){
             Session session = subject.getSession();
             UserInformation user = (UserInformation) session.getAttribute("user");
             if(user==null){
-                session.setAttribute("user", activeUser);
+                session.setAttribute("user", userInformation);
             }
-            return activeUser;
+            return userInformation;
         }else{
             return null;
         }
@@ -39,20 +39,20 @@ public class ShiroUtils {
      * @param response
      * @return
      */
-    public static UserInformation getActiveUser(String sessionID,HttpServletRequest request,HttpServletResponse response) throws Exception{
+    public static UserInformation getUserInformation(String sessionID,HttpServletRequest request,HttpServletResponse response) throws Exception{
         SessionKey key = new WebSessionKey(sessionID,request,response);
         Session se = SecurityUtils.getSecurityManager().getSession(key);
         Object obj = se.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
         //org.apache.shiro.subject.SimplePrincipalCollection cannot be cast to com.hncxhd.bywl.entity.manual.UserInfo
         SimplePrincipalCollection coll = (SimplePrincipalCollection) obj;
-        UserInformation activeUser = (UserInformation)coll.getPrimaryPrincipal();
+        UserInformation userInformation = (UserInformation)coll.getPrimaryPrincipal();
 
-        if(activeUser!=null){
+        if(userInformation!=null){
         	UserInformation user = (UserInformation) se.getAttribute("user");
             if(user==null){
-                se.setAttribute("user", activeUser);
+                se.setAttribute("user", userInformation);
             }
-            return activeUser;
+            return userInformation;
         }else{
             return null;
         }

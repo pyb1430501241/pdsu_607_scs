@@ -11,5 +11,8 @@ public interface WebThumbsService {
 	
 	//根据文章id集获取每篇文章的点赞数
 	public List<Integer> selectThumbssForWebId(List<Integer> webids);
+
+	//根据文章的id获取文章点赞数
+	public Integer selectThumbsForWebId(Integer webid);
 	
 }
