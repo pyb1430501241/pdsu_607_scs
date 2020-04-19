@@ -108,7 +108,6 @@
 				/js/** = anon
 				/img/**= anon
 				/loginAjax = anon
-				/getCode = anon
 				/blob/index = anon
 				/blob/getWebindex = anon
 				/** = authc

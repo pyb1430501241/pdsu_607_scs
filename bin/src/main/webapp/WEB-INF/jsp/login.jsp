@@ -9,46 +9,22 @@
 </head>
 <body>
 	
-		账号 :<input type="text" id = "uid"/>
+		Username :<input type="text" id = "uid"/>
 		<br>
-		密码 :<input type="text" id="password"/>
-		<br>
-		<img id = "img">
-		<br>
-		验证码:<input type="text" id = "code"/>
-		<input type="hidden" id = "hidden"/>
+		Password :<input type="text" id="password"/>
 		<br>
 		<input type="submit" value="submit" onclick="login()"/>
 
 	<script type="text/javascript">
-		$(function() {
-			code();
-		});
-		function code() {
-			$.ajax({
-				type : "GET",
-				url  : "${APP_PATH}/getCode",
-				success : function(result) {
-					$("#img").removeAttr("src");
-					$("#hidden").removeAttr("value");
-					$("#img").attr("src",result.json.img);
-					$("#hidden").attr("value",result.json.token);
-				}
-			})
-		}
-	
 		function login() {
 			var uid = $("#uid").val();
 			var password = $("#password").val();
-			var hit = $("#hidden").val();
-			var code = $("#code").val();
 			$.ajax({
 				type : "POST",
 				url  : "${APP_PATH}/loginAjax",
-				data : "uid="+uid+"&password="+password+"&code="+code+"&hit="+hit,
+				data : "uid="+uid+"&password="+password,
 				success : function(result) {
 					if(result.json.code == 200){
-						console.log(result);
 						alert(result.json.sessionId);
 						window.location.href="${APP_PATH}/blob/index";
 					}else{

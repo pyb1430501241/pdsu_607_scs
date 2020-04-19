@@ -1,11 +1,18 @@
 package com.pdsu.scs.handler;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.UUID;
+
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,6 +24,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.service.UserInformationService;
+import com.pdsu.scs.utils.CodeUtils;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 @Controller
 public class WebHanlder {
@@ -31,7 +40,10 @@ public class WebHanlder {
 	
 	/**
 	 * 处理登录
-	 * @param user  POJO
+	 * @param uid 账号
+	 * @param password 密码
+	 * @param hit session获取数据的key
+	 * @param code 输入的验证码
 	 * @param flag  是否记住密码
 	 * @param session
 	 * @return
@@ -39,11 +51,19 @@ public class WebHanlder {
 	@ResponseBody
 	@RequestMapping("/loginAjax")
 	@CrossOrigin
-	public Result loginAjax(UserInformation user, @RequestParam(value = "flag", defaultValue = "0")Integer flag,
-			HttpServletResponse response) {
+	public Result loginAjax(String uid, String password, String hit, String code, 
+			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
 		Subject subject = SecurityUtils.getSubject();
+		Session session = subject.getSession();
+		String attribute = (String) session.getAttribute(hit);
+		if(attribute == null) {
+			return Result.fail().add("exception", "网络延迟过高");
+		}
+		if(!attribute.equals(code)) {
+			return Result.fail().add("exception", "验证码错误");
+		}
 		if(!subject.isAuthenticated()) {
-			UsernamePasswordToken token = new UsernamePasswordToken(user.getUid()+"", user.getPassword());
+			UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
 			if(flag == 0) {
 				token.setRememberMe(false);
 			}else {
@@ -76,13 +96,26 @@ public class WebHanlder {
 	}
 	
 	/**
-	 * 获取用户信息
-	 * @param uid
+	 * 获取验证码
+	 * @param session 储存验证码到 session
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/getUser")
-	public Result getUserForSession(Integer uid) {
-		return Result.success().add("user", userInformationService.selectByUid(uid));
+	@RequestMapping("/getCode")
+	@CrossOrigin
+	public Result getCode(HttpSession session){
+		try {
+			CodeUtils utils = new CodeUtils();
+			BufferedImage image = utils.getImage();
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			CodeUtils.output(image, out);
+			String base64 = Base64.encode(out.toByteArray());
+			String src = "data:image/png;base64," + base64;
+			String token = UUID.randomUUID().toString();
+			session.setAttribute(token, utils.getText());
+			return Result.success().add("img", src).add("token", token);
+		} catch (IOException e) {
+			return Result.fail();
+		}
 	}
 }

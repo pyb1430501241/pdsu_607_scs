@@ -54,6 +54,7 @@ public class BlobHandler {
 	@Autowired
 	private MyLikeService myLikeService;
 	
+	@Autowired
 	private MyCollectionService myConllectionService;
 	
 	/**
