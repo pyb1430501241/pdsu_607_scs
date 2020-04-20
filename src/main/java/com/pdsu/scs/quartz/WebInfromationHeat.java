@@ -1,15 +1,12 @@
 package com.pdsu.scs.quartz;
 
-import java.util.List;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.service.WebInformationService;
-import com.pdsu.scs.utils.SimpleDateUtils;
 
 /**
  * 该任务用于计算一篇文章的热度
@@ -25,11 +22,11 @@ public class WebInfromationHeat implements Job{
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
-		List<WebInformation> webs = webInformationService.selectWebInformationOrderByTimetest();
-		for(WebInformation web : webs) {
-			String start = web.getSubTime();
-			String end = SimpleDateUtils.getSimpleDateSecond();
-		}
+//		List<WebInformation> webs = webInformationService.selectWebInformationOrderByTimetest();
+//		for(WebInformation web : webs) {
+//			String start = web.getSubTime();
+//			String end = SimpleDateUtils.getSimpleDateSecond();
+//		}
 	}
 
 }

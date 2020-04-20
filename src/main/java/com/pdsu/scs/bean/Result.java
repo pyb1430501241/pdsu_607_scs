@@ -3,8 +3,6 @@ package com.pdsu.scs.bean;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.activiti.engine.impl.util.json.JSONObject;
-
 /**
  * 处理AJAX请求
  * @author Admin

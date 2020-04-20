@@ -5,13 +5,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.codec.Base64;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.CodeUtils;
-import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
 @Controller
 public class WebHanlder {
@@ -109,7 +108,7 @@ public class WebHanlder {
 			BufferedImage image = utils.getImage();
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			CodeUtils.output(image, out);
-			String base64 = Base64.encode(out.toByteArray());
+			String base64 = Base64.encodeToString(out.toByteArray());
 			String src = "data:image/png;base64," + base64;
 			String token = UUID.randomUUID().toString();
 			session.setAttribute(token, utils.getText());

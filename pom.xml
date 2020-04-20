@@ -248,7 +248,6 @@
 	    <artifactId>mybatis-ehcache</artifactId>
 	    <version>1.2.0</version>
 	</dependency>
-	
 	<!-- 跨域 -->
     <!-- https://mvnrepository.com/artifact/com.thetransactioncompany/cors-filter -->
     <dependency>
