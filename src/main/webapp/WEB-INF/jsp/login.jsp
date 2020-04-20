@@ -47,8 +47,8 @@
 				url  : "${APP_PATH}/loginAjax",
 				data : "uid="+uid+"&password="+password+"&code="+code+"&hit="+hit,
 				success : function(result) {
+					console.log(result);
 					if(result.json.code == 200){
-						console.log(result);
 						alert(result.json.sessionId);
 						window.location.href="${APP_PATH}/blob/index";
 					}else{

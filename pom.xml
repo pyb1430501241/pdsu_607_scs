@@ -261,6 +261,20 @@
       <artifactId>java-property-utils</artifactId>
       <version>1.9.1</version>
     </dependency>
+    <!--  ehcache缓存包-->
+  <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>2.10.5</version>
+  </dependency>
+
+<!-- spring-context-support包含有Spring对于缓存功能的抽象封装接口-->
+ <dependency>
+     <groupId>org.springframework</groupId>
+     <artifactId>spring-context-support</artifactId>
+     <version>5.2.0.RELEASE</version>
+ </dependency>
+    
   </dependencies>
   
     <properties>

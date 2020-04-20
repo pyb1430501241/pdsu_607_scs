@@ -61,7 +61,7 @@
 	<!-- 配置 shiro  -->
 	<!-- ================================================================================== -->
 	<!-- 配置 cacheManager -->
-	<bean id = "cacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
+	<bean id = "ehcacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
 		<property name="cacheManagerConfigFile" value="classpath:shiro/ehcache.xml"></property>
 	</bean>	
 	<!-- 配置认证器 -->
@@ -81,7 +81,7 @@
 	</bean>
 	<!-- 配置 securityManager -->
 	<bean id = "securityManager" class = "org.apache.shiro.web.mgt.DefaultWebSecurityManager">
-		<property name="cacheManager" ref="cacheManager"></property>
+		<property name="cacheManager" ref="ehcacheManager"></property>
 		<property name="realm" ref="loginRealm"></property>
 	</bean>
 	<!-- 配置 LifecycleBeanPostProcessor, 可以自动的调用配置在 Spring IOC 容器中的 shiro bean 生命周期方法 -->
@@ -115,5 +115,13 @@
 			</value>
 		</property>
 	</bean>
-	<!-- ================================================================================== -->	
+	<!-- ================================================================================== -->
+	<!-- 配置 ehcache 缓存 -->
+	<bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">  
+		<property name="configLocation" value="classpath:shiro/ehcache.xml"></property>
+		<property name="cacheManagerName" value="code"></property>
+	</bean>  
+	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">  
+		<property name="cacheManager" ref="cacheManagerFactory"></property>   
+	</bean>
 </beans>
