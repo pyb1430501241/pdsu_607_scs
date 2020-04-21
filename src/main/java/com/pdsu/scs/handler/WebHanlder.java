@@ -10,7 +10,6 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -28,6 +27,7 @@ import com.pdsu.scs.utils.CodeUtils;
 
 
 @Controller
+@RequestMapping("/user")
 public class WebHanlder {
 	
 	@Autowired
@@ -53,7 +53,7 @@ public class WebHanlder {
 	 * 处理登录
 	 * @param uid 账号
 	 * @param password 密码
-	 * @param hit session获取数据的key
+	 * @param hit cache获取数据的key
 	 * @param code 输入的验证码
 	 * @param flag  是否记住密码 默认为不记住
 	 * @return
@@ -112,7 +112,7 @@ public class WebHanlder {
 	
 	/**
 	 * 获取验证码
-	 * @param session 储存验证码到 session
+	 * @param session 储存验证码到 cache
 	 * @return
 	 */
 	@ResponseBody

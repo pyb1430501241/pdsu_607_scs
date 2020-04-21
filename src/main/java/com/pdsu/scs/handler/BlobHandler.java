@@ -127,8 +127,8 @@ public class BlobHandler {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/blob")
-	public Result toblob(@RequestParam(value = "id", required = false)Integer id) {
+	@RequestMapping("/getBlob")
+	public Result toBlob(@RequestParam(value = "id", required = false)Integer id) {
 		try {
 			//获取博客页面信息
 			WebInformation web = webInformationService.selectById(id);
@@ -162,10 +162,10 @@ public class BlobHandler {
 			//获取网页收藏量
 			Integer collections = myConllectionService.selectCollectionsByWebId(web.getId());
 			return Result.success().add("web", web).add("webList", webList)
-				   .add("author", author)
-				   .add("visits", visits)
+				   .add("user", author)
+				   .add("visit", visits)
 				   .add("thubms", thubms)
-				   .add("collections", collections);
+				   .add("collection", collections);
 		}catch (Exception e) {
 			return Result.fail();
 		}
@@ -178,6 +178,8 @@ public class BlobHandler {
 	 * @param webid 网页id
 	 * @return
 	 */
+	@RequestMapping("collection")
+	@ResponseBody
 	public Result collection(Integer bid, Integer webid) {
 		try {
 			Integer uid = ShiroUtils.getUserInformation().getUid();
