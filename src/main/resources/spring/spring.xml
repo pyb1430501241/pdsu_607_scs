@@ -99,7 +99,7 @@
 	<bean id = "shiroFilter" class = "org.apache.shiro.spring.web.ShiroFilterFactoryBean">
 		<property name="securityManager" ref="securityManager"></property>
 		<!-- 登录页面 -->
-		<property name="loginUrl" value="/login"></property>
+		<property name="loginUrl" value="/user/login"></property>
 		<!-- 成功页面 -->
 		<property name="successUrl" value="/blob/index"></property>
 		<!-- 过滤器 -->
@@ -107,8 +107,13 @@
 			<value>
 				/js/** = anon
 				/img/**= anon
-				/loginAjax = anon
-				/getCode = anon
+				/user/login = anon
+				/user/getCodeForLogin = anon
+				/user/getCodeForApply = anon
+				/user/applyNumber = anon
+				/user/inputEmail = anon
+				/user/getCodeForRetrieve = anon
+				/user/retrieve = anon
 				/blob/index = anon
 				/blob/getWebindex = anon
 				/** = authc
@@ -124,4 +129,5 @@
 	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">  
 		<property name="cacheManager" ref="cacheManagerFactory"></property>   
 	</bean>
+	
 </beans>

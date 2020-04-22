@@ -57,14 +57,14 @@ public class EmailUtils {
 	
 	/**
 	 * 找回密码
-	 * @param email
-	 * @param name
-	 * @throws EmailException
+	 * @param email 邮箱
+	 * @param name  用户名
+	 * @throws EmailException 邮箱不存在
 	 */
 	public void sendEmailForRetrieve(String email, String name) throws EmailException {
 		text = RandomUtils.getRandom();
 		String subject = "代码分享平台找回密码验证";
-		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行找回账号的操作,"
+		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行找回密码的操作,"
 				+ "本次请求的邮件验证码是：<b><h1 style=\"font-size:150%\">                "
 				+ "        " + text + "</h1><b>为了确保你的用户安全，请在五分钟之内完成验证。"
 				+ "本验证码五分钟之内有效, 请及时输入。"
@@ -77,14 +77,34 @@ public class EmailUtils {
 	
 	/**
 	 * 换绑手机
-	 * @param email
-	 * @param name
-	 * @throws EmailException
+	 * @param email 邮箱
+	 * @param name  用户名
+	 * @throws EmailException 邮箱不存在
 	 */
 	public void sendEmailForRetrieveIpone(String email, String name) throws EmailException {
 		text = RandomUtils.getRandom();
 		String subject = "代码分享平台换绑手机号验证";
 		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行换绑手机号的操作,"
+				+ "本次请求的邮件验证码是：<b><h1 style=\"font-size:150%\">                "
+				+ "        " + text + "</h1><b>为了确保你的用户安全，请在五分钟之内完成验证。"
+				+ "本验证码五分钟之内有效, 请及时输入。"
+				+ "\n\n" + "  为确保账号安全，请勿泄露此验证码。"
+				+ "\n" + "  祝您在【代码分享平台】有所收获！"
+				+ "\n\n" + "  (这是一封自动发送的邮件，请勿直接回复)"
+				+ HR;
+		sendEmail(email, subject, msg);
+	}
+	
+	/**
+	 * 修改密码
+	 * @param email 邮箱
+	 * @param name  用户名
+	 * @throws EmailException 邮箱不存在
+	 */
+	public void sendEmailForModify(String email, String name) throws EmailException {
+		text = RandomUtils.getRandom();
+		String subject = "代码分享平台修改密码验证";
+		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行修改密码的操作,"
 				+ "本次请求的邮件验证码是：<b><h1 style=\"font-size:150%\">                "
 				+ "        " + text + "</h1><b>为了确保你的用户安全，请在五分钟之内完成验证。"
 				+ "本验证码五分钟之内有效, 请及时输入。"
