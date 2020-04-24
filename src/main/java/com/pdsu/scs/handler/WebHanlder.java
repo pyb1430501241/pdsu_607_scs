@@ -10,7 +10,6 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -36,7 +35,7 @@ import com.pdsu.scs.utils.SimpleDateUtils;
 @RequestMapping("/user")
 public class WebHanlder {
 	
-	private static final String ex = "exception";
+	private static final String EX = "exception";
 	
 	@Autowired
 	private UserInformationService userInformationService;
@@ -71,12 +70,12 @@ public class WebHanlder {
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
 		Subject subject = SecurityUtils.getSubject();
 		if(cache.get(hit) == null) {
-			return Result.fail().add(ex, "验证码已失效, 请刷新后重试");
+			return Result.fail().add(EX, "验证码已失效, 请刷新后重试");
 		}
 		//从缓存中获取验证码
 		String ss = (String) cache.get(hit).get();
 		if(!ss.equals(code)) {
-			return Result.fail().add(ex, "验证码错误");
+			return Result.fail().add(EX, "验证码错误");
 		}
 		/**
 		 * 如果未认证
@@ -95,26 +94,26 @@ public class WebHanlder {
 				UserInformation uu = (UserInformation) subject.getPrincipal();
 				uu.setPassword(null);
 				if(uu.getAccountStatus() == 2) {
-					return Result.fail().add(ex, "账号被冻结");
+					return Result.fail().add(EX, "账号被冻结");
 				}
 				if(uu.getAccountStatus() == 3) {
-					return Result.fail().add(ex, "账号被封禁");
+					return Result.fail().add(EX, "账号被封禁");
 				}
 				if(uu.getAccountStatus() == 4) {
-					return Result.fail().add(ex, "账号不存在");
+					return Result.fail().add(EX, "账号不存在");
 				}
-				return Result.success().add(ex, "登录成功")
+				return Result.success().add(EX, "登录成功")
 						.add("sessionId", subject.getSession().getId())
 						.add("user", uu);
 			}catch (IncorrectCredentialsException e) {
-				return Result.fail().add(ex, "账号或密码错误");
+				return Result.fail().add(EX, "账号或密码错误");
 			}catch (UnknownAccountException e) {
-				return Result.fail().add(ex, "账号不存在");
+				return Result.fail().add(EX, "账号不存在");
 			}catch (Exception e) {
-				return Result.fail().add(ex, "未知错误");
+				return Result.fail().add(EX, "未知错误");
 			}
 		}
-		return Result.fail().add(ex, "你已登录");
+		return Result.fail().add(EX, "你已登录");
 	}
 	
 	/**
@@ -157,13 +156,13 @@ public class WebHanlder {
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) {
 		try {
 			if(email == null) {
-				return Result.fail().add(ex, "邮箱不可为空");
+				return Result.fail().add(EX, "邮箱不可为空");
 			}
 			if(name == null) {
-				return Result.fail().add(ex, "用户名不可为空");
+				return Result.fail().add(EX, "用户名不可为空");
 			}
 			if(myEmailService.countByEmail(email) != 0) {
-				return Result.fail().add(ex, "此邮箱已被绑定");
+				return Result.fail().add(EX, "此邮箱已被绑定");
 			}
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForApply(email, name);
@@ -175,7 +174,7 @@ public class WebHanlder {
 			cache.put(token, text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
-			return Result.fail().add(ex, "邮箱地址不正确");
+			return Result.fail().add(EX, "邮箱地址不正确");
 		}
 	}
 	
@@ -194,18 +193,18 @@ public class WebHanlder {
 		try {
 			//验证验证码
 			if(cache.get(token) == null) {
-				return Result.fail().add(ex, "验证码已过期");
+				return Result.fail().add(EX, "验证码已过期");
 			}
 			String ss = (String) cache.get(token).get();
 			if(!ss.equals(code)) {
-				return Result.fail().add(ex, "验证码错误");
+				return Result.fail().add(EX, "验证码错误");
 			}
 			//查询账号是否已存在
 			if(userInformationService.countByUid(user.getUid()) != 0) {
-				return Result.fail().add(ex, "该账号已存在,是否忘记密码?");
+				return Result.fail().add(EX, "该账号已存在,是否忘记密码?");
 			}
 			if(myEmailService.countByEmail(email) != 0) {
-				return Result.fail().add(ex, "此邮箱已被绑定, 忘记密码?");
+				return Result.fail().add(EX, "此邮箱已被绑定, 忘记密码?");
 			}
 			//默认账号为正常状态
 			user.setAccountStatus(1);
@@ -215,12 +214,12 @@ public class WebHanlder {
 			user.setImgpath("01.png");
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
-				return Result.success().add(ex, "申请成功");
+				return Result.success().add(EX, "申请成功");
 			}else {
-				return Result.fail().add(ex, "申请失败");
+				return Result.fail().add(EX, "申请失败");
 			}
 		}catch (Exception e) {
-			return Result.fail().add(ex, "连接服务器失败, 请稍候重试");
+			return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
 		}
 	}
 	
@@ -288,19 +287,19 @@ public class WebHanlder {
 	public Result retrieveThePassword(Integer uid, String password,String token, String code) {
 		try {
 			if(cache.get(token) == null) {
-				return Result.fail().add(ex, "验证码已过期");
+				return Result.fail().add(EX, "验证码已过期");
 			}
 			String ss = (String) cache.get(token).get();
 			if(!ss.equals(code)) {
-				return Result.fail().add(ex, "验证码错误"); 
+				return Result.fail().add(EX, "验证码错误"); 
 			}
 			boolean b = userInformationService.ModifyThePassword(uid, password);
 			if(!b) {
-				return Result.fail().add(ex, "密码修改失败, 请稍后重试");
+				return Result.fail().add(EX, "密码修改失败, 请稍后重试");
 			}
-			return Result.success().add(ex, "修改成功");
+			return Result.success().add(EX, "修改成功");
 		}catch (Exception e) {
-			return Result.fail().add(ex, "未知错误");
+			return Result.fail().add(EX, "未知错误");
 		}
 	}
 	
@@ -344,7 +343,7 @@ public class WebHanlder {
 			cache.put(token, text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
-			return Result.fail().add(ex, "未知错误");
+			return Result.fail().add(EX, "未知错误");
 		}
 	}
 	
@@ -360,14 +359,14 @@ public class WebHanlder {
 	public Result modifyBefore(String token, String code) {
 		try {
 			if(cache.get(token) == null) {
-				return Result.fail().add(ex, "验证码已过期");
+				return Result.fail().add(EX, "验证码已过期");
 			}
 			if(!cache.get(token).get().equals(code)) {
-				return Result.fail().add(ex, "验证码错误");
+				return Result.fail().add(EX, "验证码错误");
 			}
 			return Result.success();
 		}catch (Exception e) {
-			return Result.fail().add(ex, "未知错误");
+			return Result.fail().add(EX, "未知错误");
 		}
 	}
 	
@@ -384,11 +383,11 @@ public class WebHanlder {
 			boolean flag = userInformationService.ModifyThePassword(
 					ShiroUtils.getUserInformation().getUid(), password);
 			if(!flag) {
-				return Result.fail().add(ex, "修改失败");
+				return Result.fail().add(EX, "修改失败");
 			}
 			return Result.success();
 		}catch (Exception e) {
-			return Result.fail().add(ex, "未知错误");
+			return Result.fail().add(EX, "未知错误");
 		}
 	}
 }
