@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,26 +34,52 @@ import com.pdsu.scs.utils.SimpleDateUtils;
 @Controller
 public class BlobHandler {
 
+	/**
+	 * 博客相关逻辑处理
+	 */
 	@Autowired
 	private WebInformationService webInformationService;
 	
+	/**
+	 * 用户相关逻辑处理
+	 */
 	@Autowired
 	private UserInformationService userInformationService;
 	
+	/**
+	 * 点赞相关逻辑处理
+	 */
 	@Autowired
 	private WebThumbsService webThubmsService;
 	
+	/**
+	 * 头像相关逻辑处理
+	 */
 	@Autowired
 	private MyImageService myInageService;
 	
+	/**
+	 * 访问相关逻辑处理
+	 */
 	@Autowired
 	private VisitInformationService visitInformationService;
 	
+	/**
+	 * 关注相关逻辑处理
+	 */
 	@Autowired
 	private MyLikeService myLikeService;
 	
+	/**
+	 * 收藏相关逻辑处理
+	 */
 	@Autowired
 	private MyCollectionService myConllectionService;
+	
+	/**
+	 * 日志
+	 */
+	private static final Logger log = LoggerFactory.getLogger(BlobHandler.class);
 	
 	/**
 	 * 转发到网站首页
@@ -116,7 +144,7 @@ public class BlobHandler {
 					.add("thumbsList", thumbsList)
 					.add("collectionList", collectionList);
 		}catch (Exception e) {
-			e.printStackTrace();
+			log.error("获取首页数据失败, 原因为: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -128,7 +156,7 @@ public class BlobHandler {
 	 */
 	@ResponseBody
 	@RequestMapping("/getBlob")
-	public Result toBlob(@RequestParam(value = "id", required = false)Integer id) {
+	public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) {
 		try {
 			//获取博客页面信息
 			WebInformation web = webInformationService.selectById(id);
@@ -155,6 +183,7 @@ public class BlobHandler {
 			}
 			//添加一个访问记录
 			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
+			log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
 			//获取网页访问量
 			Integer visits = visitInformationService.selectvisitByWebId(web.getId());
 			//获取网页点赞数
@@ -167,6 +196,7 @@ public class BlobHandler {
 				   .add("thubms", thubms)
 				   .add("collection", collections);
 		}catch (Exception e) {
+			log.error("加载博客信息失败, 失败信息为: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -181,14 +211,18 @@ public class BlobHandler {
 	@RequestMapping("collection")
 	@ResponseBody
 	public Result collection(Integer bid, Integer webid) {
+		Integer uid = ShiroUtils.getUserInformation().getUid();
 		try {
-			Integer uid = ShiroUtils.getUserInformation().getUid();
+			log.info("用户: " + uid + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
 			boolean flag = myConllectionService.insert(new MyCollection(null, uid, webid, bid));
 			if(flag) {
+				log.info("收藏成功");
 				return Result.success();
 			}
+			log.info("收藏失败");
 			return Result.fail();
 		}catch (Exception e) {
+			log.error("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -202,16 +236,20 @@ public class BlobHandler {
 	@RequestMapping("/like")
 	@ResponseBody
 	public Result like(Integer uid) {
+		//从session里获取当前登录的人的学号
+		Integer likeId = ShiroUtils.getUserInformation().getUid();
 		try {
-			//从session里获取当前登录的人的学号
-			Integer likeId = ShiroUtils.getUserInformation().getUid();
+			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
 			//插入记录
 			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
 			if(flag) {
+				log.info("用户: " + likeId + ", 关注: " + uid + "成功");
 				return Result.success();
 			}
+			log.info("用户: " + likeId + ", 关注: " + uid + "失败");
 			return Result.fail();
 		}catch (Exception e) {
+			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -229,17 +267,21 @@ public class BlobHandler {
 	@RequestMapping("/insert")
 	@ResponseBody
 	public Result insert(WebInformation web) {
+		Integer uid = ShiroUtils.getUserInformation().getUid();
 		try {
-			web.setUid(ShiroUtils.getUserInformation().getUid());
+			log.info("用户: " + uid + "发布文章开始");
+			web.setUid(uid);
 			web.setWebData(web.getWebDataString().getBytes("utf-8"));
 			web.setSubTime(SimpleDateUtils.getSimpleDateSecond());
 			boolean flag = webInformationService.insert(web);
 			if(flag) {
+				log.info("用户: " + uid + "发布文章成功, 文章标题为: " + web.getTitle());
 				return Result.success().add("hint", "发布成功");
 			}
+			log.info("用户: " + uid + "发布文章失败");
 			return Result.fail().add("hint", "发布失败");
 		}catch (Exception e) {
-			e.printStackTrace();
+			log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
 			return Result.fail().add("hint", "发布失败, 未知原因");
 		}
 	}

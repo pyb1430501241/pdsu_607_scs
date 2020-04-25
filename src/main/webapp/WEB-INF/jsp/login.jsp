@@ -27,7 +27,7 @@
 		function code() {
 			$.ajax({
 				type : "GET",
-				url  : "${APP_PATH}/getCode",
+				url  : "${APP_PATH}/user/getCodeForLogin",
 				success : function(result) {
 					$("#img").removeAttr("src");
 					$("#hidden").removeAttr("value");
@@ -44,7 +44,7 @@
 			var code = $("#code").val();
 			$.ajax({
 				type : "POST",
-				url  : "${APP_PATH}/loginAjax",
+				url  : "${APP_PATH}/user/loginAjax",
 				data : "uid="+uid+"&password="+password+"&code="+code+"&hit="+hit,
 				success : function(result) {
 					console.log(result);

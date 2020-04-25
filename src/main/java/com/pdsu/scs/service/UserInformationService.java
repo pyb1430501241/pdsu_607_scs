@@ -30,7 +30,7 @@ public interface UserInformationService {
 	public List<UserInformation> selectUsersByUids(List<Integer> uids);
 
 	//查询是否有此账号
-	public long countByUid(Integer uid);
+	public int countByUid(Integer uid);
 	
 	//修改密码
 	public boolean ModifyThePassword(Integer uid, String password);

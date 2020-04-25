@@ -108,10 +108,11 @@
 				/js/** = anon
 				/img/**= anon
 				/user/login = anon
+				/user/loginAjax = anon
 				/user/getCodeForLogin = anon
 				/user/getCodeForApply = anon
 				/user/applyNumber = anon
-				/user/inputEmail = anon
+				/user/inputUid = anon
 				/user/getCodeForRetrieve = anon
 				/user/retrieve = anon
 				/blob/index = anon

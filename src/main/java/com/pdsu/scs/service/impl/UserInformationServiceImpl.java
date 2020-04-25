@@ -112,11 +112,11 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 查询是否有此账号
 	 */
 	@Override
-	public long countByUid(Integer uid) {
+	public int countByUid(Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return userInformationMapper.countByExample(example);
+		return (int) userInformationMapper.countByExample(example);
 	}
 	
 	/**

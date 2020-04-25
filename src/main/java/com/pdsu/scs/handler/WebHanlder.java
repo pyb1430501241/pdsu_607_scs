@@ -11,6 +11,8 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -27,9 +29,9 @@ import com.pdsu.scs.service.MyEmailService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
+import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleDateUtils;
-
 
 @Controller
 @RequestMapping("/user")
@@ -42,7 +44,12 @@ public class WebHanlder {
 	
 	@Autowired
 	private MyEmailService myEmailService;
-
+	
+	/**
+	 * 日志
+	 */
+	private static final Logger log = LoggerFactory.getLogger(WebHanlder.class);
+	
 	/**
 	 * 缓存管理器
 	 */
@@ -54,6 +61,11 @@ public class WebHanlder {
 	 */
 	private Cache cache = null;
 	
+	@RequestMapping("/login")
+	public String login() {
+		return "login";
+	}
+	
 	/**
 	 * 处理登录
 	 * @param uid 账号
@@ -64,23 +76,27 @@ public class WebHanlder {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/login")
+	@RequestMapping("/loginAjax")
 	@CrossOrigin
 	public Result loginAjax(String uid, String password, String hit, String code, 
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
+		log.info("账号: " + uid + "登录开始");
 		Subject subject = SecurityUtils.getSubject();
 		if(cache.get(hit) == null) {
 			return Result.fail().add(EX, "验证码已失效, 请刷新后重试");
 		}
 		//从缓存中获取验证码
 		String ss = (String) cache.get(hit).get();
+		log.info("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
 		if(!ss.equals(code)) {
+			log.info("验证码错误");
 			return Result.fail().add(EX, "验证码错误");
 		}
 		/**
 		 * 如果未认证
 		 */
 		if(!subject.isAuthenticated()) {
+			log.info("账号: " + uid + "开始登录认证");
 			UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
 			//是否记住
 			if(flag == 0) {
@@ -94,31 +110,39 @@ public class WebHanlder {
 				UserInformation uu = (UserInformation) subject.getPrincipal();
 				uu.setPassword(null);
 				if(uu.getAccountStatus() == 2) {
+					log.info("账号: " + uid + "登录失败, 原因: 账号被冻结");
 					return Result.fail().add(EX, "账号被冻结");
 				}
 				if(uu.getAccountStatus() == 3) {
+					log.info("账号: " + uid + "登录失败, 原因: 账号被封禁");
 					return Result.fail().add(EX, "账号被封禁");
 				}
 				if(uu.getAccountStatus() == 4) {
-					return Result.fail().add(EX, "账号不存在");
+					log.info("账号: " + uid + "登录失败, 原因: 账号已被注销");
+					return Result.fail().add(EX, "账号已被注销");
 				}
+				log.info("账号: " + uid + "登录成功");
 				return Result.success().add(EX, "登录成功")
 						.add("sessionId", subject.getSession().getId())
 						.add("user", uu);
 			}catch (IncorrectCredentialsException e) {
+				log.info("账号: " + uid + "密码错误");
 				return Result.fail().add(EX, "账号或密码错误");
 			}catch (UnknownAccountException e) {
+				log.info("账号: " + uid + "不存在");
 				return Result.fail().add(EX, "账号不存在");
 			}catch (Exception e) {
+				log.error("账号: " + uid + "登录时发生未知错误");
 				return Result.fail().add(EX, "未知错误");
 			}
 		}
+		log.info("账号: " + uid + "已登录");
 		return Result.fail().add(EX, "你已登录");
 	}
 	
 	/**
 	 * 获取验证码
-	 * @param session 储存验证码到缓存区 cache
+	 * 储存验证码到缓存区 cache
 	 * @return
 	 */
 	@ResponseBody
@@ -126,6 +150,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result getCode(){
 		try {
+			log.info("获取验证码开始");
 			if(cache == null) {
 				cache = cacheManager.getCache("code");
 			}
@@ -137,9 +162,10 @@ public class WebHanlder {
 			String src = "data:image/png;base64," + base64;
 			String token = UUID.randomUUID().toString();
 			cache.put(token, utils.getText());
-			System.out.println(utils.getText());
+			log.info("获取成功, 验证码为: " + utils.getText());
 			return Result.success().add("img", src).add("token", token);
 		} catch (IOException e) {
+			log.error("获取验证码失败! 错误信息: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -155,6 +181,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) {
 		try {
+			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(email == null) {
 				return Result.fail().add(EX, "邮箱不可为空");
 			}
@@ -172,8 +199,10 @@ public class WebHanlder {
 			}
 			String token = UUID.randomUUID().toString();
 			cache.put(token, text);
+			log.info("发送成功, 验证码为: " + text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
+			log.error("邮箱: " + email + " 不存在");
 			return Result.fail().add(EX, "邮箱地址不正确");
 		}
 	}
@@ -191,6 +220,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result applyforAccountNumber(UserInformation user, String email, String token, String code) {
 		try {
+			log.info("申请账号: " + user.getUid() + "开始");
 			//验证验证码
 			if(cache.get(token) == null) {
 				return Result.fail().add(EX, "验证码已过期");
@@ -214,35 +244,43 @@ public class WebHanlder {
 			user.setImgpath("01.png");
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
+				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" +user);
 				return Result.success().add(EX, "申请成功");
 			}else {
+				log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
 				return Result.fail().add(EX, "申请失败");
 			}
 		}catch (Exception e) {
+			log.error("申请账号: " + user.getUid() + "失败, 服务器开小差了");
 			return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
 		}
 	}
 	
 	/**
-	 * 修改密码API集
+	 * 找回密码API集
 	 */
 	/**
-	 *  该API为用户输入邮箱验证此用户是否存在
+	 *  该API为用户输入账号验证此用户是否存在
 	 * @param email
 	 * @return
 	 */
-	@RequestMapping("/inputEmail")
+	@RequestMapping("/inputUid")
 	@ResponseBody
 	@CrossOrigin
-	public Result inputEmail(String email) {
+	public Result inputEmail(Integer uid) {
 		try {
-			int i = myEmailService.countByEmail(email);
+			log.info("开始进行找回密码验证账号是否存在");
+			int i = userInformationService.countByUid(uid);
 			if(i != 0) {
-				return Result.success().add("email", myEmailService.selectMyEmailByEmail(email));
+				log.info("账号: " + uid + "存在");
+				return Result.success().add("email", myEmailService.selectMyEmailByUid(uid))
+						.add("uid", uid);
 			}else {
+				log.info("账号: " + uid + "不存在");
 				return Result.fail();
 			}
 		}catch (Exception e) {
+			log.error("账号: " + uid + "找回密码时服务器开小差了");
 			return Result.fail();
 		}
 	}
@@ -257,6 +295,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result sendEmailForRetrieve(String email) {
 		try {
+			log.info("邮箱: " + email + " 开始发送找回密码的验证码");
 			EmailUtils utils = new EmailUtils();
 			//发送邮件
 			utils.sendEmailForRetrieve(email, 
@@ -268,9 +307,10 @@ public class WebHanlder {
 				cache = cacheManager.getCache("code");
 			}
 			cache.put(token, text);
-			System.out.println(text);
+			log.info("发送验证码成功, 验证码为: " + text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
+			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了");
 			return Result.fail();
 		}
 	}
@@ -286,6 +326,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result retrieveThePassword(Integer uid, String password,String token, String code) {
 		try {
+			log.info("账号: " + uid + "开始找回密码");
 			if(cache.get(token) == null) {
 				return Result.fail().add(EX, "验证码已过期");
 			}
@@ -297,8 +338,10 @@ public class WebHanlder {
 			if(!b) {
 				return Result.fail().add(EX, "密码修改失败, 请稍后重试");
 			}
+			log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
 			return Result.success().add(EX, "修改成功");
 		}catch (Exception e) {
+			log.error("账号: " + uid + "找回失败, 失败原因未知");
 			return Result.fail().add(EX, "未知错误");
 		}
 	}
@@ -315,8 +358,10 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result getModify() {
 		try {
+			log.info("修改密码开始, 用户信息从 session获取");
 			UserInformation user = ShiroUtils.getUserInformation();
 			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
+			log.info("信息获取成功");
 			return Result.success().add("myEmail", myEmail);
 		}catch (Exception e) {
 			return Result.fail();
@@ -333,6 +378,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result sendEmailForModify(String email) {
 		try {
+			log.info("邮箱: " + email + "开始发送修改密码的验证码");
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForModify(email, ShiroUtils.getUserInformation().getUsername());
 			if(cache == null) {
@@ -341,8 +387,10 @@ public class WebHanlder {
 			String token = UUID.randomUUID().toString();
 			String text = utils.getText();
 			cache.put(token, text);
+			log.info("邮箱: " + email + "发送验证码成功, 验证码为: " + text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
+			log.info("邮箱: " + email + "发送修改密码的验证码失败, 错误信息为: " + e.getMessage());
 			return Result.fail().add(EX, "未知错误");
 		}
 	}
@@ -358,14 +406,19 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result modifyBefore(String token, String code) {
 		try {
+			log.info("开始验证验证码是否正确");
 			if(cache.get(token) == null) {
+				log.info("验证码已过期, key 为: " + token);
 				return Result.fail().add(EX, "验证码已过期");
 			}
 			if(!cache.get(token).get().equals(code)) {
+				log.info("验证码错误, 服务器端验证码为: " + cache.get(token).get() + ", 用户输入为: " + code);
 				return Result.fail().add(EX, "验证码错误");
 			}
+			log.info("验证码: " + code + "正确");
 			return Result.success();
 		}catch (Exception e) {
+			log.error("验证验证码时发生未知错误");
 			return Result.fail().add(EX, "未知错误");
 		}
 	}
@@ -379,14 +432,19 @@ public class WebHanlder {
 	@CrossOrigin
 	@ResponseBody
 	public Result modifyForPassword(String password) {
+		Integer uid = ShiroUtils.getUserInformation().getUid();
 		try {
+			log.info("账号: " + uid + "开始修改密码");
 			boolean flag = userInformationService.ModifyThePassword(
 					ShiroUtils.getUserInformation().getUid(), password);
 			if(!flag) {
+				log.info("账号: " + uid + " 修改密码失败");
 				return Result.fail().add(EX, "修改失败");
 			}
+			log.info("账号: " + uid + "修改密码成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
 			return Result.success();
 		}catch (Exception e) {
+			log.error("账号: " + uid + "修改密码时发生错误");
 			return Result.fail().add(EX, "未知错误");
 		}
 	}
