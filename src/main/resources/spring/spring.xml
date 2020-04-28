@@ -52,7 +52,7 @@
 			<tx:method name="select*" read-only="true"/>
 		</tx:attributes>
 	</tx:advice>
-	<aop:config>
+	<aop:config >
 		<!-- 事务表达式 -->
 		<aop:pointcut expression="execution(* com.pdsu.scs.service..*(..))" id="txPointcut"/>
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
@@ -131,4 +131,6 @@
 		<property name="cacheManager" ref="cacheManagerFactory"></property>   
 	</bean>
 	
+	<!-- 使 Aspectj 注解起作用 : 自动为匹配的类生成代理对象 -->
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 </beans>

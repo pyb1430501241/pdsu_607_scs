@@ -8,7 +8,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.service.WebInformationService;
-import com.pdsu.scs.utils.SimpleDateUtils;
+import com.pdsu.scs.utils.SimpleUtils;
 
 
 @SpringJUnitConfig(locations = {"classpath:spring/spring.xml"})
@@ -38,7 +38,7 @@ public class WebInformationTest {
 	@Test
 	public void addWebInformationTest() {
 		WebInformation information = new WebInformation();
-		information.setSubTime(SimpleDateUtils.getSimpleDateSecond());
+		information.setSubTime(SimpleUtils.getSimpleDateSecond());
 		information.setTitle("Java字符串");
 		information.setUid(181360241);
 		information.setWebData(("## Java字符串操作\r\n" + 

@@ -16,7 +16,6 @@ import com.pdsu.scs.bean.UserInformation;
 public class ShiroUtils {
 
 	public static UserInformation getUserInformation() {
-		  //从shiro的session中取出activeUser
         Subject subject = SecurityUtils.getSubject();
         //取出身份信息
         UserInformation userInformation = (UserInformation) subject.getPrincipal();

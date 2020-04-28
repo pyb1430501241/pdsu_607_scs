@@ -31,7 +31,7 @@ import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
-import com.pdsu.scs.utils.SimpleDateUtils;
+import com.pdsu.scs.utils.SimpleUtils;
 
 @Controller
 @RequestMapping("/user")
@@ -239,7 +239,7 @@ public class WebHanlder {
 			//默认账号为正常状态
 			user.setAccountStatus(1);
 			//设置申请时间
-			user.setTime(SimpleDateUtils.getSimpleDate());
+			user.setTime(SimpleUtils.getSimpleDate());
 			//设置默认头像
 			user.setImgpath("01.png");
 			boolean flag = userInformationService.inset(user);

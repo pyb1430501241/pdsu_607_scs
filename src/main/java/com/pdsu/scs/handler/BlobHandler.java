@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -28,7 +29,7 @@ import com.pdsu.scs.service.VisitInformationService;
 import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebThumbsService;
 import com.pdsu.scs.utils.ShiroUtils;
-import com.pdsu.scs.utils.SimpleDateUtils;
+import com.pdsu.scs.utils.SimpleUtils;
 
 @RequestMapping("/blob")
 @Controller
@@ -110,6 +111,7 @@ public class BlobHandler {
 	 */
 	@RequestMapping("/getWebindex")
 	@ResponseBody
+	@CrossOrigin
 	public Result getWebForIndex() {
 		try {
 			//获取按时间排序的投稿
@@ -156,6 +158,7 @@ public class BlobHandler {
 	 */
 	@ResponseBody
 	@RequestMapping("/getBlob")
+	@CrossOrigin
 	public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) {
 		try {
 			//获取博客页面信息
@@ -177,9 +180,8 @@ public class BlobHandler {
 			UserInformation user = ShiroUtils.getUserInformation();
 			//如果没有用户登录
 			if(user == null) {
-				user = new UserInformation();
 				//默认访问人为 181360226
-				user.setUid(181360226);
+				user = new UserInformation(181360226);
 			}
 			//添加一个访问记录
 			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
@@ -210,6 +212,7 @@ public class BlobHandler {
 	 */
 	@RequestMapping("collection")
 	@ResponseBody
+	@CrossOrigin
 	public Result collection(Integer bid, Integer webid) {
 		Integer uid = ShiroUtils.getUserInformation().getUid();
 		try {
@@ -235,6 +238,7 @@ public class BlobHandler {
 	 */
 	@RequestMapping("/like")
 	@ResponseBody
+	@CrossOrigin
 	public Result like(Integer uid) {
 		//从session里获取当前登录的人的学号
 		Integer likeId = ShiroUtils.getUserInformation().getUid();
@@ -266,13 +270,14 @@ public class BlobHandler {
 	 */
 	@RequestMapping("/insert")
 	@ResponseBody
+	@CrossOrigin
 	public Result insert(WebInformation web) {
 		Integer uid = ShiroUtils.getUserInformation().getUid();
 		try {
 			log.info("用户: " + uid + "发布文章开始");
 			web.setUid(uid);
 			web.setWebData(web.getWebDataString().getBytes("utf-8"));
-			web.setSubTime(SimpleDateUtils.getSimpleDateSecond());
+			web.setSubTime(SimpleUtils.getSimpleDateSecond());
 			boolean flag = webInformationService.insert(web);
 			if(flag) {
 				log.info("用户: " + uid + "发布文章成功, 文章标题为: " + web.getTitle());
@@ -285,4 +290,5 @@ public class BlobHandler {
 			return Result.fail().add("hint", "发布失败, 未知原因");
 		}
 	}
+	
 }

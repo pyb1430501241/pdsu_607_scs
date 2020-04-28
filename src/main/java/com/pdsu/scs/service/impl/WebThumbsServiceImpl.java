@@ -13,10 +13,13 @@ import com.pdsu.scs.service.WebThumbsService;
 
 @Service("webThumbsService")
 public class WebThumbsServiceImpl implements WebThumbsService {
-
+	
 	@Autowired
 	private WebThumbsMapper webThumbsMapper;
 	
+	/**
+	 * 根据网页ID集合获取这些文章的点赞数
+	 */
 	@Override
 	public List<Integer> selectThumbssForWebId(List<Integer> webids) {
 		List<Integer> thumbss = new ArrayList<Integer>();
@@ -26,12 +29,16 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		return thumbss;
 	}
 
+	/**
+	 * 根据网页ID获取文章的点赞数
+	 */
 	@Override
 	public Integer selectThumbsForWebId(Integer webid) {
 		WebThumbsExample example = new WebThumbsExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWebidEqualTo(webid);
-		return (int) webThumbsMapper.countByExample(example);
+		long l = webThumbsMapper.countByExample(example);
+		return (int)l;
 	}
 
 }

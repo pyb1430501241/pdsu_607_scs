@@ -18,6 +18,10 @@ public class VisitInformationImpl implements VisitInformationService {
 	@Autowired
 	private VisitInformationMapper visitInformationMapper;
 	
+	
+	/**
+	 * 根据网页的ID集合获取这些文章的访问量
+	 */
 	@Override
 	public List<Integer> selectVisitsByWebIds(List<Integer> webids) {
 		List<Integer> visits = new ArrayList<Integer>();
@@ -27,21 +31,31 @@ public class VisitInformationImpl implements VisitInformationService {
 		return visits;
 	}
 	
+	/**
+	 * 获取一个人的总访问量
+	 */
 	public Integer selectVisitsByVid(Integer id) {
 		VisitInformationExample example = new VisitInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andVidEqualTo(id);
-		return (int)visitInformationMapper.countByExample(example);
+		int i = (int) visitInformationMapper.countByExample(example);
+		return i;
 	}
 
+	/**
+	 * 插入一次访问记录
+	 */
 	@Override
 	public boolean insert(VisitInformation visit) {
-		if(visitInformationMapper.insert(visit) == 0) {
-			return false;
+		if(visitInformationMapper.insert(visit) != 0) {
+			return true;
 		}
-		return true;
+		return false;
 	}
-
+	
+	/**
+	 * 根据网页ID获取网页访问量
+	 */
 	@Override
 	public Integer selectvisitByWebId(Integer webid) {
 		VisitInformationExample example = new VisitInformationExample();

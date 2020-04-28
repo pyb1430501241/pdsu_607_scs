@@ -139,4 +139,8 @@ public class UserInformation implements Serializable {
     
     public UserInformation() {
 	}
+    
+    public UserInformation(Integer uid) {
+    	this(null, uid, null, null, null, null , null, null);
+    }
 }

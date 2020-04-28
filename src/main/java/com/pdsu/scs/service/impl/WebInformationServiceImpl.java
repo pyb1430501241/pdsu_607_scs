@@ -45,7 +45,8 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 */
 	@Override
 	public WebInformation selectById(Integer id) {
-		return webInformationMapper.selectByPrimaryKey(id);
+		WebInformation key = webInformationMapper.selectByPrimaryKey(id);
+		return key;
 	}
 
 	/*
@@ -77,7 +78,8 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return webInformationMapper.selectByExample(example);
+		List<WebInformation> list = webInformationMapper.selectByExample(example);
+		return list;
 	}
 
 }

@@ -5,7 +5,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class SimpleDateUtils {
+/**
+ * 格式相关工具类
+ * @author Admin
+ *
+ */
+public class SimpleUtils {
 
 	public static String getSimpleDate() {
 		return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
@@ -33,5 +38,13 @@ public class SimpleDateUtils {
 			e.printStackTrace();
 		}
 		return diff;
+	}
+	
+	public static String toString(Object... args) {
+		String str = "";
+		for(Object t : args) {
+			str += t.toString();
+		}
+		return str;
 	}
 }
