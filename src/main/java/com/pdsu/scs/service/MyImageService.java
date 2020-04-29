@@ -6,7 +6,7 @@ import com.pdsu.scs.bean.MyImage;
 
 /**
  * 该接口用于提供与头像相关的方法
- * @author Admin
+ * @author 半梦
  *
  */
 public interface MyImageService {

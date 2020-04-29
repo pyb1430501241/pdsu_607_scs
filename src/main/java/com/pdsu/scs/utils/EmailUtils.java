@@ -3,6 +3,11 @@ package com.pdsu.scs.utils;
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 public class EmailUtils {
 
 	private String text;

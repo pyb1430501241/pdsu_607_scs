@@ -11,6 +11,11 @@ import com.pdsu.scs.bean.WebThumbsExample.Criteria;
 import com.pdsu.scs.dao.WebThumbsMapper;
 import com.pdsu.scs.service.WebThumbsService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Service("webThumbsService")
 public class WebThumbsServiceImpl implements WebThumbsService {
 	

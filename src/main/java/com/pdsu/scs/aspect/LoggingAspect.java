@@ -14,6 +14,11 @@ import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Component
 @Aspect
 public class LoggingAspect {
@@ -49,6 +54,6 @@ public class LoggingAspect {
 	public void afterThrowing(JoinPoint joinPoint, Exception ex) {
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
-		log.error("执行方法 " + str + " 失败, 异常信息为: " + ex.getLocalizedMessage().substring(1, ex.getLocalizedMessage().length()));
+		log.error("执行方法 " + str + " 失败, 异常信息为: " + ex.getLocalizedMessage().substring(0, ex.getLocalizedMessage().length()));
 	}
 }

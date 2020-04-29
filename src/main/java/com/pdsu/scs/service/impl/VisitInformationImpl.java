@@ -12,6 +12,11 @@ import com.pdsu.scs.bean.VisitInformationExample.Criteria;
 import com.pdsu.scs.dao.VisitInformationMapper;
 import com.pdsu.scs.service.VisitInformationService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Service("visitInformation")
 public class VisitInformationImpl implements VisitInformationService {
 
@@ -47,7 +52,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	 */
 	@Override
 	public boolean insert(VisitInformation visit) {
-		if(visitInformationMapper.insert(visit) != 0) {
+		if(visitInformationMapper.insert(visit) > 0) {
 			return true;
 		}
 		return false;

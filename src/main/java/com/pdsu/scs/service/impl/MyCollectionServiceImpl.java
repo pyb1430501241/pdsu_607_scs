@@ -12,6 +12,11 @@ import com.pdsu.scs.bean.MyCollectionExample.Criteria;
 import com.pdsu.scs.dao.MyCollectionMapper;
 import com.pdsu.scs.service.MyCollectionService;
 
+/**
+ *
+ * @author 半梦
+ *
+ */
 @Service("myCollectionService")
 public class MyCollectionServiceImpl implements MyCollectionService{
 
@@ -20,7 +25,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 
 	@Override
 	public boolean insert(MyCollection con) {
-		if(myCollectionMapper.insertSelective(con) != 0) {
+		if(myCollectionMapper.insertSelective(con) > 0) {
 			return true;
 		}
 		return false;
@@ -41,6 +46,18 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 			collectionss.add(selectCollectionsByWebId(webid));
 		}
 		return collectionss;
+	}
+
+	@Override
+	public boolean delete(Integer uid, Integer webid) {
+		MyCollectionExample example = new MyCollectionExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		criteria.andWidEqualTo(webid);
+		if(myCollectionMapper.deleteByExample(example) > 0) {
+			return true;
+		}
+		return false;
 	}
 	
 

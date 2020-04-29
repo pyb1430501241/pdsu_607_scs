@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.pdsu.scs.bean.MyLike;
 
+/**
+ * 该接口提供关注相关的方法
+ * @author 半梦
+ *
+ */
 public interface MyLikeService {
 
 	//根据学号查询自己的关注个数

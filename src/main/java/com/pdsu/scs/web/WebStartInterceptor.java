@@ -17,6 +17,11 @@ import org.quartz.impl.StdSchedulerFactory;
 
 import com.pdsu.scs.quartz.WebInfromationHeat;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 public class WebStartInterceptor implements ServletContextListener{
 
 	@Override

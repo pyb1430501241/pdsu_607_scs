@@ -6,12 +6,18 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.Exception.WebException;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.service.WebInformationService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Service("webInformationService")
 public class WebInformationServiceImpl implements WebInformationService {
 
@@ -23,7 +29,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 */
 	@Override
 	public boolean insert(WebInformation information) {
-		if(webInformationMapper.insertSelective(information) != 0) {
+		if(webInformationMapper.insertSelective(information) > 0) {
 			return true;
 		}
 		return false;
@@ -33,11 +39,14 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 删除一个网页信息
 	 */
 	@Override
-	public boolean deleteById(Integer id) {
-		if(webInformationMapper.deleteByPrimaryKey(id) != 0) {
+	public boolean deleteById(Integer id) throws WebException{
+		int i = webInformationMapper.deleteByPrimaryKey(id);
+		System.out.println(i);
+		if(i >= 0) {
 			return true;
+		}else {
+			throw new WebException("文章不存在");
 		}
-		return false;
 	}
 
 	/*
@@ -80,6 +89,18 @@ public class WebInformationServiceImpl implements WebInformationService {
 		criteria.andUidEqualTo(uid);
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
 		return list;
+	}
+
+	/*
+	 *更新文章  
+	 */
+	@Override
+	public boolean updateByWebId(WebInformation web) {
+		WebInformationExample example = new WebInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andIdEqualTo(web.getId());
+		int i = webInformationMapper.updateByExampleWithBLOBs(web, example);
+		return i > 0 ? true : false;
 	}
 
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * 该接口负责提供点赞相关的方法
- * @author Admin
+ * @author 半梦
  *
  */
 public interface WebThumbsService {

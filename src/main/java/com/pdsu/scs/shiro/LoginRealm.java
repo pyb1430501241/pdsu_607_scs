@@ -14,6 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.service.UserInformationService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 public class LoginRealm extends AuthorizingRealm{
 
 	@Autowired

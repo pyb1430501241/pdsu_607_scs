@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.pdsu.scs.bean.VisitInformation;
 
+/**
+ * 该接口提供访问相关的方法
+ * @author 半梦
+ *
+ */
 public interface VisitInformationService {
 	
 	//根据网页id集获取该网页的访问量集

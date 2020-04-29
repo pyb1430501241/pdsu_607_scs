@@ -11,6 +11,11 @@ import com.pdsu.scs.bean.MyImageExample.Criteria;
 import com.pdsu.scs.dao.MyImageMapper;
 import com.pdsu.scs.service.MyImageService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Service("myImageService")
 public class MyImageServiceImpl implements MyImageService {
 

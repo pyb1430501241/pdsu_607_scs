@@ -11,6 +11,11 @@ import java.util.Random;
 
 import javax.imageio.ImageIO;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 public class CodeUtils {
 	 private int w = 70;
 	    private int h = 35;

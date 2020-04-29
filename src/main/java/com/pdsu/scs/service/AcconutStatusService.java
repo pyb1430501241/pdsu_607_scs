@@ -4,7 +4,7 @@ import com.pdsu.scs.bean.AccountStatusExample;
 
 /**
  * 该接口提供与账号状态相关的方法
- * @author Admin
+ * @author 半梦
  *
  */
 public interface AcconutStatusService {

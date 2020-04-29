@@ -11,6 +11,11 @@ import com.pdsu.scs.bean.MyLikeExample.Criteria;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.service.MyLikeService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Service("myLikeService")
 public class MyLikeServiceImpl implements MyLikeService{
 
@@ -35,7 +40,7 @@ public class MyLikeServiceImpl implements MyLikeService{
 
 	@Override
 	public boolean insert(MyLike myLike) {
-		if(myLikeMapper.insertSelective(myLike) != 0) {
+		if(myLikeMapper.insertSelective(myLike) > 0) {
 			return true;
 		}
 		return false;

@@ -2,6 +2,11 @@ package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.MyEmail;
 
+/**
+ * 该接口提供和邮箱相关的方法
+ * @author 半梦
+ *
+ */
 public interface MyEmailService {
 
 	/**

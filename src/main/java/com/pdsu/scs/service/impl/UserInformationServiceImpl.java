@@ -15,7 +15,7 @@ import com.pdsu.scs.utils.HashUtils;
 
 /**
  * 该类继承 UserInformationService 接口, 用于处理与用户有关的逻辑
- * @author Admin
+ * @author 半梦
  *
  */
 @Service("userInformationService")
@@ -39,7 +39,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		String password = information.getPassword();
 		password = HashUtils.getPasswordHash(uid, password);
 		information.setPassword(password);
-		if(userInformationMapper.insertSelective(information) != 0) {
+		if(userInformationMapper.insertSelective(information) > 0) {
 			return true;
 		}
 		return false;
@@ -53,7 +53,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		if(userInformationMapper.deleteByExample(example) != 0) {
+		if(userInformationMapper.deleteByExample(example) > 0) {
 			return true;
 		}
 		return false;

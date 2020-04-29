@@ -4,7 +4,7 @@ import org.apache.shiro.crypto.hash.SimpleHash;
 
 /**
  * 该类是一个Hash加密相关的工具类 
- * @author Admin
+ * @author 半梦
  *
  */
 public class HashUtils {

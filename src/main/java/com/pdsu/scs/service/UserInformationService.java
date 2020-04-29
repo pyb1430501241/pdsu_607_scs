@@ -6,7 +6,7 @@ import com.pdsu.scs.bean.UserInformation;
 
 /**
  * 与用户信息相关的方法
- * @author Admin
+ * @author 半梦
  *
  */
 public interface UserInformationService {

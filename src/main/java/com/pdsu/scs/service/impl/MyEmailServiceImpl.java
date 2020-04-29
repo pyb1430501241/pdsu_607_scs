@@ -9,6 +9,11 @@ import com.pdsu.scs.bean.MyEmailExample.Criteria;
 import com.pdsu.scs.dao.MyEmailMapper;
 import com.pdsu.scs.service.MyEmailService;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Service("myEmailService")
 public class MyEmailServiceImpl implements MyEmailService{
 

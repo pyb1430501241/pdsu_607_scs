@@ -23,9 +23,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.pdsu.scs.bean.MyEmail;
+import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.service.MyEmailService;
+import com.pdsu.scs.service.MyLikeService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
@@ -33,6 +35,11 @@ import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 @Controller
 @RequestMapping("/user")
 public class WebHanlder {
@@ -44,6 +51,9 @@ public class WebHanlder {
 	
 	@Autowired
 	private MyEmailService myEmailService;
+	
+	@Autowired
+	private MyLikeService myLikeService;
 	
 	/**
 	 * 日志
@@ -446,6 +456,34 @@ public class WebHanlder {
 		}catch (Exception e) {
 			log.error("账号: " + uid + "修改密码时发生错误");
 			return Result.fail().add(EX, "未知错误");
+		}
+	}
+	
+	/**
+	 * 处理关注请求, 作者的学号由前端获取, 关注人学号从session里获取
+	 * 
+	 * @param uid  作者的学号
+	 * @return
+	 */
+	@RequestMapping("/like")
+	@ResponseBody
+	@CrossOrigin
+	public Result like(Integer uid) {
+		//从session里获取当前登录的人的学号
+		Integer likeId = ShiroUtils.getUserInformation().getUid();
+		try {
+			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
+			//插入记录
+			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
+			if(flag) {
+				log.info("用户: " + likeId + ", 关注: " + uid + "成功");
+				return Result.success();
+			}
+			log.info("用户: " + likeId + ", 关注: " + uid + "失败");
+			return Result.fail();
+		}catch (Exception e) {
+			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
+			return Result.fail();
 		}
 	}
 }

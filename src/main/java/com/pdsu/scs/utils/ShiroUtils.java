@@ -13,6 +13,11 @@ import org.apache.shiro.web.session.mgt.WebSessionKey;
 
 import com.pdsu.scs.bean.UserInformation;
 
+/**
+ * 
+ * @author 半梦
+ *
+ */
 public class ShiroUtils {
 
 	public static UserInformation getUserInformation() {

@@ -2,7 +2,7 @@ package com.pdsu.scs.utils;
 
 /**
  * 随机数生成工具
- * @author Admin
+ * @author 半梦
  *
  */
 public class RandomUtils {

@@ -2,11 +2,12 @@ package com.pdsu.scs.service;
 
 import java.util.List;
 
+import com.pdsu.scs.Exception.WebException;
 import com.pdsu.scs.bean.WebInformation;
 
 /**
  * 与网页相关的方法
- * @author Admin
+ * @author 半梦
  *
  */
 public interface WebInformationService {
@@ -23,7 +24,7 @@ public interface WebInformationService {
 	 * @param id
 	 * @return
 	 */
-	public boolean deleteById(Integer id);
+	public boolean deleteById(Integer id) throws WebException;
 	
 	/**
 	 * 根据网页id查询网页信息
@@ -45,5 +46,12 @@ public interface WebInformationService {
 	 * @return
 	 */
 	public List<WebInformation> selectWebInformationsByUid(Integer uid);
+
+	/**
+	 * 更新文章
+	 * @param web 文章信息
+	 * @return
+	 */
+	public boolean updateByWebId(WebInformation web);
 	
 }

@@ -1,6 +1,8 @@
 package com.pdsu.scs.quartz;
 
-
+/**
+ * @author 半梦
+ */
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

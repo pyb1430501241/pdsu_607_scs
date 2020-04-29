@@ -7,7 +7,7 @@ import java.util.Date;
 
 /**
  * 格式相关工具类
- * @author Admin
+ * @author 半梦
  *
  */
 public class SimpleUtils {
