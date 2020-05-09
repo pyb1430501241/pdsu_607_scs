@@ -11,7 +11,7 @@ public class WebFileExample {
     protected List<Criteria> oredCriteria;
 
     public WebFileExample() {
-        oredCriteria = new ArrayList<Criteria>();
+        oredCriteria = new ArrayList<>();
     }
 
     public void setOrderByClause(String orderByClause) {
@@ -68,7 +68,7 @@ public class WebFileExample {
 
         protected GeneratedCriteria() {
             super();
-            criteria = new ArrayList<Criterion>();
+            criteria = new ArrayList<>();
         }
 
         public boolean isValid() {
@@ -291,6 +291,76 @@ public class WebFileExample {
 
         public Criteria andFilePathNotBetween(String value1, String value2) {
             addCriterion("file_path not between", value1, value2, "filePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeIsNull() {
+            addCriterion("creattime is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeIsNotNull() {
+            addCriterion("creattime is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeEqualTo(String value) {
+            addCriterion("creattime =", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeNotEqualTo(String value) {
+            addCriterion("creattime <>", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeGreaterThan(String value) {
+            addCriterion("creattime >", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeGreaterThanOrEqualTo(String value) {
+            addCriterion("creattime >=", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeLessThan(String value) {
+            addCriterion("creattime <", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeLessThanOrEqualTo(String value) {
+            addCriterion("creattime <=", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeLike(String value) {
+            addCriterion("creattime like", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeNotLike(String value) {
+            addCriterion("creattime not like", value, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeIn(List<String> values) {
+            addCriterion("creattime in", values, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeNotIn(List<String> values) {
+            addCriterion("creattime not in", values, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeBetween(String value1, String value2) {
+            addCriterion("creattime between", value1, value2, "creattime");
+            return (Criteria) this;
+        }
+
+        public Criteria andCreattimeNotBetween(String value1, String value2) {
+            addCriterion("creattime not between", value1, value2, "creattime");
             return (Criteria) this;
         }
     }

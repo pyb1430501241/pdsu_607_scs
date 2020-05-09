@@ -5,6 +5,7 @@
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="uid" jdbcType="INTEGER" property="uid" />
     <result column="file_path" jdbcType="VARCHAR" property="filePath" />
+    <result column="creattime" jdbcType="VARCHAR" property="creattime" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -65,7 +66,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, uid, file_path
+    id, uid, file_path, creattime
   </sql>
   <select id="selectByExample" parameterType="com.pdsu.scs.bean.WebFileExample" resultMap="BaseResultMap">
     select
@@ -98,10 +99,10 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.pdsu.scs.bean.WebFile">
-    insert into db_web_file (id, uid, file_path
-      )
-    values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{filePath,jdbcType=VARCHAR}
-      )
+    insert into db_web_file (id, uid, file_path, 
+      creattime)
+    values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{filePath,jdbcType=VARCHAR}, 
+      #{creattime,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebFile">
     insert into db_web_file
@@ -115,6 +116,9 @@
       <if test="filePath != null">
         file_path,
       </if>
+      <if test="creattime != null">
+        creattime,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -125,6 +129,9 @@
       </if>
       <if test="filePath != null">
         #{filePath,jdbcType=VARCHAR},
+      </if>
+      <if test="creattime != null">
+        #{creattime,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -146,6 +153,9 @@
       <if test="record.filePath != null">
         file_path = #{record.filePath,jdbcType=VARCHAR},
       </if>
+      <if test="record.creattime != null">
+        creattime = #{record.creattime,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -155,7 +165,8 @@
     update db_web_file
     set id = #{record.id,jdbcType=INTEGER},
       uid = #{record.uid,jdbcType=INTEGER},
-      file_path = #{record.filePath,jdbcType=VARCHAR}
+      file_path = #{record.filePath,jdbcType=VARCHAR},
+      creattime = #{record.creattime,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -169,13 +180,17 @@
       <if test="filePath != null">
         file_path = #{filePath,jdbcType=VARCHAR},
       </if>
+      <if test="creattime != null">
+        creattime = #{creattime,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.pdsu.scs.bean.WebFile">
     update db_web_file
     set uid = #{uid,jdbcType=INTEGER},
-      file_path = #{filePath,jdbcType=VARCHAR}
+      file_path = #{filePath,jdbcType=VARCHAR},
+      creattime = #{creattime,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

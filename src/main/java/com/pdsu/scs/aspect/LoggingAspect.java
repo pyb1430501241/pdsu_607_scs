@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
@@ -44,10 +45,13 @@ public class LoggingAspect {
 	
 	@AfterReturning(value = "execution(* com.pdsu.scs.service..*(..))", returning = "result")
 	public void afterReturn(JoinPoint joinPoint, Object result) {
-		
+		if(result instanceof WebInformation) {
+			result = (WebInformation) result;
+			((WebInformation) result).setWebData(null);
+		}
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
-		log.info("执行方法 " + str + " 成功");
+		log.info("执行方法 " + str + " 成功" + ", 返回值为: " + result);
 	}
 	
 	@AfterThrowing(value = "execution(* com.pdsu.scs.service..*(..))", throwing = "ex")

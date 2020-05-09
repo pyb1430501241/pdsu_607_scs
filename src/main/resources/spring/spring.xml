@@ -34,11 +34,6 @@
 		<!-- 扫描 Dao 接口, 把所有接口添加进 IOC 容器 -->
 		<property name="basePackage" value="com.pdsu.scs.dao"></property>
 	</bean>
-	<!-- 配制一个可以批量插入的 SqlSession -->
-	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
-		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactoryBean"></constructor-arg>
-		<constructor-arg name="executorType" value="BATCH"></constructor-arg>
-	</bean>
 	
 	<!-- 配置 Spring 配置式事务 -->
 	<bean id = "transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">

@@ -44,10 +44,10 @@
         <table tableName="db_penalty_record" domainObjectName="PenaltyRecord"></table>
         <table tableName="db_real_Name" domainObjectName="RealName"></table>
         <table tableName="db_user_information" domainObjectName="UserInformation"></table>
-        <table tableName="db_web_information" domainObjectName="WebInformation"></table>
-        <table tableName="db_web_file" domainObjectName="WebFile"></table>
         <table tableName="db_visit_information" domainObjectName="VisitInformation"></table>
+        <table tableName="db_web_information" domainObjectName="WebInformation"></table>
         <table tableName="db_web_thumbs" domainObjectName="WebThumbs"></table>
         <table tableName="db_web_heat" domainObjectName="WebHeat"></table>
+        <table tableName="db_web_file" domainObjectName="WebFile"></table>
     </context>
 </generatorConfiguration>

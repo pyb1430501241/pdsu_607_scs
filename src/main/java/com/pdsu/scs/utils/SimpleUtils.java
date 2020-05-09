@@ -40,11 +40,25 @@ public class SimpleUtils {
 		return diff;
 	}
 	
+	/**
+	 * 拼装字符串
+	 * @param args
+	 * @return
+	 */
 	public static String toString(Object... args) {
 		String str = "";
 		for(Object t : args) {
 			str += t.toString();
 		}
 		return str;
+	}
+	
+	/**
+	 * 提供文件名, 返回文件后缀名
+	 * @param name
+	 * @return
+	 */
+	public static String getSuffixName(String name) {
+		return name.substring(name.lastIndexOf("."), name.length());
 	}
 }

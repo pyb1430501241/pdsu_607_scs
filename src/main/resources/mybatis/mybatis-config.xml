@@ -4,7 +4,8 @@
 <configuration>
 	<settings>
 		<setting name="mapUnderscoreToCamelCase" value="true"/>
-		<setting name = "cacheEnabled" value="true"></setting>
+		<setting name = "cacheEnabled" value="true"/>
+		<setting name="defaultExecutorType" value="SIMPLE"/> 
 	</settings>
 	<typeAliases>
 		<package name="com.pdsu.scs.bean"/>
