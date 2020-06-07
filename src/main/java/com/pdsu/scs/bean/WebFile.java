@@ -1,9 +1,7 @@
 package com.pdsu.scs.bean;
 
-import sun.net.www.content.text.plain;
-
 /**
- * 文件相关
+ * 文件处理类
  * @author 半梦
  *
  */
@@ -11,6 +9,8 @@ public class WebFile {
     private Integer id;
 
     private Integer uid;
+
+    private String title;
 
     private String filePath;
 
@@ -32,6 +32,14 @@ public class WebFile {
         this.uid = uid;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title == null ? null : title.trim();
+    }
+
     public String getFilePath() {
         return filePath;
     }
@@ -50,21 +58,27 @@ public class WebFile {
 
 	@Override
 	public String toString() {
-		return "WebFile [id=" + id + ", uid=" + uid + ", filePath=" + filePath + ", creattime=" + creattime + "]";
+		return "WebFile [id=" + id + ", uid=" + uid + ", title=" + title + ", filePath=" + filePath + ", creattime="
+				+ creattime + "]";
 	}
 
-	public WebFile(Integer id, Integer uid, String filePath, String creattime) {
+	public WebFile(Integer id, Integer uid, String title, String filePath, String creattime) {
 		super();
 		this.id = id;
 		this.uid = uid;
+		this.title = title;
+		this.filePath = filePath;
+		this.creattime = creattime;
+	}
+	
+	public WebFile(Integer uid, String title, String filePath, String creattime) {
+		super();
+		this.uid = uid;
+		this.title = title;
 		this.filePath = filePath;
 		this.creattime = creattime;
 	}
     
     public WebFile() {
 	}
-    
-    public WebFile(Integer uid, String filePath, String creattime) {
-    	this(null, uid, filePath, creattime);
-    }
 }

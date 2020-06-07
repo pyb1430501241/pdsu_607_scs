@@ -17,4 +17,12 @@ public class HashUtils {
 		return simpleHash.toString();
 	}
 	
+	//根据账号密码去加密密码
+	public static String getFileNameForHash(String title) {
+			
+		SimpleHash simpleHash = new SimpleHash("MD5", title, 2);
+			
+		return simpleHash.toString().substring(0, 20);
+	}
+	
 }

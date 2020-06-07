@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 处理AJAX请求
+ * 处理AJAX请求的数据
  * @author Admin
  *
  */

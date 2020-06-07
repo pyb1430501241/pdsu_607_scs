@@ -1,11 +1,8 @@
 package com.pdsu.scs.handler;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.service.WebFileService;
+import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
@@ -74,13 +72,12 @@ public class FileHandler {
 		Integer uid = ShiroUtils.getUserInformation().getUid();
 		log.info("用户: " + uid + "上传资源: " + title + " 开始" + ", 描述为:" + description);
 		try {
-			System.out.println(file);
 			byte [] s = file.getBytes();
-			String name = UUID.randomUUID().toString() + SimpleUtils.getSuffixName(file.getOriginalFilename());
+			String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
 			log.info("文件名为: " + name);
 			FileUtils.writeByteArrayToFile(new File(path + name), s);
 			log.info("文件写入成功, 开始在服务器保存地址");
-			boolean b = webFileService.insert(new WebFile(uid, name, SimpleUtils.getSimpleDateSecond()));
+			boolean b = webFileService.insert(new WebFile( uid, title, name, SimpleUtils.getSimpleDateSecond()));
 			if(b) {
 				log.info("上传成功");
 				return Result.success();
@@ -90,6 +87,14 @@ public class FileHandler {
 			}
 		}catch (Exception e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
+			return Result.fail();
+		}
+	}
+	
+	public Result getDownload() {
+		try {
+			return Result.success();
+		}catch (Exception e) {
 			return Result.fail();
 		}
 	}

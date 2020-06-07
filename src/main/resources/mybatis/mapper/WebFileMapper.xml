@@ -4,6 +4,7 @@
   <resultMap id="BaseResultMap" type="com.pdsu.scs.bean.WebFile">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="uid" jdbcType="INTEGER" property="uid" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
     <result column="file_path" jdbcType="VARCHAR" property="filePath" />
     <result column="creattime" jdbcType="VARCHAR" property="creattime" />
   </resultMap>
@@ -66,7 +67,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, uid, file_path, creattime
+    id, uid, title, file_path, creattime
   </sql>
   <select id="selectByExample" parameterType="com.pdsu.scs.bean.WebFileExample" resultMap="BaseResultMap">
     select
@@ -99,10 +100,10 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.pdsu.scs.bean.WebFile">
-    insert into db_web_file (id, uid, file_path, 
-      creattime)
-    values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{filePath,jdbcType=VARCHAR}, 
-      #{creattime,jdbcType=VARCHAR})
+    insert into db_web_file (id, uid, title, 
+      file_path, creattime)
+    values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, 
+      #{filePath,jdbcType=VARCHAR}, #{creattime,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebFile">
     insert into db_web_file
@@ -112,6 +113,9 @@
       </if>
       <if test="uid != null">
         uid,
+      </if>
+      <if test="title != null">
+        title,
       </if>
       <if test="filePath != null">
         file_path,
@@ -126,6 +130,9 @@
       </if>
       <if test="uid != null">
         #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
       </if>
       <if test="filePath != null">
         #{filePath,jdbcType=VARCHAR},
@@ -150,6 +157,9 @@
       <if test="record.uid != null">
         uid = #{record.uid,jdbcType=INTEGER},
       </if>
+      <if test="record.title != null">
+        title = #{record.title,jdbcType=VARCHAR},
+      </if>
       <if test="record.filePath != null">
         file_path = #{record.filePath,jdbcType=VARCHAR},
       </if>
@@ -165,6 +175,7 @@
     update db_web_file
     set id = #{record.id,jdbcType=INTEGER},
       uid = #{record.uid,jdbcType=INTEGER},
+      title = #{record.title,jdbcType=VARCHAR},
       file_path = #{record.filePath,jdbcType=VARCHAR},
       creattime = #{record.creattime,jdbcType=VARCHAR}
     <if test="_parameter != null">
@@ -176,6 +187,9 @@
     <set>
       <if test="uid != null">
         uid = #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
       </if>
       <if test="filePath != null">
         file_path = #{filePath,jdbcType=VARCHAR},
@@ -189,6 +203,7 @@
   <update id="updateByPrimaryKey" parameterType="com.pdsu.scs.bean.WebFile">
     update db_web_file
     set uid = #{uid,jdbcType=INTEGER},
+      title = #{title,jdbcType=VARCHAR},
       file_path = #{filePath,jdbcType=VARCHAR},
       creattime = #{creattime,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}

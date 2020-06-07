@@ -64,7 +64,7 @@ public class WebHanlder {
 	 * 缓存管理器
 	 */
 	@Autowired
-	private CacheManager cacheManager;
+	private CacheManager cacheManager; 
 	
 	/**
 	 * 缓存区, 用于存放验证码, 验证码有效期为五分钟
@@ -221,7 +221,7 @@ public class WebHanlder {
 	 * 申请账号
 	 * @param user  POJO 类
 	 * @param email 邮箱
-	 * @param token 获取验证码的key
+	 * @param token 获取验证码的 key
 	 * @param code  前端输入验证码
 	 * @return json字符串
 	 */

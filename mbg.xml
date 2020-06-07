@@ -26,7 +26,7 @@
         </javaModelGenerator>
         <!--生成映射文件存放位置-->
         <!-- 指定 sql 映射文件生成的位置 -->
-        <sqlMapGenerator targetPackage="mapper" targetProject=".\src\main\resources">
+        <sqlMapGenerator targetPackage="mapper" targetProject=".\src\main\resources\mybatis">
             <property name="enableSubPackages" value="true"/>
         </sqlMapGenerator>
         <!--生成Dao类存放位置-->
