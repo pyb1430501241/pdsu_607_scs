@@ -1,5 +1,10 @@
-package com.pdsu.scs.Exception;
+package com.pdsu.scs.exception;
 
+/**
+ * 网页相关的异常
+ * @author 半梦
+ *
+ */
 public class WebException extends Exception{
 
 	/**

@@ -1,7 +1,12 @@
-package com.pdsu.scs.Exception;
+package com.pdsu.scs.exception;
 
 import org.apache.shiro.authc.AuthenticationException;
 
+/**
+ * 用户相关的异常
+ * @author 半梦
+ *
+ */
 public class UserExpection extends AuthenticationException{
 
 	/**

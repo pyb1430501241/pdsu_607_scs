@@ -6,11 +6,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.pdsu.scs.Exception.WebException;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
 import com.pdsu.scs.dao.WebInformationMapper;
+import com.pdsu.scs.exception.WebException;
 import com.pdsu.scs.service.WebInformationService;
 
 /**

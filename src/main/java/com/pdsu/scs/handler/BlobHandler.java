@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.pdsu.scs.Exception.WebException;
 import com.pdsu.scs.bean.MyCollection;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.exception.WebException;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.UserInformationService;

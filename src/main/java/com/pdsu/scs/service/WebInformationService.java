@@ -2,8 +2,8 @@ package com.pdsu.scs.service;
 
 import java.util.List;
 
-import com.pdsu.scs.Exception.WebException;
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.exception.WebException;
 
 /**
  * 与网页相关的方法
