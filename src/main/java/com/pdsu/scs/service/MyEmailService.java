@@ -1,6 +1,7 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.MyEmail;
+import com.pdsu.scs.exception.web.user.email.NotFoundEmailException;
 
 /**
  * 该接口提供和邮箱相关的方法
@@ -22,7 +23,7 @@ public interface MyEmailService {
 	 * @param email
 	 * @return
 	 */
-	public MyEmail selectMyEmailByEmail(String email);
+	public MyEmail selectMyEmailByEmail(String email) throws NotFoundEmailException;
 
 	/**
 	 * 根据学号来获取一个 MyEmail 的对象

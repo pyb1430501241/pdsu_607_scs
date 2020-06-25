@@ -1,6 +1,10 @@
 package com.pdsu.scs.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +14,8 @@ import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.UserInformationExample.Criteria;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.HashUtils;
 
@@ -29,12 +35,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 	
 	/**
 	 * 插入一个用户信息
+	 * @throws UidRepetitionException 
 	 */
 	@Override
-	public boolean inset(UserInformation information) {
+	public boolean inset(UserInformation information) throws UidRepetitionException {
 		Integer uid = information.getUid();
 		if(countByUid(uid) != 0) {
-			return false;
+			throw new UidRepetitionException("学号重复");
 		}
 		String password = information.getPassword();
 		password = HashUtils.getPasswordHash(uid, password);
@@ -47,9 +54,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 
 	/**
 	 * 删除一个用户信息
+	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public boolean deleteByUid(Integer uid) {
+	public boolean deleteByUid(Integer uid) throws NotFoundUidException {
+		if(countByUid(uid) == 0) {
+			throw new NotFoundUidException("该用户不存在");
+		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -72,9 +83,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 	
 	/**
 	 * 根据一个用户的uid查询其所有关注人的信息
+	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public List<UserInformation> selectUsersByUid(Integer uid) {
+	public List<UserInformation> selectUsersByUid(Integer uid) throws NotFoundUidException {
+		if(countByUid(uid) == 0) {
+			throw new NotFoundUidException("该用户不存在");
+		}
 		List<Integer> likeids = myLikeMapper.selectLikeIdByUid(uid);
 		if(likeids.size() == 0) {
 			return null;
@@ -86,10 +101,14 @@ public class UserInformationServiceImpl implements UserInformationService {
 	}
 	
 	/**
-	 * 根据一个用户的uid查询一个用户所有粉丝的信息
+	 * 根据一个用户的 uid 查询一个用户所有粉丝的信息
+	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public List<UserInformation> selectUsersByLikeId(Integer likeId) {
+	public List<UserInformation> selectUsersByLikeId(Integer likeId) throws NotFoundUidException {
+		if(countByUid(likeId) == 0) {
+			throw new NotFoundUidException("该用户不存在");
+		}
 		List<Integer> uids = myLikeMapper.selectLikeIdByUid(likeId);
 		if(uids.size() == 0) {
 			return null;
@@ -105,6 +124,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 */
 	@Override
 	public List<UserInformation> selectUsersByUids(List<Integer> uids) {
+		List<Integer> f = new ArrayList<Integer>();
+		for(Integer uid : uids) {
+			if(countByUid(uid) == 0) {
+				f.add(uid);
+			}
+		}
+		uids.removeAll(f);
 		return userInformationMapper.selectUsersByUids(uids);
 	}
 	

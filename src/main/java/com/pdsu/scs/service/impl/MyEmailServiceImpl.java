@@ -7,6 +7,7 @@ import com.pdsu.scs.bean.MyEmail;
 import com.pdsu.scs.bean.MyEmailExample;
 import com.pdsu.scs.bean.MyEmailExample.Criteria;
 import com.pdsu.scs.dao.MyEmailMapper;
+import com.pdsu.scs.exception.web.user.email.NotFoundEmailException;
 import com.pdsu.scs.service.MyEmailService;
 
 /**
@@ -29,7 +30,10 @@ public class MyEmailServiceImpl implements MyEmailService{
 	}
 
 	@Override
-	public MyEmail selectMyEmailByEmail(String email) {
+	public MyEmail selectMyEmailByEmail(String email) throws NotFoundEmailException {
+		if(countByEmail(email) <= 0) {
+			throw new NotFoundEmailException("邮箱不存在");
+		}
 		MyEmailExample example = new MyEmailExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andEmailEqualTo(email);
@@ -43,5 +47,4 @@ public class MyEmailServiceImpl implements MyEmailService{
 		criteria.andUidEqualTo(uid);
 		return myEmailMapper.selectByExample(example).get(0);
 	}
-
 }

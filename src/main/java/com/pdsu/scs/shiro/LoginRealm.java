@@ -43,6 +43,9 @@ public class LoginRealm extends AuthorizingRealm{
 		return new SimpleAuthenticationInfo(user, credentials, credentialsSalt, realmName);
 	}
 	
+	/**
+	 * 负责权限分配
+	 */
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		return null;

@@ -3,6 +3,8 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import com.pdsu.scs.exception.web.user.UidRepetitionException;
 
 /**
  * 与用户信息相关的方法
@@ -12,19 +14,19 @@ import com.pdsu.scs.bean.UserInformation;
 public interface UserInformationService {
 	
 	//增加用户
-	public boolean inset(UserInformation information);
+	public boolean inset(UserInformation information) throws UidRepetitionException;
 	
 	//根据学号删除用户
-	public boolean deleteByUid(Integer uid);
+	public boolean deleteByUid(Integer uid) throws NotFoundUidException;
 	
 	//根据学号查询用户
 	public UserInformation selectByUid(Integer uid);
 	
 	//根据学号查询其关注人的信息
-	public List<UserInformation> selectUsersByUid(Integer uid);
+	public List<UserInformation> selectUsersByUid(Integer uid) throws NotFoundUidException;
 	
 	//根据学号查询其粉丝信息
-	public List<UserInformation> selectUsersByLikeId(Integer likeId);
+	public List<UserInformation> selectUsersByLikeId(Integer likeId) throws NotFoundUidException;
 
 	//根据一组学号获取一组学生信息
 	public List<UserInformation> selectUsersByUids(List<Integer> uids);

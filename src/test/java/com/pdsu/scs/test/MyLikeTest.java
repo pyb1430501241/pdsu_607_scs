@@ -30,7 +30,6 @@ public class MyLikeTest {
 		
 		System.out.println(myLikeService.selectLikeIdByUid(181360241));
 		
-		System.out.println("我关注的人的信息: " + userInformationService.selectUsersByLikeId(181360241));
 	}
 	
 }

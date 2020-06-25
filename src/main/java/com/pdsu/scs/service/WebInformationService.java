@@ -3,10 +3,13 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.WebInformation;
-import com.pdsu.scs.exception.WebException;
+import com.pdsu.scs.exception.web.WebException;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import com.sun.swing.internal.plaf.basic.resources.basic;
 
 /**
- * 与网页相关的方法
+ * 与博客网页相关的方法
  * @author 半梦
  *
  */
@@ -24,7 +27,7 @@ public interface WebInformationService {
 	 * @param id
 	 * @return
 	 */
-	public boolean deleteById(Integer id) throws WebException;
+	public boolean deleteById(Integer id) throws NotFoundBlobIdException;
 	
 	/**
 	 * 根据网页id查询网页信息
@@ -45,7 +48,7 @@ public interface WebInformationService {
 	 * @param uid  学号
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByUid(Integer uid);
+	public List<WebInformation> selectWebInformationsByUid(Integer uid) throws NotFoundUidException;
 
 	/**
 	 * 更新文章
@@ -53,5 +56,19 @@ public interface WebInformationService {
 	 * @return
 	 */
 	public boolean updateByWebId(WebInformation web);
+	
+	/**
+	 * 查询文章是否存在
+	 * @param webid
+	 * @return
+	 */
+	public boolean countByWebId(Integer webid);
+	
+	/**
+	 * 查询用户是否存在
+	 * @param uid
+	 * @return
+	 */
+	public int countByUid(Integer uid);
 	
 }

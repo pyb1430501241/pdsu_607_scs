@@ -24,10 +24,10 @@ public class ShiroUtils {
         Subject subject = SecurityUtils.getSubject();
         //取出身份信息
         UserInformation userInformation = (UserInformation) subject.getPrincipal();
-        if(userInformation!=null){
+        if(userInformation != null){
             Session session = subject.getSession();
             UserInformation user = (UserInformation) session.getAttribute("user");
-            if(user==null){
+            if(user == null){
                 session.setAttribute("user", userInformation);
             }
             return userInformation;
@@ -37,7 +37,7 @@ public class ShiroUtils {
 	}
 	
 	 /**
-     * 根据sessionid 获取用户信息
+     * 根据 sessionid 获取用户信息
      * @param sessionID
      * @param request
      * @param response

@@ -24,7 +24,6 @@ public class MyCollectionTest {
 	 */
 	@Test
 	public void test() {
-		myCollectionService.insert(new MyCollection(null, 181360226, 12, 181360226));
 	}
 	
 	/**
@@ -32,7 +31,6 @@ public class MyCollectionTest {
 	 */
 	@Test
 	public void test1() {
-		System.out.println(myCollectionService.selectCollectionsByWebId(12));
 	}
 	
 	/**

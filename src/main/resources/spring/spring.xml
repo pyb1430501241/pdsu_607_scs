@@ -74,11 +74,13 @@
 			</bean>
 		</property>
 	</bean>
+	
 	<!-- 配置 securityManager -->
 	<bean id = "securityManager" class = "org.apache.shiro.web.mgt.DefaultWebSecurityManager">
 		<property name="cacheManager" ref="ehcacheManager"></property>
 		<property name="realm" ref="loginRealm"></property>
 	</bean>
+	
 	<!-- 配置 LifecycleBeanPostProcessor, 可以自动的调用配置在 Spring IOC 容器中的 shiro bean 生命周期方法 -->
 	<bean id = "lifecycleBeanPostProcessor" class = "org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean>
 	<!-- 启用 Spring IOC 容器中的 Shiro 的注解, 但必须在配置了LifecycleBeanPostProcessor 之后才可以使用 -->
@@ -101,7 +103,7 @@
 		<property name="filterChainDefinitions">
 			<value>
 				/js/** = anon
-				/img/**= anon
+				/img/** = anon
 				/user/login = anon
 				/user/loginAjax = anon
 				/user/getCodeForLogin = anon

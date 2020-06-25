@@ -3,7 +3,9 @@ package com.pdsu.scs.utils;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 格式相关工具类
@@ -46,11 +48,8 @@ public class SimpleUtils {
 	 * @return
 	 */
 	public static String toString(Object... args) {
-		String str = "";
-		for(Object t : args) {
-			str += t.toString();
-		}
-		return str;
+		List<Object> list =Arrays.asList(args);
+		return list.toString();
 	}
 	
 	/**

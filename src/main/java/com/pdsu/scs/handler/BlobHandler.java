@@ -2,6 +2,7 @@ package com.pdsu.scs.handler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -20,7 +22,7 @@ import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
-import com.pdsu.scs.exception.WebException;
+import com.pdsu.scs.exception.web.WebException;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.UserInformationService;
@@ -97,11 +99,9 @@ public class BlobHandler {
 	 * @return
 	 */
 	@RequestMapping("{id}")
-	public String blob(HttpServletRequest request) {
-		String servletPath = request.getServletPath();
-		request.setAttribute("id", Integer.parseInt(
-				servletPath.substring(servletPath.lastIndexOf("/")+2, 
-				servletPath.length())));
+	public String blob(@PathVariable("id")String id,Map<String, Object> map) {
+		String t = id.substring(1, id.length());
+		map.put("id", t);
 		return "blob/blob";
 	}
 	
