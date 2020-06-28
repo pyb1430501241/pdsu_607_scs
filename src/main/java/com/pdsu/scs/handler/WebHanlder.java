@@ -325,7 +325,7 @@ public class WebHanlder {
 		}
 	}
 	/**
-	 * 
+	 * 找回密码
 	 * @param uid
 	 * @param token
 	 * @param code
@@ -346,10 +346,10 @@ public class WebHanlder {
 			}
 			boolean b = userInformationService.ModifyThePassword(uid, password);
 			if(!b) {
-				return Result.fail().add(EX, "密码修改失败, 请稍后重试");
+				return Result.fail().add(EX, "密码找回失败, 请稍后重试");
 			}
 			log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
-			return Result.success().add(EX, "修改成功");
+			return Result.success().add(EX, "找回成功");
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回失败, 失败原因未知");
 			return Result.fail().add(EX, "未知错误");
