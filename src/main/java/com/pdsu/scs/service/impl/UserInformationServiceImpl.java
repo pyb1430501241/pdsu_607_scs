@@ -2,9 +2,6 @@ package com.pdsu.scs.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,6 +72,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 */
 	@Override
 	public UserInformation selectByUid(Integer uid) {
+		if(countByUid(uid) <= 0) {
+			return null;
+		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -120,7 +120,8 @@ public class UserInformationServiceImpl implements UserInformationService {
 	}
 
 	/**
-	 * 根据用户的uid集群查询用户信息集群
+	 * 根据用户的 uid 集群查询用户信息集群
+	 * 如果该用户不存在, 则剔除集合
 	 */
 	@Override
 	public List<UserInformation> selectUsersByUids(List<Integer> uids) {

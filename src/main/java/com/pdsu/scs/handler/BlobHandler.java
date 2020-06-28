@@ -1,5 +1,6 @@
 package com.pdsu.scs.handler;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,9 @@ import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.exception.web.WebException;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.UserInformationService;
@@ -193,13 +197,22 @@ public class BlobHandler {
 			//获取网页收藏量
 			Integer collections = myConllectionService.selectCollectionsByWebId(web.getId());
 			return Result.success().add("web", web).add("webList", webList)
-				   .add("user", author)
+				   .add("author", author)
 				   .add("visit", visits)
 				   .add("thubms", thubms)
 				   .add("collection", collections);
-		}catch (Exception e) {
-			log.error("加载博客信息失败, 失败信息为: " + e.getMessage());
-			return Result.fail();
+		}catch (NotFoundUidException e) {
+			log.info("文章: " + id + e.getMessage());
+			return Result.fail().add(EX, "获取文章信息失败");
+		} catch (UnsupportedEncodingException e) {
+			log.error("文章: " + id + "编码转换失败!!!");
+			return Result.fail().add(EX, "获取文章信息失败");
+		} catch (NotFoundBlobIdException e) {
+			log.info("文章: " + id + e.getMessage());
+			return Result.fail().add(EX, "文章不见了");
+		} catch (Exception e) {
+			log.warn("发生未知错误!");
+			return Result.fail().add(EX, "未知错误");
 		}
 	}
 	
@@ -221,14 +234,16 @@ public class BlobHandler {
 			//添加一条收藏记录
 			boolean flag = myConllectionService.insert(new MyCollection(null, uid, webid, bid));
 			if(flag) {
-				log.info("收藏成功");
+				log.info("用户: " + uid + ", 收藏 " + webid + " 成功");
 				return Result.success();
 			}
 			log.info("收藏失败");
-			return Result.fail();
+			return Result.fail().add(EX, "网络延迟, 请稍候重试");
+		}catch (UidAndWebIdRepetitionException e) {
+			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
-			log.info("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
-			return Result.fail();
+			log.warn("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
+			return Result.fail().add(EX, "未知错误");
 		}
 	}
 
@@ -253,6 +268,9 @@ public class BlobHandler {
 				log.info("取消收藏失败");
 				return Result.fail();
 			}
+		}catch (UidAndWebIdRepetitionException e) {
+			log.info("用户: " + user.getUid() + ", 取消收藏失败");
+			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
 			log.info("用户: " + user.getUid() + "取消收藏博客: " + webid + "失败, 原因为: " + e.getMessage());
 			return Result.fail();
@@ -291,6 +309,9 @@ public class BlobHandler {
 			}
 			log.info("用户: " + uid + "发布文章失败");
 			return Result.fail().add(EX, "发布失败");
+		}catch (UnsupportedEncodingException e) {
+			log.warn("文章: " + web.getUid() + " 转码失败!!!");
+			return Result.fail().add(EX, "添加文章信息失败");
 		}catch (Exception e) {
 			log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
 			return Result.fail().add(EX, "发布失败, 未知原因");
@@ -315,12 +336,15 @@ public class BlobHandler {
 				log.info("删除文章成功, 文章ID为: " + webid);
 				return Result.success();
 			}else {
-				log.info("删除文章失败, 原因未知");
-				return Result.fail();
+				log.warn("删除文章失败, 数据库异常");
+				return Result.fail().add(EX, "网络异常, 请稍候重试");
 			}
-		} catch (WebException e) {
+		} catch (NotFoundBlobIdException e) {
 			log.info("删除文章失败, 文章不存在");
-			return Result.fail().add(EX, "文章不存在");
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			log.info("删除文章失败, 文章不存在");
+			return Result.fail().add(EX, "删除失败, 未知原因");
 		}
 	}
 	
@@ -343,11 +367,11 @@ public class BlobHandler {
 				return Result.success();
 			}else {
 				log.info("更新文章失败");
-				return Result.fail();
+				return Result.fail().add(EX, "网络异常, 请稍候重试");
 			}
 		}catch (Exception e) {
 			log.info("更新文章失败, 原因: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EX, "未知原因");
 		}
 	}
 }

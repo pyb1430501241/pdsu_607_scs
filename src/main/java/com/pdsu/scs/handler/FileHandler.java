@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.exception.web.file.FileException;
+import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
 import com.pdsu.scs.service.WebFileService;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
@@ -92,14 +93,23 @@ public class FileHandler {
 				return Result.success();
 			}else {
 				log.error("上传失败");
-				return Result.fail();
+				return Result.fail().add(EX, "网络异常, 请稍候重试");
 			}
-		}catch (Exception e) {
+		} catch (UidAndTItleRepetitionException e) {
+			log.info("用户: " + uid + ", 上传资源: " + title + " 失败, 原因为: " + e.getMessage());
+			return Result.fail().add(EX, "无法上传同名资源, 请修改名称");
+		} catch (Exception e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EX, "未知原因");
 		}
 	}
 	
+	/**
+	 * 下载文件
+	 * @param uid 
+	 * @param title
+	 * @param response
+	 */
 	@ResponseBody
 	@RequestMapping("/download")
 	@CrossOrigin

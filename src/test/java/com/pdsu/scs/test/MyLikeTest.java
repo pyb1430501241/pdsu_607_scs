@@ -22,14 +22,6 @@ public class MyLikeTest {
 	@Test
 	public void test() {
 		
-		//myLikeService.insert(new MyLike(null, 181360241, 181360226));
-		
-		System.out.println("我关注的人数为: " + myLikeService.countByUid(181360241));
-		
-		System.out.println("关注我的人数为: " + myLikeService.countByLikeId(181360226));
-		
-		System.out.println(myLikeService.selectLikeIdByUid(181360241));
-		
 	}
 	
 }
