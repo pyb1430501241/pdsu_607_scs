@@ -6,11 +6,27 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.MyCollectionExample;
+import com.pdsu.scs.bean.MyEmailExample;
+import com.pdsu.scs.bean.MyImageExample;
+import com.pdsu.scs.bean.MyLikeExample;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.UserInformationExample.Criteria;
+import com.pdsu.scs.bean.VisitInformationExample;
+import com.pdsu.scs.bean.WebFileExample;
+import com.pdsu.scs.bean.WebInformationExample;
+import com.pdsu.scs.bean.WebThumbsExample;
+import com.pdsu.scs.dao.MyCollectionMapper;
+import com.pdsu.scs.dao.MyEmailMapper;
+import com.pdsu.scs.dao.MyImageMapper;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
+import com.pdsu.scs.dao.VisitInformationMapper;
+import com.pdsu.scs.dao.WebFileMapper;
+import com.pdsu.scs.dao.WebInformationMapper;
+import com.pdsu.scs.dao.WebThumbsMapper;
+import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.UserInformationService;
@@ -30,6 +46,27 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Autowired
 	private MyLikeMapper myLikeMapper;
 	
+	@Autowired
+	private MyCollectionMapper myCollectionMapper;
+	
+	@Autowired
+	private VisitInformationMapper visitInformationMapper;
+	
+	@Autowired
+	private MyEmailMapper myEmailMapper;
+	
+	@Autowired
+	private MyImageMapper myImageMapper;
+	
+	@Autowired
+	private WebThumbsMapper webThumbsMapper;
+	
+	@Autowired
+	private WebFileMapper webFileMapper;
+	
+	@Autowired
+	private WebInformationMapper webInformationMapper;
+	
 	/**
 	 * 插入一个用户信息
 	 * @throws UidRepetitionException 
@@ -38,7 +75,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	public boolean inset(UserInformation information) throws UidRepetitionException {
 		Integer uid = information.getUid();
 		if(countByUid(uid) != 0) {
-			throw new UidRepetitionException("学号重复");
+			throw new UidRepetitionException("学号不可重复");
 		}
 		String password = information.getPassword();
 		password = HashUtils.getPasswordHash(uid, password);
@@ -51,20 +88,126 @@ public class UserInformationServiceImpl implements UserInformationService {
 
 	/**
 	 * 删除一个用户信息
-	 * @throws NotFoundUidException 
+	 * 由于用户信息绑定了自身发布的博客页面
+	 * 以及自身的访问量，头像，实名认证，邮箱绑定
+	 * 上传文件，下载量， 收藏量，关注以及被关注等等，所以要先删除
+	 * 所依赖于它的相关信息
+	 * @throws NotFoundUidException, DeleteInforException
 	 */
 	@Override
-	public boolean deleteByUid(Integer uid) throws NotFoundUidException {
+	public boolean deleteByUid(Integer uid) throws NotFoundUidException, DeleteInforException {
 		if(countByUid(uid) == 0) {
 			throw new NotFoundUidException("该用户不存在");
 		}
+		
+		/**
+		 * 删除和用户相关的收藏信息 
+		 */
+		MyCollectionExample myCollectionExample = new MyCollectionExample();
+		com.pdsu.scs.bean.MyCollectionExample.Criteria myCollectionCriteria1 = myCollectionExample.createCriteria();
+		myCollectionCriteria1.andBidEqualTo(uid);
+		com.pdsu.scs.bean.MyCollectionExample.Criteria myCollectionCriteria2 = myCollectionExample.createCriteria();
+		myCollectionCriteria2.andUidEqualTo(uid);
+		myCollectionExample.or(myCollectionCriteria2);
+		//获取和用户相关的收藏信息总数
+		long mycollectionCount = myCollectionMapper.countByExample(myCollectionExample);
+		if(myCollectionMapper.deleteByExample(myCollectionExample) != mycollectionCount) {
+			throw new DeleteInforException("删除用户收藏信息失败");
+		}
+		
+		/**
+		 *删除和用户相关的访问信息 
+		 */
+		VisitInformationExample visitInformationExample = new VisitInformationExample();
+		com.pdsu.scs.bean.VisitInformationExample.Criteria visitInformationCriteria1 = visitInformationExample.createCriteria();
+		visitInformationCriteria1.andSidEqualTo(uid);
+		com.pdsu.scs.bean.VisitInformationExample.Criteria visitInformationCriteria2 = visitInformationExample.createCriteria();
+		visitInformationCriteria2.andVidEqualTo(uid);
+		visitInformationExample.or(visitInformationCriteria2);
+		long visitCount = visitInformationMapper.countByExample(visitInformationExample);
+		if(visitInformationMapper.deleteByExample(visitInformationExample) != visitCount) {
+			throw new DeleteInforException("删除用户访问信息失败");
+		}
+		
+		/**
+		 *删除用户相关的点赞信息
+		 */
+		WebThumbsExample webThumbsExample = new WebThumbsExample();
+		com.pdsu.scs.bean.WebThumbsExample.Criteria webThumbsCriteria1 = webThumbsExample.createCriteria();
+		webThumbsCriteria1.andBidEqualTo(uid);
+		com.pdsu.scs.bean.WebThumbsExample.Criteria webThumbsCriteria2 = webThumbsExample.createCriteria();
+		webThumbsCriteria2.andUidEqualTo(uid);
+		webThumbsExample.or(webThumbsCriteria2);
+		long webThumbsCount = webThumbsMapper.countByExample(webThumbsExample);
+		if(webThumbsMapper.deleteByExample(webThumbsExample) != webThumbsCount) {
+			throw new DeleteInforException("删除用户点赞信息失败");
+		}
+		
+		/**
+		 *删除用户相关的邮箱信息 
+		 */
+		MyEmailExample myEmailExample = new MyEmailExample();
+		com.pdsu.scs.bean.MyEmailExample.Criteria myEmailCriteria = myEmailExample.createCriteria();
+		myEmailCriteria.andUidEqualTo(uid);
+		long myEmailCount = myEmailMapper.countByExample(myEmailExample);
+		if(myEmailMapper.deleteByExample(myEmailExample) != myEmailCount) {
+			throw new DeleteInforException("删除用户邮箱失败");
+		}
+		
+		/**
+		 * 删除用户相关的头像信息
+		 */
+		MyImageExample myImageExample = new MyImageExample();
+		com.pdsu.scs.bean.MyImageExample.Criteria myImageCriteria = myImageExample.createCriteria();
+		myImageCriteria.andUidEqualTo(uid);
+		long myImageCount = myImageMapper.countByExample(myImageExample);
+		if(myImageMapper.deleteByExample(myImageExample) != myImageCount) {
+			throw new DeleteInforException("删除用户头像失败");
+		}
+		
+		/**
+		 * 删除用户上传的文件信息
+		 */
+		WebFileExample webFileExample = new WebFileExample();
+		com.pdsu.scs.bean.WebFileExample.Criteria webFileCriteria = webFileExample.createCriteria();
+		webFileCriteria.andUidEqualTo(uid);
+		long webFileCount = webFileMapper.countByExample(webFileExample);
+		if(webFileMapper.deleteByExample(webFileExample) != webFileCount) {
+			throw new DeleteInforException("删除用户文件失败");
+		}
+		
+		/**
+		 * 删除用户相关的关注信息
+		 */
+		MyLikeExample myLikeExample = new MyLikeExample();
+		com.pdsu.scs.bean.MyLikeExample.Criteria myLikeCriteria1 = myLikeExample.createCriteria();
+		myLikeCriteria1.andUidEqualTo(uid);
+		com.pdsu.scs.bean.MyLikeExample.Criteria myLikeCriteria2 = myLikeExample.createCriteria();
+		myLikeCriteria2.andLikeIdEqualTo(uid);
+		myLikeExample.or(myLikeCriteria2);
+		long myLikeCount = myLikeMapper.countByExample(myLikeExample);
+		if(myLikeMapper.deleteByExample(myLikeExample) != myLikeCount) {
+			throw new DeleteInforException("删除用户关注信息失败");
+		}
+		
+		/**
+		 * 删除用户博客相关的信息		
+		 */
+		WebInformationExample webInformationExample = new WebInformationExample();
+		com.pdsu.scs.bean.WebInformationExample.Criteria webInforCriteria = webInformationExample.createCriteria();
+		webInforCriteria.andUidEqualTo(uid);
+		long webInforCount = webInformationMapper.countByExample(webInformationExample);
+		if(webInformationMapper.deleteByExample(webInformationExample) != webInforCount) {
+			throw new DeleteInforException("删除用户博客失败");
+		}
+		
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		if(userInformationMapper.deleteByExample(example) > 0) {
 			return true;
 		}
-		return false;
+		throw new DeleteInforException("删除用户失败");
 	}
 
 	/**

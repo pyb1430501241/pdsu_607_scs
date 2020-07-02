@@ -254,7 +254,7 @@ public class WebHanlder {
 			user.setImgpath("01.png");
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
-				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" +user);
+				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 				return Result.success().add(EX, "申请成功");
 			}else {
 				log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
@@ -287,7 +287,7 @@ public class WebHanlder {
 						.add("uid", uid);
 			}else {
 				log.info("账号: " + uid + "不存在");
-				return Result.fail();
+				return Result.fail().add(EX, "账号不存在, 是否申请?");
 			}
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回密码时服务器开小差了");
@@ -346,10 +346,10 @@ public class WebHanlder {
 			}
 			boolean b = userInformationService.ModifyThePassword(uid, password);
 			if(!b) {
-				return Result.fail().add(EX, "密码修改失败, 请稍后重试");
+				return Result.fail().add(EX, "密码找回失败, 请稍后重试");
 			}
 			log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
-			return Result.success().add(EX, "修改成功");
+			return Result.success().add(EX, "找回成功");
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回失败, 失败原因未知");
 			return Result.fail().add(EX, "未知错误");

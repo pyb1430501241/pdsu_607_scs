@@ -6,12 +6,19 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.MyCollectionExample;
 import com.pdsu.scs.bean.UserInformationExample;
+import com.pdsu.scs.bean.VisitInformationExample;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
+import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
+import com.pdsu.scs.dao.MyCollectionMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
+import com.pdsu.scs.dao.VisitInformationMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
+import com.pdsu.scs.dao.WebThumbsMapper;
+import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.WebInformationService;
@@ -30,6 +37,15 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Autowired
 	private UserInformationMapper userInformationMapper;
 	
+	@Autowired
+	private WebThumbsMapper webThumbsMapper;
+	
+	@Autowired
+	private MyCollectionMapper myCollectionMapper;
+	
+	@Autowired
+	private VisitInformationMapper visitInformationMapper;
+	
 	/*
 	 * 插入一个网页信息
 	 */
@@ -45,15 +61,50 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 删除一个网页信息
 	 */
 	@Override
-	public boolean deleteById(Integer id) throws NotFoundBlobIdException{
+	public boolean deleteById(Integer id) throws NotFoundBlobIdException, DeleteInforException{
 		if(!countByWebId(id)) {
 			throw new NotFoundBlobIdException("该文章不存在");
 		}
+		
+		/**
+		 * 删除和网页相关的收藏信息 
+		 */
+		MyCollectionExample myCollectionExample = new MyCollectionExample();
+		com.pdsu.scs.bean.MyCollectionExample.Criteria myCollectionCriteria1 = myCollectionExample.createCriteria();
+		myCollectionCriteria1.andWidEqualTo(id);
+		//获取和用户相关的收藏信息总数
+		long mycollectionCount = myCollectionMapper.countByExample(myCollectionExample);
+		if(myCollectionMapper.deleteByExample(myCollectionExample) != mycollectionCount) {
+			throw new DeleteInforException("删除网页收藏信息失败");
+		}
+		
+		/**
+		 *删除和网页相关的访问信息 
+		 */
+		VisitInformationExample visitInformationExample = new VisitInformationExample();
+		com.pdsu.scs.bean.VisitInformationExample.Criteria visitInformationCriteria1 = visitInformationExample.createCriteria();
+		visitInformationCriteria1.andWidEqualTo(id);
+		long visitCount = visitInformationMapper.countByExample(visitInformationExample);
+		if(visitInformationMapper.deleteByExample(visitInformationExample) != visitCount) {
+			throw new DeleteInforException("删除网页访问信息失败");
+		}
+		
+		/**
+		 *删除用户相关的点赞信息
+		 */
+		WebThumbsExample webThumbsExample = new WebThumbsExample();
+		com.pdsu.scs.bean.WebThumbsExample.Criteria webThumbsCriteria1 = webThumbsExample.createCriteria();
+		webThumbsCriteria1.andWebidEqualTo(id);
+		long webThumbsCount = webThumbsMapper.countByExample(webThumbsExample);
+		if(webThumbsMapper.deleteByExample(webThumbsExample) != webThumbsCount) {
+			throw new DeleteInforException("删除用户点赞信息失败");
+		}
+		
 		int i = webInformationMapper.deleteByPrimaryKey(id);
 		if(i >= 0) {
 			return true;
 		}else {
-			return false;
+			throw new DeleteInforException("删除网页失败");
 		}
 	}
 

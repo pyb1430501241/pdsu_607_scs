@@ -3,6 +3,7 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.WebException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
@@ -27,7 +28,7 @@ public interface WebInformationService {
 	 * @param id
 	 * @return
 	 */
-	public boolean deleteById(Integer id) throws NotFoundBlobIdException;
+	public boolean deleteById(Integer id) throws NotFoundBlobIdException, DeleteInforException;
 	
 	/**
 	 * 根据网页id查询网页信息

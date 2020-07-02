@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.exception.web.DeleteInforException;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.UserInformationService;
-import com.pdsu.scs.utils.SimpleUtils;
 
-@SpringJUnitConfig(locations = {"classpath:spring/spring.xml", "classpath:spring/springmvc.xml"})
+@SpringJUnitConfig(locations = {"classpath:spring/spring.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UserInformationTest {
 
@@ -19,6 +19,13 @@ public class UserInformationTest {
 	
 	@Test
 	public void test() {
+		try {
+			System.out.println(userInformationService.deleteByUid(181360226));
+		} catch (NotFoundUidException e) {
+			System.out.println(e.getMessage());
+		} catch (DeleteInforException e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 }

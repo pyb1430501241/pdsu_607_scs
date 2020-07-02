@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
-import com.pdsu.scs.exception.web.WebException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
@@ -41,8 +38,8 @@ import com.pdsu.scs.utils.SimpleUtils;
  * @author 半梦
  *
  */
-@RequestMapping("/blob")
 @Controller
+@RequestMapping("/blob")
 public class BlobHandler {
 
 	/**
@@ -223,7 +220,7 @@ public class BlobHandler {
 	 * @param webid 网页id
 	 * @return
 	 */
-	@RequestMapping("collection")
+	@RequestMapping("/collection")
 	@ResponseBody
 	@CrossOrigin
 	public Result collection(Integer bid, Integer webid) {
@@ -253,7 +250,7 @@ public class BlobHandler {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/deCollection")
+	@RequestMapping("/decollection")
 	@CrossOrigin
 	public Result deCollection(Integer webid) {
 		//获取当前登录用户的信息
@@ -331,6 +328,10 @@ public class BlobHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		try {
 			log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
+			WebInformation webInformation = webInformationService.selectById(webid);
+			if(user.getUid() != webInformation.getUid()) {
+				return Result.fail().add(EX, "您无权删除这篇文章");
+			}
 			boolean b = webInformationService.deleteById(webid);
 			if(b) {
 				log.info("删除文章成功, 文章ID为: " + webid);
@@ -353,7 +354,7 @@ public class BlobHandler {
 	 * @param web  更新后的文章
 	 * @return
 	 */
-	@RequestMapping("/update")
+	@RequestMapping(value = "/update")
 	@ResponseBody
 	@CrossOrigin
 	public Result update(WebInformation web) {

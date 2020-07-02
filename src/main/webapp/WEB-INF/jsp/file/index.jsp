@@ -23,8 +23,6 @@
 		    	return ;
 		    }
 		    formData.append("file", $("#file")[0].files[0]);
-		    formData.append("title", "R18+");
-		    formData.append("description", "超涩");
 		    //把file添加进去  name命名为img
 		    $.ajax({
 		        url: "${APP_PATH}/file/upload",

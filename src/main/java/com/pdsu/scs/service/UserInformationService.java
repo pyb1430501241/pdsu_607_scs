@@ -3,6 +3,7 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 
@@ -17,7 +18,7 @@ public interface UserInformationService {
 	public boolean inset(UserInformation information) throws UidRepetitionException;
 	
 	//根据学号删除用户
-	public boolean deleteByUid(Integer uid) throws NotFoundUidException;
+	public boolean deleteByUid(Integer uid) throws NotFoundUidException, DeleteInforException;
 	
 	//根据学号查询用户
 	public UserInformation selectByUid(Integer uid);
