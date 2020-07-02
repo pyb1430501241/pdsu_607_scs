@@ -325,7 +325,7 @@ public class WebHanlder {
 		}
 	}
 	/**
-	 * 
+	 * 找回密码
 	 * @param uid
 	 * @param token
 	 * @param code
