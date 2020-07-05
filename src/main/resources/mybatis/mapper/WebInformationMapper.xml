@@ -123,7 +123,8 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.WebInformation">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.WebInformation"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_information (id, title, uid, 
       contype, sub_time, web_data
       )
@@ -131,7 +132,8 @@
       #{contype,jdbcType=INTEGER}, #{subTime,jdbcType=CHAR}, #{webData,jdbcType=LONGVARBINARY}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebInformation">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebInformation"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_information
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

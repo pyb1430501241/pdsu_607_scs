@@ -98,13 +98,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.VisitInformation">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.VisitInformation"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_visit_information (id, vid, sid, 
       wid)
     values (#{id,jdbcType=INTEGER}, #{vid,jdbcType=INTEGER}, #{sid,jdbcType=INTEGER}, 
       #{wid,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.VisitInformation">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.VisitInformation"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_visit_information
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

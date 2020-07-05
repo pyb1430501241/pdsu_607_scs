@@ -98,13 +98,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.WebThumbs">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.WebThumbs"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_thumbs (id, uid, bid, 
       webid)
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{bid,jdbcType=INTEGER}, 
       #{webid,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebThumbs">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebThumbs"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_thumbs
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

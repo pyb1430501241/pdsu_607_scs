@@ -66,7 +66,7 @@
     <Loggers>
          <!--过滤掉一些无用的DEBUG信息-->
         <logger name="org.springframework" level="WARN"></logger>
-        <logger name="org.apache.ibatis" level="WARN"></logger>
+        <logger name="org.apache" level="WARN"></logger>
         <logger name="org.mybatis" level="WARN"></logger>
         <logger name="org.apache.shiro" level="WARN"></logger>
         <logger name="net.sf.ehcache" level="WARN"></logger>

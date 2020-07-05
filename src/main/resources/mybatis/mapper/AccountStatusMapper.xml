@@ -97,11 +97,13 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.AccountStatus">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.AccountStatus"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_account_status (id, status)
     values (#{id,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.AccountStatus">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.AccountStatus"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_account_status
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

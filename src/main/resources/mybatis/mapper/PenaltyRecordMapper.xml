@@ -99,13 +99,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.PenaltyRecord">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.PenaltyRecord"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_penalty_record (id, uid, reasons, 
       time, dutation)
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{reasons,jdbcType=VARCHAR}, 
       #{time,jdbcType=CHAR}, #{dutation,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.PenaltyRecord">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.PenaltyRecord"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_penalty_record
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

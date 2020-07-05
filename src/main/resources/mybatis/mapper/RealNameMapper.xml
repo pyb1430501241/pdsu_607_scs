@@ -98,13 +98,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.RealName">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.RealName"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_real_name (id, uid, real_name, 
       idcard)
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{realName,jdbcType=VARCHAR}, 
       #{idcard,jdbcType=CHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.RealName">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.RealName"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_real_name
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

@@ -97,13 +97,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.MyLike">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.MyLike"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_my_like (id, uid, like_id
       )
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{likeId,jdbcType=INTEGER}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.MyLike">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.MyLike"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_my_like
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

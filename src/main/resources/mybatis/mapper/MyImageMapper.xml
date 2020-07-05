@@ -97,13 +97,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.MyImage">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.MyImage"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_my_image (id, uid, image_path
       )
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{imagePath,jdbcType=VARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.MyImage">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.MyImage"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_my_image
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

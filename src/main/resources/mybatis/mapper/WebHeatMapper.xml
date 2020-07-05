@@ -97,13 +97,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.WebHeat">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.WebHeat"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_heat (id, webid, heat
       )
     values (#{id,jdbcType=INTEGER}, #{webid,jdbcType=INTEGER}, #{heat,jdbcType=VARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebHeat">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebHeat"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_heat
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

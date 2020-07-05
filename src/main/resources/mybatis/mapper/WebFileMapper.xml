@@ -99,13 +99,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.WebFile">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.WebFile"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_file (id, uid, title, 
       file_path, creattime)
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, 
       #{filePath,jdbcType=VARCHAR}, #{creattime,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebFile">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebFile"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_web_file
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

@@ -97,13 +97,15 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.MyEmail">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.MyEmail"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_my_email (id, uid, email
       )
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{email,jdbcType=VARCHAR}
       )
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.MyEmail">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.MyEmail"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_my_email
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

@@ -1,14 +1,21 @@
 package com.pdsu.scs.utils;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.elasticsearch.search.SearchHit;
 
 /**
- * 格式相关工具类
+ * 格式化相关工具类
  * @author 半梦
  *
  */
@@ -53,11 +60,57 @@ public class SimpleUtils {
 	}
 	
 	/**
-	 * 提供文件名, 返回文件后缀名
 	 * @param name
 	 * @return
 	 */
 	public static String getSuffixName(String name) {
 		return name.substring(name.lastIndexOf("."), name.length());
 	}
+	
+	
+	private static final String USERINFORMATION = "EsUserInformation";
+	private static final String BLOBINFORMATION = "EsBlobInformation";
+	private static final String FILEINFORMATION = "EsFileInformation";
+	/**
+	 * 拼装 SearchHit 成对应的实体类
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 * @throws InvocationTargetException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 */
+	public static List<?> getObjectBySearchHit(SearchHit [] searchHits, Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "").toString();
+		Constructor<?> constructor = null;
+		if(name.equals(USERINFORMATION)) {
+			constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, String.class, Integer.class, String.class);
+		}else if(name.equals(BLOBINFORMATION)) {
+			constructor = clazz.getDeclaredConstructor(Integer.class, String.class, String.class);
+		}else if(name.equals(FILEINFORMATION)) {
+			constructor = clazz.getDeclaredConstructor(String.class, String.class, Integer.class);
+		}else {
+			return null;
+		}
+		constructor.setAccessible(true);
+		return getSearchHitByList(searchHits, constructor);
+	}
+	
+	private static List<Object> getSearchHitByList(SearchHit [] searchHits, Constructor<?> constructor) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+		List<Object> list = new ArrayList<>();
+		for(SearchHit hit : searchHits) {
+			Map<String, Object> map = hit.getSourceAsMap();
+			Set<String> keySet = map.keySet();
+			Object [] objects = new Object[keySet.size()];
+			int i = 0;
+			for(String key : keySet) {
+				objects[i] = map.get(key);
+				i++;
+			}
+			Object object = constructor.newInstance(objects);
+			list.add(object);
+		}
+		return list;
+	}
+	
 }
