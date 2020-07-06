@@ -110,7 +110,7 @@ public class BlobHandler {
 	 * 获取首页的数据
 	 * @return
 	 */
-	@RequestMapping("/getWebindex")
+	@RequestMapping("/getwebindex")
 	@ResponseBody
 	@CrossOrigin
 	public Result getWebForIndex() {
@@ -158,7 +158,7 @@ public class BlobHandler {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/getBlob")
+	@RequestMapping("/getblob")
 	@CrossOrigin
 	public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) {
 		try {

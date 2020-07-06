@@ -9,13 +9,26 @@
 	2) user的 json 对应 json{"id" : "xx", "uid" : "用户学号", "password" : "null", "username" : "网名"
 		, "college" : "学院", "clazz" : "班级", "time" : "申请时间", "accountStatus" : "账号状态"
 		, "imgpath" : "头像地址"}
-	3) visit的 json 对应 json{访问量}
-	4) thubms的 json 对应 json{点赞量}
-	5) collection的 json 对应 json{收藏量}
+	3) es的json 对应 json{ 
+						  "authorList" : {"uid" : "作者学号" , "username" : "用户名"， " imgpath" : "图片路径" " , "blobnum" : "博客编号" , "likenum": "喜爱编号"}], 
+						  "b1obList" :[{"webid" : "网页名", "title" : "标题" , "description" : "内容" }], 
+		                  "fi1eList":[{"fi1eid" : "文件名", "title" : "标题" , "description" : "内容"}]
+		                  }
+    4) MyEmail 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "email" : "作者邮箱"}
+    5) MyImage 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "imagePath" : "图片路径"}
+    6) MyLike 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "likeid" : "喜欢的作者id"}
+    7) PenaltyRecord 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "reasons" : "封禁原因" 
+    									， "time" : "封禁时间" ，" dutation" : "时长"}
+    8) webFile 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "title" : "标题" 
+    									, "filePath" : "下载路径" ，"creattime" : "创建时间"}
+    9) webHeat 的 json 对应 json{"id" : "xx" , "webid" : "网页号" , "heat" : "点击量"}
+    									
+	10) visit的 json 对应 json{访问量}
+	11) thubms的 json 对应 json{点赞量}
+	12) collection的 json 对应 json{收藏量}
 	
 	注:
 	1：后带List的均为此数据的集合形式  
-	2：exception统称 EX
 	
 1: BlobHandler API相关
 	1) public String blob()
@@ -27,7 +40,7 @@
 				作用: 处理博客页面请求,返回博客页面地址信息
 				
 	2) public Result getWebForIndex()
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/getWebindex
+		请求路径: 域名/pdsu_softwaregroup_scs/blob/getwebindex
 				返回JSON为: 
 				成功：json{"code" : "200", "msg" : "success",
 					"webList" : "网页信息集合", "userList", "用户信息集合", "visitList", "访问量集合"
@@ -36,15 +49,14 @@
 				作用: 返回网站主页相关信息
 				
 	3) public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) 
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/getBlob
+		请求路径: 域名/pdsu_softwaregroup_scs/blob/getblob
 				参数: id=?
-				如: 域名/pdsu_softwaregroup_scs/blob/getBlob?id=2
+				如: 域名/pdsu_softwaregroup_scs/blob/getblob?id=2
 				返回JSON为:
 				成功： json{"code" : "200", "msg" : "success",
-					"web" : "网页信息", "webList", "作者其余作品", "user", "作者信息"
-					, "visit" : "访问量", "thubms" : "点赞量", "collection" : "收藏量"}
-				失败： json{"code" : "404", "msg" : "fail" , "Id EX" : "获取文章信息失败" 
-				or "文章不见了" , "EX" : "未知错误"}
+					"web" : "网页信息", "webList" , "作者其余作品" , "user", "作者信息"
+					, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量"}
+				失败： json{"code" : "404", "msg" : "fail" , "exception" : "错误原因" }
 				作用: 返回博客页面相关信息
 				
 	4) public Result collection(Integer bid, Integer webid)
@@ -53,114 +65,103 @@
 				如:域名/pdsu_softwaregroup_scs/blob/collection?bid=2&webid=3
 				返回JSON为: 
 				成功：json{"code" : "200", "msg" : "success"}
-				失败：json{"code" : "404", "msg" : "fail" , "web EX" : "网络延迟, 请稍候重试"
-				, "EX" : "未知错误"}
+				失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				作用: 处理用户点击收藏博客的请求
 				
 	5) public Result deCollection(Integer webid)
-		请求路径:  域名/pdsu_softwaregrop_scs/blob/collection
+		请求路径:  域名/pdsu_softwaregrop_scs/blob/decollection
 				参数: webid=?
 				如: 域名/pdsu_softwaregroup_scs/blob/decollection?webid=3
 				返回JSON为：
-				成功：json{"code" : "200","msg" : "success"}
-				失败：json{"code" : "404","msg" : "fail" , "collection EX" : "收藏失败原因"}
+				成功：json{"code" : "200" , "msg" : "success"}
+				失败：json{"code" : "404" , "msg" : "fail" , "exception" : "错误原因"}
 				作用：处理用户取消收藏博客的请求	
 	
-	6) public String in()
-		请求路径：域名/pdsu_softwaregrop_scs/blob/add
-				作用：跳转到 insert
+
 		
-	7) public Result insert(WebInformation web)
+	6) public Result insert(WebInformation web)
 		请求路径: 域名/pdsu_softwaregroup_scs/blob/insert
 				参数: title=?&contype=?&webDataString=?
-				如:域名/pdsu_softwaregroup_scs/blob/insert?title="xxxx"&contype=1&webDataString="xxxx"
+				如:域名/pdsu_softwaregroup_scs/blob/insert?title=111&contype=1&webDataString=xxxx
 				返回JSON为:
-				 成功：json{"code" : "200", "msg" : "success", "send EX" : "发布成功"}
-				 失败：json{"code" : "404", "msg" : "fail" , "send EX" : "发布失败" 
-				 or "添加文章信息失败" , "EX" : "发布失败，未知错误"}
+				 成功：json{"code" : "200", "msg" : "success" , "exception" : "发布成功"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				作用：处理投稿请求
 				
-	8) public Result delete(Integer webid)
+	7) public Result delete(Integer webid)
 		请求路径: 域名/pdsu_softwaregroup_scs/blob/delete
 				参数: webid=?
 				如:域名/pdsu_softwaregroup_scs/blob/delete?webid=2
 				返回JSON为:
 				成功： json{"code" : "200", "msg" : "success"}
-				失败： json{"code" : "404", "msg" : "fail" , "web EX" : "网络异常, 请稍候重试" 
-				, "blob EX" : "失败原因" , "EX" : "删除失败，未知原因"}
+				失败： json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				作用：删除指定文章
 				
-	9) public Result updata(WebInformation web)
+	8) public Result updata(WebInformation web)
 		请求路径: 域名/pdsu_softwaregroup_scs/blob/updata
 				参数: title=?&contype=?&webDataString=?
-				如:域名/pdsu_softwaregroup_scs/blob/updata?title="xxxx"&contype=1&webDataString="xxxx"
+				如:域名/pdsu_softwaregroup_scs/blob/updata?title=222&contype=1&webDataString=xxxx
 				返回JSON为: 
 				成功： json{"code" : "200", "msg" : "success"}
-				失败： json{"code" : "404", "msg" : "fail" , "web EX" : "网络异常, 请稍候重试" 
-				, "EX" : "删除失败，未知原因"}
-				作用：删除指定文章
+				失败： json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
+				作用：更新指定文章
 				
 2. WebHandler API相关
 	1) public Result loginAjax(String uid, String password, String hit, String code, 
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag)
-		请求路径: 域名/pdsu_softwaregroup_scs/user/loginAjax
-				参数：uid=?&password="xxxx"&hit="xxxx"&code="xxxx"&flag=?
-				如:域名/pdsu_softwaregroup_scs/user/loginAjax?uid=?&password="xxxx"&hit="xxxx"&code="xxxx"&flag=1
+		请求路径: 域名/pdsu_softwaregroup_scs/user/loginajax
+				参数：uid=?&password=?&hit=?&code=?&flag=?
+				如:域名/pdsu_softwaregroup_scs/user/loginajax?uid=1&password=123456&hit=99code=78561&flag=1
 				返回JSON为:
-				成功：json{"code" : "200", "msg" : "success" , "EX" : "登录成功"
+				成功：json{"code" : "200", "msg" : "success" , "exception" : "登录成功"
 				, "sessionId" : "sessionId" , "user" : "uu"}
-				失败：json{"code" : "404", "msg" : "fail" , "hit EX" : "验证码已失效, 请刷新后重试"
-				, "code EX" : "验证码错误" , "uid EX" : "账号被冻结" or "账号被封禁" 
-				or "账号已被注销" or "账号或密码错误" or "账号不存在" or "未知错误" or "你已登录"}
+				失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				作用：处理登录
 		
 	2) public Result getCode(){
-		请求路径：域名/pdsu_softwaregroup_scs/user/getCodeForLogin
+		请求路径：域名/pdsu_softwaregroup_scs/user/getcodeforlogin
 				参数：无
-				如：域名/pdsu_softwaregroup_scs/user/getCodeForLogin
+				如：域名/pdsu_softwaregroup_scs/user/getcodeforlogin
 				返回JSON为：
-				成功：json{"code" : "200", "msg" : "success", "img" : "图像", "token" : "xxxx"}
+				成功：json{"code" : "200", "msg" : "success", "img" : "图像" ,  "token" : "xxxx"}
 				失败：json{"code" : "404", "msg" : "fail"}
 				作用：获取验证码
 		
 	3) public Result sendEmailforApply(
 			@RequestParam("email")String email,
 		 	@RequestParam("name")String name)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getCodeForApply
-				 参数：email="xxxx"&name="xxxx"
-				 如：域名/pdsu_softwaregroup_scs/user/getCodeForApply?email="xxxx"&name="xxxx"
+		 请求路径：域名/pdsu_softwaregroup_scs/user/getcodeforapply
+				 参数：email=?&name=?
+				 如：域名/pdsu_softwaregroup_scs/user/getcodeforapply?email=222@qq.com&name=ss
 				 返回JSON为：
 				 成功：json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
-				 失败：json{"code" : "404", "msg" : "fail" , "email EX" : "邮箱不可为空"
-				 or "此邮箱已被绑定" , or "邮箱地址不正确" , "uid EX" : "用户名不可为空"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：申请账号时发送邮箱验证码
 		 
 	4) public Result applyforAccountNumber(UserInformation user, String email,
 						 	String token, String code)
-		请求路径:域名/pdsu_softwaregroup_scs/user/applyNumber
-				参数：user(POJO类)&email="xxxx"&token="xxxx"&code="xxxx"
-				如：域名/pdsu_softwaregroup_scs/user/applyNumber?user(POJO类)
-				&email="xxxx"&token="xxxx"&code="xxxx"
+		请求路径:域名/pdsu_softwaregroup_scs/user/applynumber
+				参数：user(POJO类)&email=?&token=?&code=?
+				如：域名/pdsu_softwaregroup_scs/user/applynumber?user(POJO类)
+				&email=222@qq.com&token=12343&code=12343
 				返回JSON为：
-				成功：json{"code" : "200" , "msg" : "success" , "uid EX" : "申请成功"}
-				失败：json{"code" : "404", "msg" : "fail" , "token" : "验证码已过期" , "code EX" : "验证码错误"
-				, "email EX" : "此邮箱已被绑定, 忘记密码?", "user EX" : "该账号已存在,是否忘记密码?" 
-				or "申请失败" or "连接服务器失败, 请稍候重试"}
+				成功：json{"code" : "200" , "msg" : "success"}
+				失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				作用：申请账号
 		
 	5) public Result inputEmail(Integer uid)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/inputUid
+		 请求路径：域名/pdsu_softwaregroup_scs/user/inputuid
 				 参数：uid=?
-				 如：域名/pdsu_softwaregroup_scs/user/inputUid?uid=?
+				 如：域名/pdsu_softwaregroup_scs/user/inputuid?uid=2
 				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "email EX" : "邮箱存在" , "uid EX" : "账号存在"}
+				 成功：json{"code" : "200" , "msg" : "success" , "email" : "邮箱存在" , "uid" : "账号存在"}
 				 失败：json{"code" : "404", "msg" : "fail"}
 				 作用：验证此用户是否存在
 		 
 	6) public Result sendEmailForRetrieve(String email)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getCodeForRetrieve
+		 请求路径：域名/pdsu_softwaregroup_scs/user/getcodeforretrieve
 				 参数：email=?
-				 如：域名/pdsu_softwaregroup_scs/user//getCodeForRetrieve?email=?
+				 如：域名/pdsu_softwaregroup_scs/user/getcodeforretrieve?email=222@qq.com
 				 返回JSON为：
 				 成功：json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
 				 失败：json{"code" : "404", "msg" : "fail"}
@@ -168,56 +169,56 @@
 		 
 	7) public Result retrieveThePassword(Integer uid, String password,String token, String code)
 		 请求路径：域名/pdsu_softwaregroup_scs/user/retrieve
-				 参数：uid=?&token="xxxx"&code="xxxx"
-				 如：域名/pdsu_softwaregroup_scs/user/retrieve?uid=2&token="2222"&code="2222"
+				 参数：uid=?&token=?&code=?
+				 如：域名/pdsu_softwaregroup_scs/user/retrieve?uid=2&token=2222&code=2222
 				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "uid EX" : "找回成功"}
-				 失败：json{"code" : "404", "msg" : "fail" , "token EX" : "验证码已过期" , "code EX" : "验证码错误"
-				 , "uid EX" : "密码找回失败, 请稍后重试" , "EX" : "未知错误"}
+				 成功：json{"code" : "200" , "msg" : "success"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：找回密码
 		
 	8) public Result getModify()
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getModify
+		 请求路径：域名/pdsu_softwaregroup_scs/user/getmodify
 				 参数：无
-				 如：域名/pdsu_softwaregroup_scs/user/getModify
+				 如：域名/pdsu_softwaregroup_scs/user/getmodify
 				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "email EX" : "自己的邮箱"}
+				 成功：json{"code" : "200" , "msg" : "success" , "id" : "你的id" , "uid" : "你的uid" , "email" : "你的email"}
 				 失败：json{"code" : "404", "msg" : "fail"}
 				 作用：获取修改密码页面数据
 		 
 	9) public Result sendEmailForModify(String email)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getCodeForModify
-				 参数：email="xxxx"
-				 如：域名/pdsu_softwaregroup_scs/user/getCodeForModify?email="222@qq.com"
+		 请求路径：域名/pdsu_softwaregroup_scs/user/getcodeformodify
+				 参数：email=?
+				 如：域名/pdsu_softwaregroup_scs/user/getcodeformodify?email=222@qq.com
 				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "token EX" : "xxxx"}
-				 失败：json{"code" : "404", "msg" : "fail" , "EX" : "未知错误"}
+				 成功：json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：获取验证码
 		
 	10) public Result modifyBefore(String token, String code)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/modifyBefore
-				 参数：token="xxxx"&code="xxxx"
-				 如：域名/pdsu_softwaregroup_scs/user/modifyBefore?token="2222"&code="2222"
+		 请求路径：域名/pdsu_softwaregroup_scs/user/modifybefore
+				 参数：token=?&code=?
+				 如：域名/pdsu_softwaregroup_scs/user/modifybBefore?token=2222&code=2222
 				 返回JSON为：
 				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "token EX" : "验证码已过期" , "code EX" : "验证码错误"
-				 , "EX" : "未知错误"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：验证码验证
 		 
 	11) public Result modifyForPassword(String password)
 		 请求路径：域名/pdsu_softwaregroup_scs/user/modify
-				 参数：password="xxxx"
-				 如：域名/pdsu_softwaregroup_scs/user/modify?password="12345"
+				 参数：password=?
+				 如：域名/pdsu_softwaregroup_scs/user/modify?password=12345
 				 返回JSON为：
 				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "uid EX" : "修改失败" , "EX" : "未知错误"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：修改密码
 		 
-	12) public Result like(Integer uid)
+	12) public Result like(Integer uid) //要用formdate传递参数
 		请求路径: 域名/pdsu_softwaregroup_scs/blob/like
 				参数: uid=?
 				如: 域名/pdsu_softwaregroup_scs/blob/like?uid=2
-				返回JSON为: json{"code" : "200/404", "msg" : "success/fail"}
+				返回JSON为: 
+				成功：json{"code" : "200", "msg" : "success"}
+				失败：json{"code" : "404", "msg" : "fail"}
 				作用: 处理用户关注请求
 
 3: FileHandler API相关
@@ -226,30 +227,26 @@
 	@RequestParam("file")
 	MultipartFile file, String title, String description)
 		请求路径：域名/pdsu_softwaregroup_scs/file/upload
-				参数：file=?&title="xxxx"&description="xxxx"
-				如：域名/pdsu_softwaregroup_scs/file/upload?file=?&title="xxxx"&description="xxxx"
+				参数：file=?&title=?&description=?
+				如：域名/pdsu_softwaregroup_scs/file/upload?file=xxxx&title=xxxx&description=xxxx
 				返回JSON为：
 				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "web EX" : "网络异常, 请稍候重试"
-				  , "file EX" : "无法上传同名资源, 请修改名称" , "EX" : "未知原因"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：上传文件
 				 
 	2) public void getDownload(Integer uid, String title, HttpServletResponse response)
 		请求路径：域名/pdsu_softwaregroup_scs/file/download
-				参数：uid=?&title="xxxx"&response=?
-				如：域名/pdsu_softwaregroup_scs/file/download?uid=?&title="xxxx"&response=?
-				返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail"}
+				参数：uid=?&title=?
+				如：域名/pdsu_softwaregroup_scs/file/download?uid=2&title=xxx
 				 作用：下载文件
 			 
 4.SearchHandler API相关
 	1)public Result searchByText(String text)
 		请求路径：域名/pdsu_softwaregroup_scs/search
-				参数：text="xxxx"
-				如：域名/pdsu_softwaregroup_scs/search?text="xxxx"
+				参数：text=?
+				如：域名/pdsu_softwaregroup_scs/search?text=xxxx
 				返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "authorList" : "用户"  , " "  :  "博客信息" 
-				 , "fileList" : "文件"}
-				 失败：json{"code" : "404", "msg" : "fail" , "web EX" : "网络异常, 请稍候重试"}
+				 成功：json{"code" : "200" , "msg" : "success" , "authorList" : "用户信息"  ,  " blobList"  :  "博客信息" 
+				 , "fileList" : "文件信息"}
+				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
 				 作用：搜索相关

@@ -86,7 +86,7 @@ public class WebHanlder {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/loginAjax")
+	@RequestMapping("/loginajax")
 	@CrossOrigin
 	public Result loginAjax(String uid, String password, String hit, String code, 
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
@@ -156,7 +156,7 @@ public class WebHanlder {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/getCodeForLogin")
+	@RequestMapping("/getcodeforlogin")
 	@CrossOrigin
 	public Result getCode(){
 		try {
@@ -186,7 +186,7 @@ public class WebHanlder {
 	 * @param name  前端输入网名
 	 * @return
 	 */
-	@RequestMapping("/getCodeForApply")
+	@RequestMapping("/getcodeforapply")
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) {
@@ -225,7 +225,7 @@ public class WebHanlder {
 	 * @param code  前端输入验证码
 	 * @return json字符串
 	 */
-	@RequestMapping("/applyNumber")
+	@RequestMapping("/applynumber")
 	@ResponseBody
 	@CrossOrigin
 	public Result applyforAccountNumber(UserInformation user, String email, String token, String code) {
@@ -274,7 +274,7 @@ public class WebHanlder {
 	 * @param email
 	 * @return
 	 */
-	@RequestMapping("/inputUid")
+	@RequestMapping("/inputuid")
 	@ResponseBody
 	@CrossOrigin
 	public Result inputEmail(Integer uid) {
@@ -300,7 +300,7 @@ public class WebHanlder {
 	 * @param email  前端传入
 	 * @return
 	 */
-	@RequestMapping("/getCodeForRetrieve")
+	@RequestMapping("/getcodeforretrieve")
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailForRetrieve(String email) {
@@ -363,7 +363,7 @@ public class WebHanlder {
 	 * 获取修改密码页面数据
 	 * @return
 	 */
-	@RequestMapping("/getModify")
+	@RequestMapping("/getmodify")
 	@ResponseBody
 	@CrossOrigin
 	public Result getModify() {
@@ -383,7 +383,7 @@ public class WebHanlder {
 	 * @param email 前端获取 
 	 * @return
 	 */
-	@RequestMapping("/getCodeForModify")
+	@RequestMapping("/getcodeformodify")
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailForModify(String email) {
@@ -411,7 +411,7 @@ public class WebHanlder {
 	 * @param code  前端输入验证码
 	 * @return
 	 */
-	@RequestMapping("/modifyBefore")
+	@RequestMapping("/modifybefore")
 	@ResponseBody
 	@CrossOrigin
 	public Result modifyBefore(String token, String code) {
