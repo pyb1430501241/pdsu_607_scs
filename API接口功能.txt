@@ -1,3 +1,8 @@
+/**
+ * 
+ * @author bymio
+ */
+
 0: 数据相关
 	1) web的 json 对应 json{"id" : "xx", "title" : "标题", "uid" : "作者学号", "contype", "投稿类型"
 		, "subTime" : "投稿时间" , "webData" : "null", "webDataString" : "网页信息"}
@@ -238,3 +243,13 @@
 				 失败：json{"code" : "404", "msg" : "fail"}
 				 作用：下载文件
 			 
+4.SearchHandler API相关
+	1)public Result searchByText(String text)
+		请求路径：域名/pdsu_softwaregroup_scs/search
+				参数：text="xxxx"
+				如：域名/pdsu_softwaregroup_scs/search?text="xxxx"
+				返回JSON为：
+				 成功：json{"code" : "200" , "msg" : "success" , "authorList" : "用户"  , " "  :  "博客信息" 
+				 , "fileList" : "文件"}
+				 失败：json{"code" : "404", "msg" : "fail" , "web EX" : "网络异常, 请稍候重试"}
+				 作用：搜索相关
