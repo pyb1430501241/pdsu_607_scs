@@ -21,6 +21,7 @@ import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
@@ -77,7 +78,7 @@ public class BlobHandler {
 	 */
 	@Autowired
 	private MyCollectionService myConllectionService;
-
+	
 	private static final String EX = "exception";
 	
 	/**
@@ -117,7 +118,7 @@ public class BlobHandler {
 		try {
 			//获取按时间排序的投稿
 			List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
-			//根据投稿的投稿人uid获取这些投稿人的信息
+			//根据投稿的投稿人 uid 获取这些投稿人的信息
 			List<Integer> uids = new ArrayList<Integer>();
 			List<Integer> webids = new ArrayList<Integer>();
 			for(WebInformation w : webList) {

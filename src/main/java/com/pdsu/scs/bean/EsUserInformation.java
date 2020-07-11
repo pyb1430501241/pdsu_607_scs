@@ -59,8 +59,13 @@ public class EsUserInformation {
 
 	@Override
 	public String toString() {
-		return "EsUserInformation [uid=" + uid + ", username=" + username + ", imgpath=" + imgpath + ", blobnum="
-				+ blobnum + ", likenum=" + likenum + "]";
+		return "{\r\n" + 
+				"  \"uid\" : " + uid + ",\r\n" + 
+				"  \"username\" : \"" + username + "\",\r\n" + 
+				"  \"imgpath\" : \"" + imgpath + "\",\r\n" + 
+				"  \"blobnum\" : " + blobnum + ",\r\n" + 
+				"  \"likenum\" : " + likenum + "\r\n" + 
+				"}";
 	}
 
 	public EsUserInformation(Integer uid, Integer blobnum, String imgpath, Integer likenum, String username) {

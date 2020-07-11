@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.WebFile;
-import com.pdsu.scs.exception.web.file.FileException;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
 import com.pdsu.scs.service.WebFileService;
 import com.pdsu.scs.utils.HashUtils;
@@ -41,12 +41,12 @@ public class FileHandler {
 	/**
 	 * 文件上传地址
 	 */
-	private static final String path = "pdsu/web/file/";
+	private static final String FILEPATH = "pdsu/web/file/";
 	
 	private static final String EX = "exception";
 	
 	static {
-		File file = new File(path);
+		File file = new File(FILEPATH);
 		if(file.exists()) {
 			file.mkdirs();
 		}
@@ -85,9 +85,9 @@ public class FileHandler {
 			byte [] s = file.getBytes();
 			String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
 			log.info("文件名为: " + name);
-			FileUtils.writeByteArrayToFile(new File(path + name), s);
+			FileUtils.writeByteArrayToFile(new File(FILEPATH + name), s);
 			log.info("文件写入成功, 开始在服务器保存地址");
-			boolean b = webFileService.insert(new WebFile(uid, title, name, SimpleUtils.getSimpleDateSecond()));
+			boolean b = webFileService.insert(new WebFile(uid, title, description, name, SimpleUtils.getSimpleDateSecond()));
 			if(b) {
 				log.info("上传成功");
 				return Result.success();
@@ -98,7 +98,10 @@ public class FileHandler {
 		} catch (UidAndTItleRepetitionException e) {
 			log.info("用户: " + uid + ", 上传资源: " + title + " 失败, 原因为: " + e.getMessage());
 			return Result.fail().add(EX, "无法上传同名资源, 请修改名称");
-		} catch (Exception e) {
+		} catch (InsertException e) {
+			log.error("上传失败, 原因为: " + e.getMessage());
+			return Result.fail().add(EX, "网络异常, 请稍候重试");
+		}catch (Exception e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
 			return Result.fail().add(EX, "未知原因");
 		}
@@ -121,7 +124,7 @@ public class FileHandler {
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String name = webfile.getFilePath();
-			String url = path + name;
+			String url = FILEPATH + name;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
 			String filename = title + SimpleUtils.getSuffixName(name);

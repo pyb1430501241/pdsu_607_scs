@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.EsUserInformation;
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.VisitInformationExample;
@@ -14,7 +16,9 @@ import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.dao.VisitInformationMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
+import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.es.UpdateException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.VisitInformationService;
 
@@ -35,6 +39,8 @@ public class VisitInformationImpl implements VisitInformationService {
 	@Autowired
 	private UserInformationMapper userInformationMapper;
 	
+	@Autowired
+	private EsDao esDao;
 	
 	/**
 	 * 根据网页的ID集合获取这些文章的访问量
@@ -69,6 +75,7 @@ public class VisitInformationImpl implements VisitInformationService {
 
 	/**
 	 * 插入一次访问记录
+	 * @throws UpdateException 
 	 */
 	@Override
 	public boolean insert(VisitInformation visit) {

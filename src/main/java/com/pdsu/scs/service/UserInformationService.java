@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.exception.web.DeleteInforException;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 
@@ -15,7 +16,7 @@ import com.pdsu.scs.exception.web.user.UidRepetitionException;
 public interface UserInformationService {
 	
 	//增加用户
-	public boolean inset(UserInformation information) throws UidRepetitionException;
+	public boolean inset(UserInformation information) throws UidRepetitionException, InsertException;
 	
 	//根据学号删除用户
 	public boolean deleteByUid(Integer uid) throws NotFoundUidException, DeleteInforException;
@@ -37,5 +38,7 @@ public interface UserInformationService {
 	
 	//修改密码
 	public boolean ModifyThePassword(Integer uid, String password);
+
+	public int countByUserName(String username);
 	
 }

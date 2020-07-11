@@ -39,7 +39,11 @@ public class EsBlobInformation {
 
 	@Override
 	public String toString() {
-		return "EsBlobInformation [webid=" + webid + ", title=" + title + ", description=" + description + "]";
+		return "{\r\n" + 
+				"  \"webid\" : " + webid + ",\r\n" + 
+				"  \"title\" : \"" + title + "\",\r\n" + 
+				"  \"description\" : \"" + description + "\"\r\n" + 
+				"}";
 	}
 
 	public EsBlobInformation(Integer webid, String description, String title) {

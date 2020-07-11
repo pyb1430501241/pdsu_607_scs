@@ -31,4 +31,6 @@ public interface UserInformationMapper {
 	List<UserInformation> selectUsersByUids(@Param("uids")List<Integer> uids);
 
 	List<UserInformation> selectUsersByUidsWithImage(List<Integer> uids);
+	
+	UserInformation selectUserByUid(Integer uid);
 }

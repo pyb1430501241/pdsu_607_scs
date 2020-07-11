@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.MyCollectionExample;
 import com.pdsu.scs.bean.MyEmailExample;
 import com.pdsu.scs.bean.MyImageExample;
@@ -26,7 +27,9 @@ import com.pdsu.scs.dao.VisitInformationMapper;
 import com.pdsu.scs.dao.WebFileMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
+import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.DeleteInforException;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.UserInformationService;
@@ -67,12 +70,16 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Autowired
 	private WebInformationMapper webInformationMapper;
 	
+	@Autowired
+	private EsDao esDao;
+	
 	/**
 	 * 插入一个用户信息
 	 * @throws UidRepetitionException 
+	 * @throws InsertException 
 	 */
 	@Override
-	public boolean inset(UserInformation information) throws UidRepetitionException {
+	public boolean inset(UserInformation information) throws UidRepetitionException, InsertException {
 		Integer uid = information.getUid();
 		if(countByUid(uid) != 0) {
 			throw new UidRepetitionException("学号不可重复");
@@ -81,7 +88,10 @@ public class UserInformationServiceImpl implements UserInformationService {
 		password = HashUtils.getPasswordHash(uid, password);
 		information.setPassword(password);
 		if(userInformationMapper.insertSelective(information) > 0) {
-			return true;
+			Integer id = information.getId();
+			EsUserInformation user = new EsUserInformation(information.getUid(),
+					0, information.getImgpath(), 0, information.getUsername());
+			return esDao.insert(user, id);
 		}
 		return false;
 	}
@@ -301,5 +311,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 		criteria.andUidEqualTo(uid);
 		int updateByExample = userInformationMapper.updateByExample(user, example);
 		return updateByExample == 0 ? false : true;
+	}
+
+	@Override
+	public int countByUserName(String username) {
+		UserInformationExample example = new UserInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUsernameEqualTo(username);
+		return (int) userInformationMapper.countByExample(example);
 	}
 }

@@ -49,7 +49,11 @@ public class EsFileInformation {
 
 	@Override
 	public String toString() {
-		return "EsFileInformation [fileid=" + fileid + ", title=" + title + ", description=" + description + "]";
+		return "{\r\n" + 
+				"  \"fileid\" : " + fileid + ",\r\n" + 
+				"  \"title\" : \"" + title + "\",\r\n" + 
+				"  \"description\" : \"" + description + "\"\r\n" + 
+				"}";
 	}
 	
 }

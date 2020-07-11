@@ -2,6 +2,7 @@ package com.pdsu.scs.handler;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -21,12 +22,18 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.pdsu.scs.bean.MyEmail;
+import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.exception.web.es.InsertException;
+import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
+import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.MyEmailService;
+import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.MyLikeService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.CodeUtils;
@@ -54,6 +61,11 @@ public class WebHanlder {
 	
 	@Autowired
 	private MyLikeService myLikeService;
+	
+	@Autowired
+	private MyImageService myImageService;
+	
+	private static final String FILEPATH = "pdsu/web/img/";
 	
 	/**
 	 * 日志
@@ -246,6 +258,9 @@ public class WebHanlder {
 			if(myEmailService.countByEmail(email) != 0) {
 				return Result.fail().add(EX, "此邮箱已被绑定, 忘记密码?");
 			}
+			if(userInformationService.countByUserName(user.getUsername()) != 0) {
+				return Result.fail().add(EX, "用户名已存在");
+			}
 			//默认账号为正常状态
 			user.setAccountStatus(1);
 			//设置申请时间
@@ -260,8 +275,10 @@ public class WebHanlder {
 				log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
 				return Result.fail().add(EX, "申请失败");
 			}
-		}catch (Exception e) {
-			log.error("申请账号: " + user.getUid() + "失败, 服务器开小差了");
+		} catch (UidRepetitionException e) {
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			log.error(e.getMessage());
 			return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
 		}
 	}
@@ -442,8 +459,9 @@ public class WebHanlder {
 	@CrossOrigin
 	@ResponseBody
 	public Result modifyForPassword(String password) {
-		Integer uid = ShiroUtils.getUserInformation().getUid();
+		Integer uid = null;
 		try {
+			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("账号: " + uid + "开始修改密码");
 			boolean flag = userInformationService.ModifyThePassword(
 					ShiroUtils.getUserInformation().getUid(), password);
@@ -470,8 +488,9 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result like(Integer uid) {
 		//从session里获取当前登录的人的学号
-		Integer likeId = ShiroUtils.getUserInformation().getUid();
+		Integer likeId = null;
 		try {
+			likeId = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
 			//插入记录
 			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
@@ -479,11 +498,37 @@ public class WebHanlder {
 				log.info("用户: " + likeId + ", 关注: " + uid + "成功");
 				return Result.success();
 			}
-			log.info("用户: " + likeId + ", 关注: " + uid + "失败");
+			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: 数据库连接失败");
 			return Result.fail();
-		}catch (Exception e) {
+		} catch (UidAndLikeIdRepetitionException e) {
+			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
 			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EX, "连接服务器失败, 请稍后重试");
 		}
+	}
+	
+	@RequestMapping("/delike")
+	@ResponseBody
+	@CrossOrigin
+	public Result delike(Integer uid) {
+		return Result.fail();
+	}
+	
+	static {
+		File file = new File(FILEPATH);
+		if(file.exists()) {
+			file.mkdirs();
+		}
+	}
+	
+	@RequestMapping("/updateimage")
+	@ResponseBody
+	@CrossOrigin
+	public Result updateImage(@RequestParam("img")MultipartFile img) {
+		UserInformation user = ShiroUtils.getUserInformation();
+		
+		return Result.fail();
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.es.UpdateException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 
 /**

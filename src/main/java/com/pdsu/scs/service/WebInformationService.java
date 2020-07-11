@@ -4,10 +4,9 @@ import java.util.List;
 
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.exception.web.DeleteInforException;
-import com.pdsu.scs.exception.web.WebException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
-import com.sun.swing.internal.plaf.basic.resources.basic;
 
 /**
  * 与博客网页相关的方法
@@ -21,7 +20,7 @@ public interface WebInformationService {
 	 * @param information
 	 * @return  是否插入成功
 	 */
-	public boolean insert(WebInformation information);
+	public boolean insert(WebInformation information) throws InsertException;
 	
 	/**
 	 * 根据网页id删除一个网页

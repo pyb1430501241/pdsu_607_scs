@@ -2,13 +2,18 @@ package com.pdsu.scs.service.impl;
 
 import java.util.List;
 
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.EsFileInformation;
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.bean.WebFileExample;
 import com.pdsu.scs.bean.WebFileExample.Criteria;
 import com.pdsu.scs.dao.WebFileMapper;
+import com.pdsu.scs.es.dao.EsDao;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.FileException;
 import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
 import com.pdsu.scs.service.WebFileService;
@@ -19,19 +24,28 @@ public class WebFileServiceImpl implements WebFileService{
 	@Autowired
 	private WebFileMapper webFileMapper;
 	
+	@Autowired
+	private EsDao esDao;
+	
 	/**
 	 * 插入一个文件记录
 	 * @param webFile
 	 * @return  true false
 	 * @throws UidAndTItleRepetitionException 
+	 * @throws InsertException 
 	 */
 	@Override
-	public boolean insert(WebFile webFile) throws UidAndTItleRepetitionException {
+	public boolean insert(WebFile webFile) throws UidAndTItleRepetitionException, InsertException {
 		if(countByUidAndTitle(webFile.getUid(), webFile.getTitle())) {
 			throw new UidAndTItleRepetitionException("用户无法重复上传同名文件");
 		}
 		int t = webFileMapper.insertSelective(webFile);
-		return t > 0 ? true : false;
+		if(t > 0) {
+			EsFileInformation file = new EsFileInformation(webFile.getDescription(), 
+					webFile.getTitle(), webFile.getId());
+			return esDao.insert(file, webFile.getId());
+		}
+		return false;
 	}
 
 	/**

@@ -267,4 +267,12 @@
 				</foreach>  				
   			</where>
   </select>
+  
+  <select id="selectUserByUserName" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"></include>
+  		from db_user_information
+  			<where>
+  				username = #{username}
+  			</where>
+  </select>
 </mapper>

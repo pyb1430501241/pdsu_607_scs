@@ -6,20 +6,23 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.EsBlobInformation;
 import com.pdsu.scs.bean.MyCollectionExample;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.VisitInformationExample;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
-import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
+import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.dao.MyCollectionMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.dao.VisitInformationMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
+import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.WebInformationService;
 
@@ -46,13 +49,18 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Autowired
 	private VisitInformationMapper visitInformationMapper;
 	
+	@Autowired
+	private EsDao esDao;
+	
 	/*
 	 * 插入一个网页信息
 	 */
 	@Override
-	public boolean insert(WebInformation information) {
+	public boolean insert(WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
-			return true;
+			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
+					information.getWebDataString().substring(0, 30), information.getTitle());
+			return esDao.insert(blob, information.getId());
 		}
 		return false;
 	}

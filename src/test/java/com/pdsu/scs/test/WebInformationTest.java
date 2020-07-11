@@ -7,6 +7,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.utils.SimpleUtils;
 
@@ -36,7 +37,7 @@ public class WebInformationTest {
 	}
 	
 	@Test
-	public void addWebInformationTest() {
+	public void addWebInformationTest() throws InsertException {
 		WebInformation information = new WebInformation();
 		information.setSubTime(SimpleUtils.getSimpleDateSecond());
 		information.setTitle("Java字符串");

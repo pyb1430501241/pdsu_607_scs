@@ -1,6 +1,7 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.WebFile;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.FileException;
 import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
 
@@ -16,7 +17,7 @@ public interface WebFileService {
 	 * @param webFile
 	 * @return  true false
 	 */
-	public boolean insert(WebFile webFile) throws UidAndTItleRepetitionException;
+	public boolean insert(WebFile webFile) throws UidAndTItleRepetitionException, InsertException;
 
 	/**
 	 * 查询所有文件

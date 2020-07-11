@@ -83,14 +83,18 @@ public class SimpleUtils {
 	public static List<?> getObjectBySearchHit(SearchHit [] searchHits, Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "").toString();
 		Constructor<?> constructor = null;
-		if(name.equals(USERINFORMATION)) {
-			constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, String.class, Integer.class, String.class);
-		}else if(name.equals(BLOBINFORMATION)) {
-			constructor = clazz.getDeclaredConstructor(Integer.class, String.class, String.class);
-		}else if(name.equals(FILEINFORMATION)) {
-			constructor = clazz.getDeclaredConstructor(String.class, String.class, Integer.class);
-		}else {
-			return null;
+		switch (name) {
+			case USERINFORMATION:
+				constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, String.class, Integer.class, String.class);
+				break;
+			case BLOBINFORMATION:
+				constructor = clazz.getDeclaredConstructor(Integer.class, String.class, String.class);
+				break;	
+			case FILEINFORMATION:
+				constructor = clazz.getDeclaredConstructor(String.class, String.class, Integer.class);
+				break;	
+			default:
+				return null;
 		}
 		constructor.setAccessible(true);
 		return getSearchHitByList(searchHits, constructor);
