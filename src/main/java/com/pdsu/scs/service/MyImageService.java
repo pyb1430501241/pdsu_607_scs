@@ -19,5 +19,9 @@ public interface MyImageService {
 	public MyImage selectImagePathByUid(Integer uid) throws NotFoundUidException;
 	
 	public boolean countByUid(Integer uid);
+
+	public boolean insert(MyImage myImage) throws NotFoundUidException;
+
+	public boolean update(MyImage myImage) throws NotFoundUidException;
 	
 }

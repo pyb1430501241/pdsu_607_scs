@@ -103,7 +103,7 @@ public class FileHandler {
 			return Result.fail().add(EX, "网络异常, 请稍候重试");
 		}catch (Exception e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "未知原因");
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	

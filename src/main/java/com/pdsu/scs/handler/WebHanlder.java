@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
@@ -29,7 +30,6 @@ import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.MyEmailService;
@@ -269,6 +269,7 @@ public class WebHanlder {
 			user.setImgpath("01.png");
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
+				myImageService.insert(new MyImage(user.getUid(), "01.png"));
 				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 				return Result.success().add(EX, "申请成功");
 			}else {
@@ -527,8 +528,23 @@ public class WebHanlder {
 	@ResponseBody
 	@CrossOrigin
 	public Result updateImage(@RequestParam("img")MultipartFile img) {
-		UserInformation user = ShiroUtils.getUserInformation();
-		
-		return Result.fail();
+		UserInformation user = null;
+		try{
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + " 更换头像开始");
+			String name = HashUtils.getFileNameForHash(user.getUid()+"") + SimpleUtils.getSuffixName(img.getOriginalFilename());
+			FileUtils.writeByteArrayToFile(new File(FILEPATH + name), img.getBytes());
+			log.info("用户: " + user.getUid() + " 更换头像成功, 开始写入数据库地址");
+			boolean b = myImageService.update(new MyImage(user.getUid(), name));
+			if(b) {
+				log.info("用户: " + user.getUid() + " 更换头像成功");
+				return Result.success();
+			} else {
+				log.error("写入数据库失败!");
+				return Result.fail().add(EX, "网络异常, 请稍后重试");
+			}
+		}catch (Exception e) {
+			return Result.fail().add(EX, "未定义类型错误"); 
+		}		
 	}
 }

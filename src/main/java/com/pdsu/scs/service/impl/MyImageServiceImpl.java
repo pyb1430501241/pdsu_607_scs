@@ -65,4 +65,23 @@ public class MyImageServiceImpl implements MyImageService {
 		criteria.andUidEqualTo(uid);
 		return userInformationMapper.countByExample(example) > 0 ? true : false;
 	}
+
+	@Override
+	public boolean insert(MyImage myImage) throws NotFoundUidException {
+		if(!countByUid(myImage.getUid())) {
+			throw new NotFoundUidException("该用户不存在");
+		}
+		return myImageMapper.insertSelective(myImage) == 0 ? false : true;
+	}
+
+	@Override
+	public boolean update(MyImage myImage) throws NotFoundUidException {
+		if(!countByUid(myImage.getUid())) {
+			throw new NotFoundUidException("该用户不存在");
+		}
+		MyImageExample example = new MyImageExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(myImage.getUid());
+		return myImageMapper.updateByExample(myImage, example) == 0 ? false : true;
+	}
 }
