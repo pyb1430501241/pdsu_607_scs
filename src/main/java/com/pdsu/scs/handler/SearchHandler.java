@@ -52,7 +52,7 @@ public class SearchHandler {
 			List<EsBlobInformation> blobs = esBlobService.queryByText(text);
 			List<EsFileInformation> files = esFileService.queryByText(text);
 			log.info("查询成功");
-			return Result.success().add("authorList", users).add("	", blobs)
+			return Result.success().add("authorList", users).add("blobList", blobs)
 					.add("fileList", files);
 		} catch (QueryException e) {
 			log.error(e.getMessage());
