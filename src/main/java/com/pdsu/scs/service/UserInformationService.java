@@ -37,8 +37,9 @@ public interface UserInformationService {
 	public int countByUid(Integer uid);
 	
 	//修改密码
-	public boolean ModifyThePassword(Integer uid, String password);
+	public boolean modifyThePassword(Integer uid, String password);
 
+	//查询用户名是否存在
 	public int countByUserName(String username);
 	
 }

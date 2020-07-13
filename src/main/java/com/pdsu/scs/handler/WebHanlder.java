@@ -1,10 +1,12 @@
 package com.pdsu.scs.handler;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
@@ -108,9 +110,9 @@ public class WebHanlder {
 			return Result.fail().add(EX, "验证码已失效, 请刷新后重试");
 		}
 		//从缓存中获取验证码
-		String ss = (String) cache.get(hit).get();
+		String ss = ((String) cache.get(hit).get()).toLowerCase();
 		log.info("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
-		if(!ss.equals(code)) {
+		if(!ss.equals(code.toLowerCase())) {
 			log.info("验证码错误");
 			return Result.fail().add(EX, "验证码错误");
 		}
@@ -145,7 +147,6 @@ public class WebHanlder {
 				}
 				log.info("账号: " + uid + "登录成功");
 				return Result.success().add(EX, "登录成功")
-						.add("sessionId", subject.getSession().getId())
 						.add("user", uu);
 			}catch (IncorrectCredentialsException e) {
 				log.info("账号: " + uid + "密码错误");
@@ -170,25 +171,31 @@ public class WebHanlder {
 	@ResponseBody
 	@RequestMapping("/getcodeforlogin")
 	@CrossOrigin
-	public Result getCode(){
+	public Result getCode(HttpServletRequest request){
 		try {
 			log.info("获取验证码开始");
 			if(cache == null) {
+				System.setProperty("java.awt.headless", "true");
 				cache = cacheManager.getCache("code");
 			}
-			CodeUtils utils = new CodeUtils();
-			BufferedImage image = utils.getImage();
+			String verifyCode = CodeUtils.generateVerifyCode(4);
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			CodeUtils.output(image, out);
+			CodeUtils.outputImage(100, 30, out, verifyCode);
 			String base64 = Base64.encodeToString(out.toByteArray());
 			String src = "data:image/png;base64," + base64;
-			String token = UUID.randomUUID().toString();
-			cache.put(token, utils.getText());
-			log.info("获取成功, 验证码为: " + utils.getText());
-			return Result.success().add("img", src).add("token", token);
-		} catch (IOException e) {
-			log.error("获取验证码失败! 错误信息: " + e.getMessage());
-			return Result.fail();
+			String token = UUID.randomUUID().toString().replaceAll("[-]", "");
+			cache.put(token, verifyCode);
+			log.info("获取成功, 验证码为: " + verifyCode);
+			return Result.success().add("Access-Token", request.getSession().getId())
+					.add("token", token)
+					.add("img", src);
+		} catch (Exception e) {
+			if(e instanceof InvocationTargetException) {
+				log.error(((InvocationTargetException)e).getTargetException().getMessage());
+			}else {
+				log.info("获取验证码失败, 原因: " + e.getMessage());
+			}
+			return Result.fail().add(EX, "获取验证码失败, 未知原因");
 		}
 	}
 	
@@ -224,7 +231,7 @@ public class WebHanlder {
 			log.info("发送成功, 验证码为: " + text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
-			log.error("邮箱: " + email + " 不存在");
+			log.error("邮箱: " + email + " 不存在, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "邮箱地址不正确");
 		}
 	}
@@ -271,15 +278,16 @@ public class WebHanlder {
 			if(flag) {
 				myImageService.insert(new MyImage(user.getUid(), "01.png"));
 				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
-				return Result.success().add(EX, "申请成功");
+				return Result.success();
 			}else {
 				log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
 				return Result.fail().add(EX, "申请失败");
 			}
 		} catch (UidRepetitionException e) {
+			log.info("该用户已存在, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			log.error("申请账号失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
 		}
 	}
@@ -308,7 +316,7 @@ public class WebHanlder {
 				return Result.fail().add(EX, "账号不存在, 是否申请?");
 			}
 		}catch (Exception e) {
-			log.error("账号: " + uid + "找回密码时服务器开小差了");
+			log.error("账号: " + uid + "找回密码时服务器开小差了, 原因: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -330,7 +338,7 @@ public class WebHanlder {
 					userInformationService.selectByUid(
 							myEmailService.selectMyEmailByEmail(email).getUid()).getUsername());
 			String text = utils.getText();
-			String token = UUID.randomUUID().toString();
+			String token = UUID.randomUUID().toString().replaceAll("[-]", "");
 			if(cache == null) {
 				cache = cacheManager.getCache("code");
 			}
@@ -338,7 +346,7 @@ public class WebHanlder {
 			log.info("发送验证码成功, 验证码为: " + text);
 			return Result.success().add("token", token);
 		}catch (Exception e) {
-			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了");
+			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了, 原因: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -362,14 +370,14 @@ public class WebHanlder {
 			if(!ss.equals(code)) {
 				return Result.fail().add(EX, "验证码错误"); 
 			}
-			boolean b = userInformationService.ModifyThePassword(uid, password);
+			boolean b = userInformationService.modifyThePassword(uid, password);
 			if(!b) {
 				return Result.fail().add(EX, "密码找回失败, 请稍后重试");
 			}
 			log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
 			return Result.success().add(EX, "找回成功");
 		}catch (Exception e) {
-			log.error("账号: " + uid + "找回失败, 失败原因未知");
+			log.error("账号: " + uid + "找回失败, 失败原因: " + e.getMessage());
 			return Result.fail().add(EX, "未知错误");
 		}
 	}
@@ -392,6 +400,7 @@ public class WebHanlder {
 			log.info("信息获取成功");
 			return Result.success().add("myEmail", myEmail);
 		}catch (Exception e) {
+			log.info("修改密码失败, 原因: " + e.getMessage());
 			return Result.fail();
 		}
 	}
@@ -412,7 +421,7 @@ public class WebHanlder {
 			if(cache == null) {
 				cache = cacheManager.getCache("code");
 			}
-			String token = UUID.randomUUID().toString();
+			String token = UUID.randomUUID().toString().replaceAll("[-]", "");
 			String text = utils.getText();
 			cache.put(token, text);
 			log.info("邮箱: " + email + "发送验证码成功, 验证码为: " + text);
@@ -464,7 +473,7 @@ public class WebHanlder {
 		try {
 			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("账号: " + uid + "开始修改密码");
-			boolean flag = userInformationService.ModifyThePassword(
+			boolean flag = userInformationService.modifyThePassword(
 					ShiroUtils.getUserInformation().getUid(), password);
 			if(!flag) {
 				log.info("账号: " + uid + " 修改密码失败");

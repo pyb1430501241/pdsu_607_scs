@@ -303,7 +303,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 修改密码
 	 */
 	@Override
-	public boolean ModifyThePassword(Integer uid, String password) {
+	public boolean modifyThePassword(Integer uid, String password) {
 		UserInformation user = selectByUid(uid);
 		user.setPassword(HashUtils.getPasswordHash(uid, password));
 		UserInformationExample example = new UserInformationExample();

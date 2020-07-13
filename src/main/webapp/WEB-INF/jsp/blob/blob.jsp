@@ -16,7 +16,7 @@
 			var t = ${id};
 			$.ajax({
 				type : "POST",
-				url  : "${APP_PATH}/blob/getBlob",
+				url  : "${APP_PATH}/blob/getblob",
 				data : "webid="+t,
 				success : function(result) {
 					console.log(result);

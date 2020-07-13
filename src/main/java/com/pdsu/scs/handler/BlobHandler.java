@@ -118,6 +118,10 @@ public class BlobHandler {
 		try {
 			//获取按时间排序的投稿
 			List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
+			if(webList == null || webList.size() == 0) {
+				log.info("首页没有数据");
+				return Result.accepted();
+			}
 			//根据投稿的投稿人 uid 获取这些投稿人的信息
 			List<Integer> uids = new ArrayList<Integer>();
 			List<Integer> webids = new ArrayList<Integer>();

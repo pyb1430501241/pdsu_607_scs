@@ -59,8 +59,20 @@ public class Result{
 		return result;
 	}
 	
+	public static Result accepted() {
+		Result result = new Result();
+		result.add("code", 202);
+		result.add("msg", "accepted");
+		return result;
+	}
+	
 	public Result add(String key, Object value) {
 		this.json.put(key, value);
 		return this;
+	}
+	
+	@Override
+	public String toString() {
+		return "Result [json=" + json + "]";
 	}
 }

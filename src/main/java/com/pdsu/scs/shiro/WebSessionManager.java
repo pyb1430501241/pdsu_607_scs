@@ -40,7 +40,6 @@ public class WebSessionManager extends DefaultWebSessionManager{
 		/**
 		 * 如果没有则调用父类方法
 		 */
-		log.warn("请求未带 Authorization!!!");
 		return super.getSessionId(request, response);
 	}
 }

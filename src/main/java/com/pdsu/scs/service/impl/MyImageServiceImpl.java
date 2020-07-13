@@ -37,6 +37,9 @@ public class MyImageServiceImpl implements MyImageService {
 				ids.add(id);
 			}
 		}
+		if(ids.size() == 0) {
+			return new ArrayList<MyImage>();
+		}
 		MyImageExample example = new MyImageExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidIn(ids);

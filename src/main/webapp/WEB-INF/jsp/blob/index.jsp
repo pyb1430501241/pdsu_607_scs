@@ -18,7 +18,7 @@
 		$(function() {
 			$.ajax({
 				type	: "POST",
-				url		: "${APP_PATH}/blob/getWebindex",
+				url		: "${APP_PATH}/blob/getwebindex",
 				success : function(result) {
 					console.log(result);
 					$.each(result.json.webList,function(index,web){
