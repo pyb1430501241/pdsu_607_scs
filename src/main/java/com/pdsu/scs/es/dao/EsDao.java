@@ -35,4 +35,6 @@ public interface EsDao {
 	
 	public boolean update(Object ob, Integer id) throws UpdateException;
 	
+	public Map<String, Object> queryByTableNameAndId(String str, Integer id) throws QueryException;
+	
 }

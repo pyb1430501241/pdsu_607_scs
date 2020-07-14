@@ -61,7 +61,6 @@ public class EsUserServiceImpl implements EsService<EsUserInformation>{
 			return (List<EsUserInformation>) SimpleUtils.getObjectBySearchHit(searchHits, EsUserInformation.class);
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
-			System.out.println(e.getMessage());
 			throw new QueryException("解析用户失败");
 		}
 	}

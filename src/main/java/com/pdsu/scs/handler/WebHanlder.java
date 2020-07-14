@@ -3,8 +3,6 @@ package com.pdsu.scs.handler;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Random;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 

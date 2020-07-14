@@ -79,16 +79,15 @@ public class SimpleUtils {
 	private static final String USERINFORMATION = "EsUserInformation";
 	private static final String BLOBINFORMATION = "EsBlobInformation";
 	private static final String FILEINFORMATION = "EsFileInformation";
+	
 	/**
-	 * 拼装 SearchHit 成对应的实体类
-	 * @throws SecurityException 
-	 * @throws NoSuchMethodException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * 获取该类的构造器
+	 * @param clazz
+	 * @return
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
 	 */
-	public static List<?> getObjectBySearchHit(SearchHit [] searchHits, Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private static Constructor<?> getConstructorByClass(Class<?> clazz) throws NoSuchMethodException, SecurityException{
 		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "").toString();
 		Constructor<?> constructor = null;
 		switch (name) {
@@ -105,24 +104,78 @@ public class SimpleUtils {
 				return null;
 		}
 		constructor.setAccessible(true);
-		return getSearchHitByList(searchHits, constructor);
+		return constructor;
 	}
 	
-	private static List<Object> getSearchHitByList(SearchHit [] searchHits, Constructor<?> constructor) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+	/**
+	 * 拼装 SearchHit 成对应的实体类
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 * @throws InvocationTargetException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 */
+	public static List<?> getObjectBySearchHit(SearchHit [] searchHits, Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		return getListBySearchHit(searchHits, getConstructorByClass(clazz));
+	}
+	
+	/**
+	 * 把数据封装成集合
+	 * @param searchHits
+	 * @param constructor
+	 * @return
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 */
+	private static List<Object> getListBySearchHit(SearchHit [] searchHits, Constructor<?> constructor) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
 		List<Object> list = new ArrayList<>();
 		for(SearchHit hit : searchHits) {
 			Map<String, Object> map = hit.getSourceAsMap();
-			Set<String> keySet = map.keySet();
-			Object [] objects = new Object[keySet.size()];
-			int i = 0;
-			for(String key : keySet) {
-				objects[i] = map.get(key);
-				i++;
-			}
-			Object object = constructor.newInstance(objects);
-			list.add(object);
+			list.add(getObjectByMap(map, constructor));
 		}
 		return list;
 	}
+	
+	/**
+	 * 根据构造器把 map 封装成对象
+	 * @param map
+	 * @param constructor
+	 * @return
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 */
+	private static Object getObjectByMap(Map<String, Object> map, Constructor<?> constructor) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		Set<String> keySet = map.keySet();
+		Object [] objects = new Object[keySet.size()];
+		int i = 0;
+		for(String key : keySet) {
+			objects[i] = map.get(key);
+			i++;
+		}
+		return constructor.newInstance(objects);
+	}
+	
+	/**
+	 * 根据类来拼装该类的对象
+	 * @param map
+	 * @param clazz
+	 * @return
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
+	public static Object getObjectByMapAndClass(Map<String, Object> map, Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+		return getObjectByMap(map, getConstructorByClass(clazz));
+	}
+	
+	
 	
 }

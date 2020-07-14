@@ -2,18 +2,23 @@ package com.pdsu.scs.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyImageExample;
 import com.pdsu.scs.bean.MyImageExample.Criteria;
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.dao.MyImageMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
+import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.MyImageService;
+import com.pdsu.scs.utils.SimpleUtils;
 
 /**
  * 
@@ -28,6 +33,9 @@ public class MyImageServiceImpl implements MyImageService {
 	
 	@Autowired
 	private UserInformationMapper userInformationMapper;
+	
+	@Autowired
+	private EsDao esDao;
 	
 	@Override
 	public List<MyImage> selectImagePathByUids(List<Integer> uids) {
@@ -85,6 +93,20 @@ public class MyImageServiceImpl implements MyImageService {
 		MyImageExample example = new MyImageExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(myImage.getUid());
-		return myImageMapper.updateByExample(myImage, example) == 0 ? false : true;
+		boolean b = myImageMapper.updateByExample(myImage, example) == 0 ? false : true;
+		if(b) {
+			new Thread(()->{
+				try {
+					UserInformation user = userInformationMapper.selectUserByUid(myImage.getUid());
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+							getObjectByMapAndClass(map, EsUserInformation.class);
+					esuser.setImgpath(myImage.getImagePath());
+					esDao.update(esuser, user.getId());
+				} catch (Exception e) {
+				}
+			}).start();
+		}
+		return b;
 	}
 }

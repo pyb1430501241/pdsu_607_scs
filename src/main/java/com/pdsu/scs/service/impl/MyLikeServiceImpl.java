@@ -1,23 +1,28 @@
 package com.pdsu.scs.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.MyLikeExample;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.MyLikeExample.Criteria;
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
+import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.scs.service.MyLikeService;
+import com.pdsu.scs.utils.SimpleUtils;
 
 /**
- * 
+ * 处理关注相关
  * @author 半梦
  *
  */
@@ -29,6 +34,9 @@ public class MyLikeServiceImpl implements MyLikeService{
 	
 	@Autowired
 	private UserInformationMapper userInformationMapper;
+	
+	@Autowired
+	private EsDao esDao;
 	
 	@Override
 	public long countByUid(Integer uid) throws NotFoundUidException {
@@ -58,6 +66,17 @@ public class MyLikeServiceImpl implements MyLikeService{
 			throw new UidAndLikeIdRepetitionException("你已关注此用户, 无法重复关注");
 		}
 		if(myLikeMapper.insertSelective(myLike) > 0) {
+			new Thread(()->{
+				try {
+					UserInformation user = userInformationMapper.selectUserByUid(myLike.getLikeId());
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+							getObjectByMapAndClass(map, EsUserInformation.class);
+					esuser.setLikenum(esuser.getLikenum()+1);
+					esDao.update(esuser, user.getId());
+				} catch (Exception e) {
+				}
+			}).start();
 			return true;
 		}
 		return false;
@@ -105,6 +124,20 @@ public class MyLikeServiceImpl implements MyLikeService{
 		Criteria criteria = example.createCriteria();
 		criteria.andLikeIdEqualTo(uid);
 		criteria.andUidEqualTo(likeId);
-		return myLikeMapper.deleteByExample(example) > 0 ? true : false;
+		boolean b = myLikeMapper.deleteByExample(example) > 0 ? true : false;
+		if(b) {
+			new Thread(()->{
+				try {
+					UserInformation user = userInformationMapper.selectUserByUid(uid);
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+							getObjectByMapAndClass(map, EsUserInformation.class);
+					esuser.setLikenum(esuser.getLikenum()-1);
+					esDao.update(esuser, user.getId());
+				} catch (Exception e) {
+				}
+			}).start();
+		}
+		return b;
 	}
 }
