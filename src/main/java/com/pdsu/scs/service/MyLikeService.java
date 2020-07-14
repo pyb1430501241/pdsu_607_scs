@@ -3,6 +3,7 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.MyLike;
+import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 
@@ -31,5 +32,9 @@ public interface MyLikeService {
 	//判断用户是否存在
 	public boolean isByUid(Integer uid);
 	
+	//根据 uid likeid 判断是否已关注
 	public boolean countByUidAndLikeId(Integer uid, Integer likeId);
+
+	//根据 uid likeid 删除关注记录
+	public boolean deleteByLikeIdAndUid(Integer likeId, Integer uid) throws NotFoundUidAndLikeIdException;
 }

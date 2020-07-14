@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,7 +76,7 @@ public class FileHandler {
 	 * @param description  文件描述
 	 * @return
 	 */
-	@RequestMapping("/upload")
+	@RequestMapping(value = "/upload", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result sendcomment(@RequestParam("file")MultipartFile file, String title, String description) {
@@ -114,13 +115,13 @@ public class FileHandler {
 	 * @param response
 	 */
 	@ResponseBody
-	@RequestMapping("/download")
+	@RequestMapping(value = "/download", method = RequestMethod.GET)
 	@CrossOrigin
 	public void getDownload(Integer uid, String title, HttpServletResponse response) {
-		log.info("开始下载文件, 下载人 UID 为: " + ShiroUtils.getUserInformation().getUid());
 		OutputStream out = null;
 		InputStream in = null;
 		try {
+			log.info("开始下载文件, 下载人 UID 为: " + ShiroUtils.getUserInformation().getUid());
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String name = webfile.getFilePath();

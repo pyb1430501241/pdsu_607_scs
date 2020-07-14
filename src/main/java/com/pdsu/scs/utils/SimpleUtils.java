@@ -21,10 +21,18 @@ import org.elasticsearch.search.SearchHit;
  */
 public class SimpleUtils {
 
+	/**
+	 * 返回当前时间
+	 * @return
+	 */
 	public static String getSimpleDate() {
 		return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 	}
 	
+	/**
+	 * 返回当前时间, 带时分秒
+	 * @return
+	 */
 	public static String getSimpleDateSecond() {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 	}

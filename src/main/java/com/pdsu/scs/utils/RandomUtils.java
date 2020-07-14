@@ -1,5 +1,7 @@
 package com.pdsu.scs.utils;
 
+import java.util.UUID;
+
 /**
  * 随机数生成工具
  * @author 半梦
@@ -7,6 +9,10 @@ package com.pdsu.scs.utils;
  */
 public class RandomUtils {
 
+	/**
+	 * 返回邮箱验证码
+	 * @return
+	 */
 	public static String getRandom() {
 		String random = "";
 		for(int i = 0;i < 6; i++) {
@@ -14,6 +20,14 @@ public class RandomUtils {
 			random += j;
 		}
 		return random;
+	}
+	
+	/**
+	 * 返回 uuid
+	 * @return
+	 */
+	public static String getUUID() {
+		return UUID.randomUUID().toString().replaceAll("[-]", "");
 	}
 	
 }

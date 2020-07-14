@@ -2,8 +2,8 @@ package com.pdsu.scs.handler;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +23,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +33,7 @@ import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.MyEmailService;
@@ -41,6 +43,7 @@ import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
 import com.pdsu.scs.utils.HashUtils;
+import com.pdsu.scs.utils.RandomUtils;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
@@ -85,9 +88,26 @@ public class WebHanlder {
 	 */
 	private Cache cache = null;
 	
-	@RequestMapping("/login")
-	public String login() {
-		return "login";
+	
+	/**
+	 * @return  用户的登录状态
+	 * 如登录, 返回用户信息
+	 * 反之返回提示语
+	 */
+	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
+	@ResponseBody
+	@CrossOrigin
+	public Result getloginstatus() {
+		try {
+			UserInformation user = ShiroUtils.getUserInformation();
+			if(user == null) {
+				return Result.fail().add(EX, "未登录");
+			}
+			return Result.success().add("user", user);
+		}catch (Exception e) {
+			log.error("原因: " + e.getMessage());
+			return Result.fail().add(EX, "未知错误, 请稍候重试");
+		}
 	}
 	
 	/**
@@ -100,7 +120,7 @@ public class WebHanlder {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/loginajax")
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@CrossOrigin
 	public Result loginAjax(String uid, String password, String hit, String code, 
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
@@ -116,6 +136,7 @@ public class WebHanlder {
 			log.info("验证码错误");
 			return Result.fail().add(EX, "验证码错误");
 		}
+		
 		/**
 		 * 如果未认证
 		 */
@@ -147,7 +168,8 @@ public class WebHanlder {
 				}
 				log.info("账号: " + uid + "登录成功");
 				return Result.success().add(EX, "登录成功")
-						.add("user", uu);
+						.add("user", uu)
+						.add("AccessToken", subject.getSession().getId());
 			}catch (IncorrectCredentialsException e) {
 				log.info("账号: " + uid + "密码错误");
 				return Result.fail().add(EX, "账号或密码错误");
@@ -169,7 +191,7 @@ public class WebHanlder {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/getcodeforlogin")
+	@RequestMapping(value = "/getcodeforlogin", method = RequestMethod.GET)
 	@CrossOrigin
 	public Result getCode(HttpServletRequest request){
 		try {
@@ -183,10 +205,10 @@ public class WebHanlder {
 			CodeUtils.outputImage(100, 30, out, verifyCode);
 			String base64 = Base64.encodeToString(out.toByteArray());
 			String src = "data:image/png;base64," + base64;
-			String token = UUID.randomUUID().toString().replaceAll("[-]", "");
+			String token = RandomUtils.getUUID();
 			cache.put(token, verifyCode);
 			log.info("获取成功, 验证码为: " + verifyCode);
-			return Result.success().add("Access-Token", request.getSession().getId())
+			return Result.success()
 					.add("token", token)
 					.add("img", src);
 		} catch (Exception e) {
@@ -205,7 +227,7 @@ public class WebHanlder {
 	 * @param name  前端输入网名
 	 * @return
 	 */
-	@RequestMapping("/getcodeforapply")
+	@RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) {
@@ -226,7 +248,7 @@ public class WebHanlder {
 			if(cache == null) {
 				cache = cacheManager.getCache("code");
 			}
-			String token = UUID.randomUUID().toString();
+			String token = RandomUtils.getUUID();
 			cache.put(token, text);
 			log.info("发送成功, 验证码为: " + text);
 			return Result.success().add("token", token);
@@ -244,7 +266,7 @@ public class WebHanlder {
 	 * @param code  前端输入验证码
 	 * @return json字符串
 	 */
-	@RequestMapping("/applynumber")
+	@RequestMapping(value = "/applynumber", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result applyforAccountNumber(UserInformation user, String email, String token, String code) {
@@ -293,17 +315,19 @@ public class WebHanlder {
 	}
 	
 	/**
-	 * 找回密码API集
+	 * 找回密码API集开始
+	 *	===============================================================================================
 	 */
+	
 	/**
 	 *  该API为用户输入账号验证此用户是否存在
 	 * @param email
 	 * @return
 	 */
-	@RequestMapping("/inputuid")
+	@RequestMapping(value = "/isexist", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result inputEmail(Integer uid) {
+	public Result getEmail(Integer uid) {
 		try {
 			log.info("开始进行找回密码验证账号是否存在");
 			int i = userInformationService.countByUid(uid);
@@ -317,7 +341,7 @@ public class WebHanlder {
 			}
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回密码时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	
@@ -326,7 +350,7 @@ public class WebHanlder {
 	 * @param email  前端传入
 	 * @return
 	 */
-	@RequestMapping("/getcodeforretrieve")
+	@RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailForRetrieve(String email) {
@@ -338,7 +362,7 @@ public class WebHanlder {
 					userInformationService.selectByUid(
 							myEmailService.selectMyEmailByEmail(email).getUid()).getUsername());
 			String text = utils.getText();
-			String token = UUID.randomUUID().toString().replaceAll("[-]", "");
+			String token = RandomUtils.getUUID();
 			if(cache == null) {
 				cache = cacheManager.getCache("code");
 			}
@@ -357,7 +381,7 @@ public class WebHanlder {
 	 * @param code
 	 * @return
 	 */
-	@RequestMapping("/retrieve")
+	@RequestMapping(value = "/retrieve", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result retrieveThePassword(Integer uid, String password,String token, String code) {
@@ -383,13 +407,21 @@ public class WebHanlder {
 	}
 	
 	/**
-	 * 修改密码 API集
+	 * 找回密码 api 结束
+	 * ===============================================================================================
+	 */
+	
+	
+	
+	/**
+	 * 修改密码 API 集
+	 * ===============================================================================================
 	 */
 	/**
 	 * 获取修改密码页面数据
 	 * @return
 	 */
-	@RequestMapping("/getmodify")
+	@RequestMapping(value = "/getmodify", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
 	public Result getModify() {
@@ -410,7 +442,7 @@ public class WebHanlder {
 	 * @param email 前端获取 
 	 * @return
 	 */
-	@RequestMapping("/getcodeformodify")
+	@RequestMapping(value = "/getcodeformodify", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailForModify(String email) {
@@ -421,7 +453,7 @@ public class WebHanlder {
 			if(cache == null) {
 				cache = cacheManager.getCache("code");
 			}
-			String token = UUID.randomUUID().toString().replaceAll("[-]", "");
+			String token = RandomUtils.getUUID();
 			String text = utils.getText();
 			cache.put(token, text);
 			log.info("邮箱: " + email + "发送验证码成功, 验证码为: " + text);
@@ -438,7 +470,7 @@ public class WebHanlder {
 	 * @param code  前端输入验证码
 	 * @return
 	 */
-	@RequestMapping("/modifybefore")
+	@RequestMapping(value = "/modifybefore", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
 	public Result modifyBefore(String token, String code) {
@@ -465,7 +497,7 @@ public class WebHanlder {
 	 * @param password 新密码
 	 * @return
 	 */
-	@RequestMapping("/modify")
+	@RequestMapping(value = "/modify", method = RequestMethod.POST)
 	@CrossOrigin
 	@ResponseBody
 	public Result modifyForPassword(String password) {
@@ -488,12 +520,17 @@ public class WebHanlder {
 	}
 	
 	/**
+	 * 修改密码 api 集结束
+	 * ===============================================================================================
+	 */
+	
+	/**
 	 * 处理关注请求, 作者的学号由前端获取, 关注人学号从session里获取
 	 * 
 	 * @param uid  作者的学号
 	 * @return
 	 */
-	@RequestMapping("/like")
+	@RequestMapping(value = "/like", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result like(Integer uid) {
@@ -509,23 +546,52 @@ public class WebHanlder {
 				return Result.success();
 			}
 			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: 数据库连接失败");
-			return Result.fail();
+			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
 		} catch (UidAndLikeIdRepetitionException e) {
 			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
 		} catch (Exception e) {
 			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "连接服务器失败, 请稍后重试");
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	
-	@RequestMapping("/delike")
+	/**
+	 * 处理取消关注请求, 作者的学号由前端获取, 关注人学号从session里获取
+	 * @param uid
+	 * @return
+	 */
+	@RequestMapping(value = "/delike", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result delike(Integer uid) {
-		return Result.fail();
+		Integer likeId = null;
+		try {
+			likeId = ShiroUtils.getUserInformation().getUid();
+			log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
+			//刪除记录
+			boolean b;
+				b = myLikeService.deleteByLikeIdAndUid(likeId, uid);
+			if(b) {
+				log.info("用户: " + likeId + ", 取消关注: " + uid + "成功");
+				return Result.success();
+			}
+			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: 数据库连接失败");
+			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+		} catch (NotFoundUidAndLikeIdException e) {
+			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
 	}
 	
+	/**
+	 * 静态代码块
+	 * 检测储存头像的文件夹是否建立
+	 * 如未创建, 则创建
+	 */
 	static {
 		File file = new File(FILEPATH);
 		if(file.exists()) {
@@ -533,7 +599,12 @@ public class WebHanlder {
 		}
 	}
 	
-	@RequestMapping("/updateimage")
+	/**
+	 * 更换头像
+	 * @param img  上传头像文件
+	 * @return
+	 */
+	@RequestMapping(value = "/updateimage", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result updateImage(@RequestParam("img")MultipartFile img) {
@@ -547,7 +618,7 @@ public class WebHanlder {
 			boolean b = myImageService.update(new MyImage(user.getUid(), name));
 			if(b) {
 				log.info("用户: " + user.getUid() + " 更换头像成功");
-				return Result.success();
+				return Result.success().add("imgpath", name);
 			} else {
 				log.error("写入数据库失败!");
 				return Result.fail().add(EX, "网络异常, 请稍后重试");

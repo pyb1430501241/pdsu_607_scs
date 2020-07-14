@@ -11,6 +11,7 @@ import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.MyLikeExample.Criteria;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
+import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.scs.service.MyLikeService;
@@ -93,5 +94,17 @@ public class MyLikeServiceImpl implements MyLikeService{
 		criteria.andUidEqualTo(uid);
 		criteria.andLikeIdEqualTo(likeId);
 		return myLikeMapper.countByExample(example) > 0 ? true : false;
+	}
+	
+	@Override
+	public boolean deleteByLikeIdAndUid(Integer likeId, Integer uid) throws NotFoundUidAndLikeIdException {
+		if(!countByUidAndLikeId(uid, likeId)) {
+			throw new NotFoundUidAndLikeIdException("您并未关注该用户");
+		}
+		MyLikeExample example = new MyLikeExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andLikeIdEqualTo(uid);
+		criteria.andUidEqualTo(likeId);
+		return myLikeMapper.deleteByExample(example) > 0 ? true : false;
 	}
 }

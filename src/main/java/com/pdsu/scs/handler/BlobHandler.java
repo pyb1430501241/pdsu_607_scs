@@ -3,15 +3,14 @@ package com.pdsu.scs.handler;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -21,7 +20,6 @@ import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebInformation;
-import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
@@ -87,31 +85,10 @@ public class BlobHandler {
 	private static final Logger log = LoggerFactory.getLogger(BlobHandler.class);
 	
 	/**
-	 * 转发到网站首页
-	 * @return
-	 */
-	@RequestMapping("/index")
-	public String index() {
-		return "blob/index";
-	}
-	
-	/**
-	 * 转发到博客页面
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping("{id}")
-	public String blob(@PathVariable("id")String id,Map<String, Object> map) {
-		String t = id.substring(1, id.length());
-		map.put("id", t);
-		return "blob/blob";
-	}
-	
-	/**
 	 * 获取首页的数据
 	 * @return
 	 */
-	@RequestMapping("/getwebindex")
+	@RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
 	public Result getWebForIndex() {
@@ -163,7 +140,7 @@ public class BlobHandler {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/getblob")
+	@RequestMapping(value = "/getblob", method = RequestMethod.GET)
 	@CrossOrigin
 	public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) {
 		try {
@@ -225,13 +202,14 @@ public class BlobHandler {
 	 * @param webid 网页id
 	 * @return
 	 */
-	@RequestMapping("/collection")
+	@RequestMapping(value = "/collection", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result collection(Integer bid, Integer webid) {
 		//获取当前登录用户的UID
-		Integer uid = ShiroUtils.getUserInformation().getUid();
+		Integer uid = null;
 		try {
+			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + uid + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
 			//添加一条收藏记录
 			boolean flag = myConllectionService.insert(new MyCollection(null, uid, webid, bid));
@@ -255,13 +233,14 @@ public class BlobHandler {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping("/decollection")
+	@RequestMapping(value = "/decollection", method = RequestMethod.POST)
 	@CrossOrigin
 	public Result deCollection(Integer webid) {
 		//获取当前登录用户的信息
-		UserInformation user = ShiroUtils.getUserInformation();
-		log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
+		UserInformation user = null;
 		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
 			//删除一条收藏记录
 			if(myConllectionService.delete(user.getUid(), webid)) {
 				log.info("取消收藏成功");
@@ -274,14 +253,9 @@ public class BlobHandler {
 			log.info("用户: " + user.getUid() + ", 取消收藏失败");
 			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
-			log.info("用户: " + user.getUid() + "取消收藏博客: " + webid + "失败, 原因为: " + e.getMessage());
+			log.info("用户: " + (user != null ? user.getUid() : "用户未登录") + "取消收藏博客失败, 原因: " + e.getMessage());
 			return Result.fail();
 		}
-	}
-	
-	@RequestMapping("/add")
-	public String in() {
-		return "blob/insert";
 	}
 	
 	/**
@@ -289,13 +263,14 @@ public class BlobHandler {
 	 * @param user
 	 * @return
 	 */
-	@RequestMapping("/insert")
+	@RequestMapping(value = "/contribution", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result insert(WebInformation web) {
 		//获取当前登录用户的UID
-		Integer uid = ShiroUtils.getUserInformation().getUid();
+		Integer uid = null;
 		try {
+			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + uid + "发布文章开始");
 			//设置作者UID
 			web.setUid(uid);
@@ -315,7 +290,7 @@ public class BlobHandler {
 			log.warn("文章: " + web.getUid() + " 转码失败!!!");
 			return Result.fail().add(EX, "添加文章信息失败");
 		}catch (Exception e) {
-			log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
+			log.error("用户: " + (uid == null ? "用户未登录" : uid) + ", 发布文章失败, 原因为: " + e.getMessage());
 			return Result.fail().add(EX, "发布失败, 未知原因");
 		}
 	}
@@ -325,7 +300,7 @@ public class BlobHandler {
 	 * @param webid  文章id
 	 * @return
 	 */
-	@RequestMapping("/delete")
+	@RequestMapping(value = "/delete", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result delete(Integer webid) {
@@ -359,14 +334,14 @@ public class BlobHandler {
 	 * @param web  更新后的文章
 	 * @return
 	 */
-	@RequestMapping(value = "/update")
+	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result update(WebInformation web) {
 		//获取当前登录用户的信息
-		UserInformation user = ShiroUtils.getUserInformation();
-		log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId() + "作者: " + web.getUid());
 		try {
+			UserInformation user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId() + "作者: " + web.getUid());
 			boolean b = webInformationService.updateByWebId(web);
 			if(b) {
 				log.info("更新文章成功");

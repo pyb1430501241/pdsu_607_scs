@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.pdsu.scs.bean.EsBlobInformation;
@@ -41,10 +43,15 @@ public class SearchHandler {
 	
 	private static final Logger log = LoggerFactory.getLogger(SearchHandler.class);
 	
-	@RequestMapping("/search")
+	/**
+	 * 根据关键字在 es 中搜索 用户, 博客, 文件
+	 * @param text
+	 * @return
+	 */
+	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result searchByText(String text) {
+	public Result searchByText(@RequestParam(value = "p")String text) {
 		UserInformation user = ShiroUtils.getUserInformation();
 		log.info("用户: " + user.getUid() + " 查询: " + text + " 开始");
 		try {

@@ -112,15 +112,16 @@
 		<!-- 过滤器 -->
 		<property name="filterChainDefinitions">
 			<value>
+				/search = anon
+				/user/loginstatus = anon
 				/user/logout = logout
 				/js/** = anon
 				/img/** = anon
 				/user/login = anon
-				/user/loginajax = anon
 				/user/getcodeforlogin = anon
 				/user/getcodeforapply = anon
 				/user/applynumber = anon
-				/user/inputuid = anon
+				/user/isexist = anon
 				/user/getcodeforretrieve = anon
 				/user/retrieve = anon
 				/blob/index = anon

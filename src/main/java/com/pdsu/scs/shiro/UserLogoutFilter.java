@@ -26,21 +26,27 @@ public class UserLogoutFilter extends LogoutFilter{
 	@Override
 	protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
 		Subject subject = getSubject(request, response);
-	    log.info("用户: " + ShiroUtils.getUserInformation().getUid() + " 退出登录");
+		PrintWriter out = response.getWriter();
+		response.setCharacterEncoding("UTF-8");
+        JSONObject json = new JSONObject();
 		try {
+			log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录");
 	        subject.logout();
 	    } catch (SessionException ise) {
+	    	json.append("code", 404);
+	        json.append("msg", "fail");
+	        out.println(json);
+	        out.flush();
+	        out.close();
 	        log.error("用户退出登录失败, 原因: " + ise.getMessage());
+	        return false;
 	    }
-	    response.setCharacterEncoding("UTF-8");
-        PrintWriter out = response.getWriter();
-        JSONObject json = new JSONObject();
         json.append("code", 200);
         json.append("msg", "success");
         out.println(json);
         out.flush();
         out.close();
-        log.info("退出登录成功");
+        log.info("用户退出登录成功");
 	    return false;
 	}
 	

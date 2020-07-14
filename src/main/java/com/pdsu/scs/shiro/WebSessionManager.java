@@ -9,8 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.apache.shiro.web.util.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Session 管理器, 在用户登录后, 从请求头中获取 sessionId, 以确保每次访问的 Session都是同一Session
@@ -22,8 +20,6 @@ public class WebSessionManager extends DefaultWebSessionManager{
 	private static final String AUTHORIZATION = "Authorization";
 	
 	private static final String REFERENCED_SESSION_ID_SOURCE  = "Stateless request";
-	
-	private static final Logger log = LoggerFactory.getLogger("session监听器");
 	
 	@Override
 	protected Serializable getSessionId(ServletRequest request, ServletResponse response) {
