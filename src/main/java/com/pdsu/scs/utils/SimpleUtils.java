@@ -117,6 +117,9 @@ public class SimpleUtils {
 	 * @throws InstantiationException 
 	 */
 	public static List<?> getObjectBySearchHit(SearchHit [] searchHits, Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		if(getConstructorByClass(clazz) == null) {
+			throw new NoSuchMethodException("无此构造方法");
+		}
 		return getListBySearchHit(searchHits, getConstructorByClass(clazz));
 	}
 	
@@ -173,6 +176,9 @@ public class SimpleUtils {
 	 * @throws SecurityException
 	 */
 	public static Object getObjectByMapAndClass(Map<String, Object> map, Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+		if(getConstructorByClass(clazz) == null) {
+			throw new NoSuchMethodException("无此构造方法");
+		}
 		return getObjectByMap(map, getConstructorByClass(clazz));
 	}
 	

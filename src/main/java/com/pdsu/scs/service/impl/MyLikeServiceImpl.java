@@ -75,6 +75,7 @@ public class MyLikeServiceImpl implements MyLikeService{
 					esuser.setLikenum(esuser.getLikenum()+1);
 					esDao.update(esuser, user.getId());
 				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}).start();
 			return true;

@@ -95,7 +95,7 @@ public class WebHanlder {
 	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getloginstatus() {
+	public Result getLoginStatus() {
 		try {
 			UserInformation user = ShiroUtils.getUserInformation();
 			if(user == null) {
@@ -237,7 +237,7 @@ public class WebHanlder {
 			if(name == null) {
 				return Result.fail().add(EX, "用户名不可为空");
 			}
-			if(myEmailService.countByEmail(email) != 0) {
+			if(myEmailService.countByEmail(email)) {
 				return Result.fail().add(EX, "此邮箱已被绑定");
 			}
 			EmailUtils utils = new EmailUtils();
@@ -282,7 +282,7 @@ public class WebHanlder {
 			if(userInformationService.countByUid(user.getUid()) != 0) {
 				return Result.fail().add(EX, "该账号已存在,是否忘记密码?");
 			}
-			if(myEmailService.countByEmail(email) != 0) {
+			if(myEmailService.countByEmail(email)) {
 				return Result.fail().add(EX, "此邮箱已被绑定, 忘记密码?");
 			}
 			if(userInformationService.countByUserName(user.getUsername()) != 0) {
@@ -297,6 +297,7 @@ public class WebHanlder {
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
 				myImageService.insert(new MyImage(user.getUid(), "01.png"));
+				myEmailService.insert(new MyEmail(null, user.getUid(), email));
 				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 				return Result.success();
 			}else {
@@ -531,11 +532,11 @@ public class WebHanlder {
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result like(Integer uid) {
+	public Result like(Integer likeId, Integer uid) {
 		//从session里获取当前登录的人的学号
-		Integer likeId = null;
+		//Integer likeId = null;
 		try {
-			likeId = ShiroUtils.getUserInformation().getUid();
+			//likeId = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
 			//插入记录
 			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));

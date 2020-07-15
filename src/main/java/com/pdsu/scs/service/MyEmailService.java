@@ -1,6 +1,8 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.MyEmail;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import com.pdsu.scs.exception.web.user.email.EmailRepetitionException;
 import com.pdsu.scs.exception.web.user.email.NotFoundEmailException;
 
 /**
@@ -16,7 +18,7 @@ public interface MyEmailService {
 	 * @param email
 	 * @return
 	 */
-	public int countByEmail(String email);
+	public boolean countByEmail(String email);
 
 	/**
 	 * 根据邮箱地址获取一个 MyEamil 的对象
@@ -31,5 +33,21 @@ public interface MyEmailService {
 	 * @return
 	 */
 	public MyEmail selectMyEmailByUid(Integer uid);
+
+	/**
+	 * 插入
+	 * @param myEmail
+	 * @return
+	 * @throws EmailRepetitionException
+	 * @throws NotFoundUidException
+	 */
+	public boolean insert(MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException;
+	
+	/**
+	 * 查询用户是否存在
+	 * @param uid
+	 * @return
+	 */
+	public boolean countByUid(Integer uid);
 
 }
