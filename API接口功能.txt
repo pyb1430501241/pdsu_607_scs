@@ -11,7 +11,7 @@
 		, "imgpath" : "头像地址"}
 	3) es的json 对应 json{ 
 						  "authorList" : {"uid" : "作者学号" , "username" : "用户名"， " imgpath" : "图片路径" " , "blobnum" : "博客编号" , "likenum": "喜爱编号"}], 
-						  "b1obList" :[{"webid" : "网页名", "title" : "标题" , "description" : "内容" }], 
+						  "b1obList" :[{"webid" : "网页号", "title" : "标题" , "description" : "内容" }], 
 		                  "fi1eList":[{"fi1eid" : "文件名", "title" : "标题" , "description" : "内容"}]
 		                  }
     4) MyEmail 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "email" : "作者邮箱"}
@@ -31,222 +31,453 @@
 	1：后带List的均为此数据的集合形式  
 	
 1: BlobHandler API相关
-	1) public String blob()
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/参数
-				如: 域名/pdsu_softwaregroup_scs/blob/b1
-				返回JSON为: 
-				成功：json{"code" : "200", "msg" : "success", "id" : "xx"}
-				失败：json{"code" : "404", "msg" : "fail"}
-				作用: 处理博客页面请求,返回博客页面地址信息
 				
-	2) public Result getWebForIndex()
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/getwebindex
-				返回JSON为: 
-				成功：json{"code" : "200", "msg" : "success",
+	1) 获取首页数据api
+		请求路径: 域名(ip)/项目名称/blob/getwebindex
+		请求方式：GET
+			如: http://121.199.27.93/blob/getwebindex
+			返回值: 
+				成功：
+					json{"code" : "200", "msg" : "success",
 					"webList" : "网页信息集合", "userList", "用户信息集合", "visitList", "访问量集合"
 					, "thumbsList" : "点赞量集合", "collectionList" : "收藏量集合"}
-				失败：json{"code" : "404", "msg" : "fail"}
-				作用: 返回网站主页相关信息
+				失败:
+					json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+				异常：
+					json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
-	3) public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) 
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/getblob
-				参数: id=?
-				如: 域名/pdsu_softwaregroup_scs/blob/getblob?id=2
-				返回JSON为:
-				成功： json{"code" : "200", "msg" : "success",
-					"web" : "网页信息", "webList" , "作者其余作品" , "user", "作者信息"
-					, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量"}
-				失败： json{"code" : "404", "msg" : "fail" , "exception" : "错误原因" }
-				作用: 返回博客页面相关信息
+	2) 获取博客页面相关信息api 
+		请求路径: 域名(ip)/项目名称/blob/getblob
+		请求方式：GET
+		请求头: Authorization
+			请求参数: 
+				id ：网页号
+				如: http://121.199.27.93/blob/getblob?id=2
+				返回值:
+					成功： json{"code" : "200", "msg" : "success",
+						"web" : "网页信息", "webList" , "作者其余作品" , "user", "作者信息"
+						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
-	4) public Result collection(Integer bid, Integer webid)
-		请求路径:  域名/pdsu_softwaregroup_scs/blob/collection
-				参数: bid=?&webid=?
-				如:域名/pdsu_softwaregroup_scs/blob/collection?bid=2&webid=3
-				返回JSON为: 
-				成功：json{"code" : "200", "msg" : "success"}
-				失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				作用: 处理用户点击收藏博客的请求
+	3) 处理用户收藏博客api
+		请求路径:  域名(ip)/项目名称/blob/collection
+		请求方式：POST
+		请求头: Authorization
+			请求参数:
+			 bid ： 博客号
+			 webid ：网页号
+			  如:http://121.199.27.93/blob/collection?bid=2&webid=3
+				返回值: 
+					成功：json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
-	5) public Result deCollection(Integer webid)
-		请求路径:  域名/pdsu_softwaregrop_scs/blob/decollection
-				参数: webid=?
-				如: 域名/pdsu_softwaregroup_scs/blob/decollection?webid=3
-				返回JSON为：
+	6) 处理用户取消收藏博客api
+		请求路径:  域名(ip)/pdsu_softwaregrop_scs/blob/decollection
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				webid ：网页号
+				如: http://121.199.27.93/blob/decollection?webid=3
+				返回值：
 				成功：json{"code" : "200" , "msg" : "success"}
-				失败：json{"code" : "404" , "msg" : "fail" , "exception" : "错误原因"}
-				作用：处理用户取消收藏博客的请求	
+				失败:
+					json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+				异常：
+					json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 	
-
-		
-	6) public Result insert(WebInformation web)
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/insert
-				参数: title=?&contype=?&webDataString=?
-				如:域名/pdsu_softwaregroup_scs/blob/insert?title=111&contype=1&webDataString=xxxx
-				返回JSON为:
-				 成功：json{"code" : "200", "msg" : "success" , "exception" : "发布成功"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				作用：处理投稿请求
+	7) 处理投稿请求api
+		请求路径: 域名(ip)/项目名称/blob/contribution
+		请求方式：POST
+		请求头: Authorization
+				请求参数: 
+					title ：文章标题
+					contype ：投稿类型
+					webDataString ：网页信息
+				如:http://121.199.27.93/blob/contribution?title=111&contype=1&webDataString=xxxx
+				返回值:
+					 成功：json{"code" : "200", "msg" : "success" , "exception" : "发布成功"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
-	7) public Result delete(Integer webid)
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/delete
-				参数: webid=?
-				如:域名/pdsu_softwaregroup_scs/blob/delete?webid=2
-				返回JSON为:
-				成功： json{"code" : "200", "msg" : "success"}
-				失败： json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				作用：删除指定文章
+	8) 删除指定文章api
+		请求路径: 域名(ip)/项目名称/blob/delete
+		请求方式：POST
+			请求参数: 
+				webid ：网页号
+				如:http://121.199.27.93/blob/delete?webid=2
+				返回值:
+					成功： json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
-	8) public Result updata(WebInformation web)
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/updata
-				参数: title=?&contype=?&webDataString=?
-				如:域名/pdsu_softwaregroup_scs/blob/updata?title=222&contype=1&webDataString=xxxx
-				返回JSON为: 
-				成功： json{"code" : "200", "msg" : "success"}
-				失败： json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				作用：更新指定文章
+	9) 更新指定文章api
+		请求路径: 域名(ip)/项目名称/blob/updata
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				title ：文章标题
+				contype ：投稿类型
+				webDataString ：网页信息
+				如:http://121.199.27.93/blob/updata?title=222&contype=1&webDataString=xxxx
+				返回值: 
+					成功： json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
 2. WebHandler API相关
-	1) public Result loginAjax(String uid, String password, String hit, String code, 
-			@RequestParam(value = "flag", defaultValue = "0")Integer flag)
-		请求路径: 域名/pdsu_softwaregroup_scs/user/loginajax
-				参数：uid=?&password=?&hit=?&code=?&flag=?
-				如:域名/pdsu_softwaregroup_scs/user/loginajax?uid=1&password=123456&hit=99code=78561&flag=1
-				返回JSON为:
-				成功：json{"code" : "200", "msg" : "success" , "exception" : "登录成功"
-				, "sessionId" : "sessionId" , "user" : "uu"}
-				失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				作用：处理登录
+
+	1)用户退出登录 API
+		路径: 域名(ip)/项目名称/user/logout
+		请求方式: GET
+		返回值:
+			成功:
+				json{"code" : "200", "msg" : "success"}
+			失败:
+				json{"code" : "404", "msg" : "fail"}
+	
+	2)用户登录状态 API
+		路径: 域名(ip)/项目名称/user/loginstatus
+		请求方式: GET
+		请求头: Authorization
+		返回值:
+			成功:
+				json{"code" : "200", "msg" : "success", "user" : "user"}
+			失败:
+				json{"code" : "404", "msg" : "fail", "exception" : "未登录"}
+			异常：
+				json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+	
+	3)登录 API集
+	 	
+	 	/**
+	 	*
+	 	*登录 api 开始
+	 	*===============================================================================================
+	 	*
+	 	*/
+			1.处理登录 api
+				请求路径: 域名(ip)/项目名称/user/login
+				请求方式：POST
+					请求参数：
+						uid ：学号
+						password ：密码
+						hit ：cache获取数据的key
+						code ： 前端输入验证码的 key
+						flag ：是否记住密码 (0代表不记住,1代表记住)
+						如:http://121.199.27.93/user/loginajax?uid=1&password=123456&hit=99code=78561&flag=1
+						返回值:
+							成功：
+								json{"code" : "200", "msg" : "success" , "exception" : "登录成功"
+												, "AccessToken" : "sessionId" , "user" : "uu"}
+							失败：
+								json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+							
+							异常：
+								json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
+								
 		
-	2) public Result getCode(){
-		请求路径：域名/pdsu_softwaregroup_scs/user/getcodeforlogin
-				参数：无
-				如：域名/pdsu_softwaregroup_scs/user/getcodeforlogin
-				返回JSON为：
-				成功：json{"code" : "200", "msg" : "success", "img" : "图像" ,  "token" : "xxxx"}
-				失败：json{"code" : "404", "msg" : "fail"}
-				作用：获取验证码
+			2.获取验证码 api
+				请求路径：域名(ip)/项目名称/user/getcodeforlogin
+				请求方式：GET
+					请求参数：无
+						如：http://121.199.27.93/user/getcodeforlogin
+						返回值：
+							成功：
+								json{"code" : "200", "msg" : "success", "img" : "图像" ,  "token" : "xxxx"}
+							失败：
+								json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+							
+							异常：
+								json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
+								
+		/**
+		*
+	 	*登录 api 结束 
+	 	*===============================================================================================
+	 	*
+	 	*/
+			
+	4)申请账号API集
 		
-	3) public Result sendEmailforApply(
-			@RequestParam("email")String email,
-		 	@RequestParam("name")String name)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getcodeforapply
-				 参数：email=?&name=?
-				 如：域名/pdsu_softwaregroup_scs/user/getcodeforapply?email=222@qq.com&name=ss
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：申请账号时发送邮箱验证码
-		 
-	4) public Result applyforAccountNumber(UserInformation user, String email,
-						 	String token, String code)
-		请求路径:域名/pdsu_softwaregroup_scs/user/applynumber
-				参数：user(POJO类)&email=?&token=?&code=?
-				如：域名/pdsu_softwaregroup_scs/user/applynumber?user(POJO类)
-				&email=222@qq.com&token=12343&code=12343
-				返回JSON为：
-				成功：json{"code" : "200" , "msg" : "success"}
-				失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				作用：申请账号
+		/**
+		*
+	 	*申请账号 api 开始 
+	 	*===============================================================================================
+	 	*
+	 	*/
+		 	1.申请账号api
+			请求路径:域名(ip)/项目名称/user/applynumber
+			请求方式：POST
+				请求参数：
+					uid:学号
+					password : 密码
+					username : 用户名
+					college : 学院
+					clazz : 班级
+					email : 邮箱
+					token : 取出验证码的key
+					code : 前端输入验证码的key
+					例: http:/ /121.199.27.93/user/applynumber ?uid=123 &password=123456
+						&username=asd&college=XX&clazz=xx&emai1=xxQgqcom& token=xxx&code=xxx
+						返回值：
+							成功：
+								json{"code" : "200" , "msg" : "success"}
+							失败：
+								json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+							异常：
+					 			json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+			
+		 	
+			2.申请账号发送邮箱验证码api
+			 请求路径：域名(ip)/项目名称/user/getcodeforapply
+			 请求方式：POST
+				 请求参数：
+					 email ：邮箱
+					 name ： 用户名
+					 如：http://121.199.27.93/user/getcodeforapply?email=222@qq.com&name=ss
+					 返回值：
+						 成功：
+						 	json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
+						 失败：
+					 		json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+			 			异常：
+			 				json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+	
+
+		/**
+		*
+	 	*申请账号api结束
+	 	*===============================================================================================
+	 	*
+	 	*/
+	 	
+	5) 找回密码API集
 		
-	5) public Result inputEmail(Integer uid)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/inputuid
-				 参数：uid=?
-				 如：域名/pdsu_softwaregroup_scs/user/inputuid?uid=2
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "email" : "邮箱存在" , "uid" : "账号存在"}
-				 失败：json{"code" : "404", "msg" : "fail"}
-				 作用：验证此用户是否存在
-		 
-	6) public Result sendEmailForRetrieve(String email)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getcodeforretrieve
-				 参数：email=?
-				 如：域名/pdsu_softwaregroup_scs/user/getcodeforretrieve?email=222@qq.com
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
-				 失败：json{"code" : "404", "msg" : "fail"}
-				 作用：找回密码时发送验证码
-		 
-	7) public Result retrieveThePassword(Integer uid, String password,String token, String code)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/retrieve
-				 参数：uid=?&token=?&code=?
-				 如：域名/pdsu_softwaregroup_scs/user/retrieve?uid=2&token=2222&code=2222
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：找回密码
+		/**
+		*
+	 	*找回密码api开始
+	 	*===============================================================================================
+	 	*
+	 	*/
+			1.验证此用户是否存在api
+				 请求路径：域名(ip)/项目名称/user/isexist
+				 请求方式：GET
+					请求参数：
+						 uid ：学号
+						 如：http://121.199.27.93/user/inputuid?uid=2
+						 返回值：
+							 成功：
+							 	json{"code" : "200" , "msg" : "success" , "email" : "邮箱存在" , "uid" : "账号存在"}
+							 失败：
+							 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+							 异常：
+					 			json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+			2.找回密码发送验证码api
+			 	请求路径：域名(ip)/项目名称/user/getcodeforretrieve
+			 	请求方式：GET
+					 请求参数：
+					 	email ：邮箱
+					 	如：http://121.199.27.93/user/getcodeforretrieve?email=222@qq.com
+						 返回值：
+						 	成功：
+						 		json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
+						 	失败：
+						 		json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+						 	异常：
+					 			json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+			 
+			3.找回密码api
+				 请求路径：域名(ip)/项目名称/user/retrieve
+				 请求方式：POST
+					 请求参数：
+					 	uid ：学号
+						token : 取出验证码的key
+						code : 前端输入验证码的key
+						 如：http://121.199.27.93/user/retrieve?uid=2&token=2222&code=2222
+					 返回值：
+						 成功：
+						 	json{"code" : "200" , "msg" : "success"}
+						 失败：
+						 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+						 异常：
+					 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+		/**
+		*
+	 	*找回密码api结束
+	 	*===============================================================================================
+	 	*
+	 	*/
 		
-	8) public Result getModify()
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getmodify
-				 参数：无
-				 如：域名/pdsu_softwaregroup_scs/user/getmodify
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "id" : "你的id" , "uid" : "你的uid" , "email" : "你的email"}
-				 失败：json{"code" : "404", "msg" : "fail"}
-				 作用：获取修改密码页面数据
+	6) 修改密码API集
+	
+	/**
+	 *
+	 * 修改密码 API 集 开始
+	 *
+	 * =================================================================================================
+	 */
+		 1.获取修改密码页面数据api
+			 请求路径：域名(ip)/项目名称/user/getmodify
+			 	请求方式：GET
+			 	请求头: Authorization
+				       请求参数：无
+					 如：http://121.199.27.93/user/getmodify
+					 返回值：
+						 成功：
+						 	json{"code" : "200" , "msg" : "success" , "id" : "你的id" , "uid" : "你的uid" , "email" : "你的email"}
+						 失败：
+						 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+						 异常：
+					 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+			 
+		2.获取验证码api
+			 请求路径：域名(ip)/项目名称/user/getcodeformodify
+				请求方式：GET
+				请求头: Authorization
+					请求参数：
+					 	email ：邮箱
+						 如：http://121.199.27.93/user/getcodeformodify?email=222@qq.com
+						 返回值：
+							 成功：
+							 	json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
+							 失败：
+							 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+							 异常：
+						 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+			
+		3.验证码验证api
+			 请求路径：域名(ip)/项目名称/user/modifybefore
+			 请求方式：GET
+				请求参数：
+					token : 取出验证码的key
+					code : 前端输入验证码的key
+					 如：http://121.199.27.93/user/modifybBefore?token=2222&code=2222
+					 返回值：
+						 成功：
+						 	json{"code" : "200" , "msg" : "success"}
+						 失败：
+						 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+						 异常：
+					 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+			 
+		4.修改密码api
+			 请求路径：域名(ip)/项目名称/user/modify
+			 请求方式：POST
+			 请求头: Authorization
+				请求参数：
+					password ：密码
+					 如：http://121.199.27.93/user/modify?password=12345
+					 返回值：
+						 成功：
+						 	json{"code" : "200" , "msg" : "success"}
+						 失败：
+						 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+						 异常：
+					 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+
+	/**
+	 *
+	 * 修改密码 API 集 结束
+	 *
+	 * =================================================================================================
+	 */
 		 
-	9) public Result sendEmailForModify(String email)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/getcodeformodify
-				 参数：email=?
-				 如：域名/pdsu_softwaregroup_scs/user/getcodeformodify?email=222@qq.com
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "token" : "xxxx"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：获取验证码
-		
-	10) public Result modifyBefore(String token, String code)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/modifybefore
-				 参数：token=?&code=?
-				 如：域名/pdsu_softwaregroup_scs/user/modifybBefore?token=2222&code=2222
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：验证码验证
-		 
-	11) public Result modifyForPassword(String password)
-		 请求路径：域名/pdsu_softwaregroup_scs/user/modify
-				 参数：password=?
-				 如：域名/pdsu_softwaregroup_scs/user/modify?password=12345
-				 返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：修改密码
-		 
-	12) public Result like(Integer uid) //要用formdate传递参数
-		请求路径: 域名/pdsu_softwaregroup_scs/blob/like
-				参数: uid=?
-				如: 域名/pdsu_softwaregroup_scs/blob/like?uid=2
-				返回JSON为: 
-				成功：json{"code" : "200", "msg" : "success"}
-				失败：json{"code" : "404", "msg" : "fail"}
-				作用: 处理用户关注请求
+	7) 处理关注请求api
+		请求路径: 域名(ip)/项目名称/user/like
+		 请求方式：POST
+		 请求头: Authorization
+			请求参数: 
+				uid : 学号
+				如: http://121.199.27.93/blob/like?uid=2
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	8) 处理取消关注请求api
+		请求路径: 域名(ip)/项目名称/user/delike
+		 请求方式：POST
+		 请求头: Authorization
+			请求参数: 
+				uid : 学号
+				如: http://121.199.27.93/blob/delike?uid=2
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	9) 更换头像api
+		请求路径: 域名(ip)/项目名称/user/updateimage
+		 请求方式：POST
+		 请求头: Authorization
+			请求参数: 
+				img : 图片
+				如: http://121.199.27.93/blob/updateimage?img=xx.png
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success", "imgpath" : "name"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 
 3: FileHandler API相关
 
-	1) public Result sendcomment(
-	@RequestParam("file")
-	MultipartFile file, String title, String description)
-		请求路径：域名/pdsu_softwaregroup_scs/file/upload
-				参数：file=?&title=?&description=?
-				如：域名/pdsu_softwaregroup_scs/file/upload?file=xxxx&title=xxxx&description=xxxx
-				返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：上传文件
+	1) 上传文件api
+		请求路径：域名(ip)/项目名称/file/upload
+		请求方式：POST
+		请求头: Authorization
+				请求参数：
+					file ：文件
+					title ：标题
+					description ：内容
+				如：http://121.199.27.93/file/upload?file=xxxx&title=xxxx&description=xxxx
+				返回值：
+					 成功：json{"code" : "200" , "msg" : "success"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 				 
-	2) public void getDownload(Integer uid, String title, HttpServletResponse response)
-		请求路径：域名/pdsu_softwaregroup_scs/file/download
-				参数：uid=?&title=?
-				如：域名/pdsu_softwaregroup_scs/file/download?uid=2&title=xxx
-				 作用：下载文件
+	2) 下载文件api
+		请求路径：域名(ip)/项目名称/file/download
+		请求方式：GET
+		请求头: Authorization
+				请求参数：
+					uid ：学号
+					title ：标题
+					如：http://121.199.27.93/file/download?uid=2&title=xxx
 			 
 4.SearchHandler API相关
-	1)public Result searchByText(String text)
-		请求路径：域名/pdsu_softwaregroup_scs/search
-				参数：text=?
-				如：域名/pdsu_softwaregroup_scs/search?text=xxxx
-				返回JSON为：
-				 成功：json{"code" : "200" , "msg" : "success" , "authorList" : "用户信息"  ,  " blobList"  :  "博客信息" 
-				 , "fileList" : "文件信息"}
-				 失败：json{"code" : "404", "msg" : "fail" , "exception" : "错误原因"}
-				 作用：搜索相关
+	1)搜索相关api
+		请求路径：域名(ip)/项目名称/search
+		请求方式：GET
+		请求头: Authorization
+			请求参数：
+				text ：文本
+				如：http://121.199.27.93/search?text=xxxx
+				返回值：
+					 成功：json{"code" : "200" , "msg" : "success" , "authorList" : "用户信息"  ,  " blobList"  :  "博客信息" 
+					 , "fileList" : "文件信息"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
