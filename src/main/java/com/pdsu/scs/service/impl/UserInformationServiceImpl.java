@@ -2,6 +2,7 @@ package com.pdsu.scs.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.HashUtils;
+import com.pdsu.scs.utils.SimpleUtils;
 
 /**
  * 该类继承 UserInformationService 接口, 用于处理与用户有关的逻辑
@@ -319,5 +321,32 @@ public class UserInformationServiceImpl implements UserInformationService {
 		Criteria criteria = example.createCriteria();
 		criteria.andUsernameEqualTo(username);
 		return (int) userInformationMapper.countByExample(example);
+	}
+
+	@Override
+	public boolean updateUserName(Integer uid, String username) throws NotFoundUidException {
+		if(countByUid(uid) == 0) {
+			throw new NotFoundUidException("该用户不存在");
+		}
+		UserInformationExample example = new UserInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		UserInformation userinformation = new UserInformation();
+		userinformation.setUsername(username);
+		boolean b = userInformationMapper.updateByExampleSelective(userinformation, example) == 0 ? false : true;
+		if(b) {
+			new Thread(()->{
+				try {
+					UserInformation user = userInformationMapper.selectUserByUid(uid);
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+							getObjectByMapAndClass(map, EsUserInformation.class);
+					esuser.setUsername(username);
+					esDao.update(esuser, user.getId());
+				} catch (Exception e) {
+				}
+			}).start();
+		}
+		return b;
 	}
 }

@@ -1,12 +1,12 @@
 package com.pdsu.scs.test;
 
-import java.util.Enumeration;
 
+import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -16,7 +16,12 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@SpringJUnitConfig(locations = {"classpath:spring/spring.xml","classpath:spring/springmvc.xml"})
+import com.pdsu.scs.bean.EsUserInformation;
+import com.pdsu.scs.es.dao.EsDao;
+import com.pdsu.scs.exception.web.es.QueryException;
+import com.pdsu.scs.utils.SimpleUtils;
+
+@SpringJUnitConfig(locations = {"classpath:spring/springmvc.xml", "classpath:spring/spring.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public class WebHandlerTest {
@@ -26,32 +31,41 @@ public class WebHandlerTest {
 	
 	MockMvc mvc;
 	
+	@Autowired
+	org.apache.shiro.mgt.SecurityManager securityManager;
+	
 	@Before
 	public void initMockMvc() {
 		mvc = MockMvcBuilders.webAppContextSetup(context).build();
-		
+		SecurityUtils.setSecurityManager(securityManager);
+	}
+
+	@Test
+	public void testGetLoginStatus() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/loginstatus"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
 	}
 	
-	//测试发送验证码
 	@Test
-	public void test() throws Exception {
-		MvcResult ret = mvc.perform(MockMvcRequestBuilders.get("/user/sendEmail").param("email", "1398375393@qq.com")
-				.param("name", "H_on")).andReturn();
-		MockHttpServletRequest request1 = ret.getRequest();
-		Enumeration<String> attributeNames = request1.getAttributeNames();
-		System.out.println(attributeNames);
+	public void testLike() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.post("/user/like").param("likeId", "181360241")
+					.param("uid", "181360226"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
 	}
 	
-	//测试申请账号
 	@Test
-	public void test1() throws Exception {
-		MvcResult ret = mvc.perform(MockMvcRequestBuilders.get("/user/applyNumber")
-				.param("uid", "181360251")
-				.param("password", "123456789")
-				.param("username", "H_on")
-				.param("college", "信息工程学院")
-				.param("clazz", "18物联网工程二班")
-				.param("email", "1398375393@qq.com")
-				.param("token", "xxxx")).andReturn();
+	public void testse() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/4"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
 	}
 }
+

@@ -2,12 +2,17 @@ package com.pdsu.scs.service.impl;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.EsBlobInformation;
+import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.MyCollectionExample;
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.VisitInformationExample;
 import com.pdsu.scs.bean.WebInformation;
@@ -25,6 +30,7 @@ import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.WebInformationService;
+import com.pdsu.scs.utils.SimpleUtils;
 
 /**
  * 处理博客页面
@@ -52,6 +58,14 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Autowired
 	private EsDao esDao;
 	
+	
+	private String getDescriptionByWebData(String webdata) {
+		Pattern p = Pattern.compile("[/\\#`~\r\n*]");
+		Matcher m = p.matcher(webdata);
+		String str = m.replaceAll("");
+		return str.substring(0, 100);
+	}
+	
 	/*
 	 * 插入一个网页信息
 	 */
@@ -59,7 +73,18 @@ public class WebInformationServiceImpl implements WebInformationService {
 	public boolean insert(WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
-					information.getWebDataString().substring(0, 30), information.getTitle());
+						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
+			new Thread(()->{
+				try {
+					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+							getObjectByMapAndClass(map, EsUserInformation.class);
+					esuser.setBlobnum(esuser.getBlobnum()+1);
+					esDao.update(esuser, user.getId());
+				} catch (Exception e) {
+				}
+			}).start();
 			return esDao.insert(blob, information.getId());
 		}
 		return false;
@@ -80,7 +105,6 @@ public class WebInformationServiceImpl implements WebInformationService {
 		MyCollectionExample myCollectionExample = new MyCollectionExample();
 		com.pdsu.scs.bean.MyCollectionExample.Criteria myCollectionCriteria1 = myCollectionExample.createCriteria();
 		myCollectionCriteria1.andWidEqualTo(id);
-		//获取和用户相关的收藏信息总数
 		long mycollectionCount = myCollectionMapper.countByExample(myCollectionExample);
 		if(myCollectionMapper.deleteByExample(myCollectionExample) != mycollectionCount) {
 			throw new DeleteInforException("删除网页收藏信息失败");
@@ -98,7 +122,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 		}
 		
 		/**
-		 *删除用户相关的点赞信息
+		 *删除和网页相关的点赞信息
 		 */
 		WebThumbsExample webThumbsExample = new WebThumbsExample();
 		com.pdsu.scs.bean.WebThumbsExample.Criteria webThumbsCriteria1 = webThumbsExample.createCriteria();
@@ -107,9 +131,20 @@ public class WebInformationServiceImpl implements WebInformationService {
 		if(webThumbsMapper.deleteByExample(webThumbsExample) != webThumbsCount) {
 			throw new DeleteInforException("删除用户点赞信息失败");
 		}
-		
+		WebInformation information = webInformationMapper.selectByPrimaryKey(id);
 		int i = webInformationMapper.deleteByPrimaryKey(id);
 		if(i >= 0) {
+			new Thread(()->{
+				try {
+					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+							getObjectByMapAndClass(map, EsUserInformation.class);
+					esuser.setBlobnum(esuser.getBlobnum()-1);
+					esDao.update(esuser, user.getId());
+				} catch (Exception e) {
+				}
+			}).start();
 			return true;
 		}else {
 			throw new DeleteInforException("删除网页失败");

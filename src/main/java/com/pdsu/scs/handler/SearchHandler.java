@@ -52,8 +52,7 @@ public class SearchHandler {
 	@ResponseBody
 	@CrossOrigin
 	public Result searchByText(@RequestParam(value = "p")String text) {
-		UserInformation user = ShiroUtils.getUserInformation();
-		log.info("用户: " + user.getUid() + " 查询: " + text + " 开始");
+		log.info("用户查询: " + text + " 开始");
 		try {
 			List<EsUserInformation> users = esUserService.queryByText(text);
 			List<EsBlobInformation> blobs = esBlobService.queryByText(text);

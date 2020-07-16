@@ -1,7 +1,10 @@
 package com.pdsu.scs.es.dao.impl;
 
 import java.io.IOException;
+import java.util.Map;
 
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -47,6 +50,18 @@ public class EsDaoImpl implements EsDao{
 		}
 	}
 	
+	@Override
+	public Map<String, Object> queryByTableNameAndId(String str,Integer id) throws QueryException {
+		GetRequest request = new GetRequest(str, id+"");
+		try {
+			GetResponse response = restHighLevelClient.get(request, RequestOptions.DEFAULT);
+			return response.getSourceAsMap();
+		} catch (IOException e) {
+			throw new QueryException("查询失败");
+		}
+	}
+	
+	
 	private boolean indexUtil(IndexRequest request) throws InsertException {
 		IndexResponse response = null;
 		try {
@@ -91,6 +106,7 @@ public class EsDaoImpl implements EsDao{
 	private boolean updateUtil(UpdateRequest request) throws UpdateException {
 		UpdateResponse response = null;
 		try {
+			request.retryOnConflict(3);
 			response = restHighLevelClient.update(request, RequestOptions.DEFAULT);
 			ReplicationResponse.ShardInfo shardInfo = response.getShardInfo();
 			if(shardInfo.getTotal() != shardInfo.getSuccessful()){
@@ -125,5 +141,5 @@ public class EsDaoImpl implements EsDao{
 			throw new UpdateException("类型转换异常");
 		}
 	}
-	
+
 }

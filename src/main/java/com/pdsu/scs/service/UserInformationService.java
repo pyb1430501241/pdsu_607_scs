@@ -41,5 +41,8 @@ public interface UserInformationService {
 
 	//查询用户名是否存在
 	public int countByUserName(String username);
+
+	//更换用户名
+	public boolean updateUserName(Integer uid, String username) throws NotFoundUidException;
 	
 }

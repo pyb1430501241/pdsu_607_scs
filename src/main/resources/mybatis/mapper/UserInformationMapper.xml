@@ -275,4 +275,12 @@
   				username = #{username}
   			</where>
   </select>
+  
+  <select id="selectUserByUid" resultMap="BaseResultMap">
+  	select <include refid="Base_Column_List"></include>
+  		from db_user_information
+  			<where>
+  				uid = #{uid}
+  			</where>
+  </select>
 </mapper>

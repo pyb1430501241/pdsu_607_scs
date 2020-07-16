@@ -15,7 +15,7 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 
-import com.pdsu.scs.quartz.WebInfromationHeat;
+import com.pdsu.scs.quartz.WebInformationHeat;
 
 /**
  * 
@@ -52,7 +52,7 @@ public class WebStartInterceptor implements ServletContextListener{
 		 *	2.1 withIdentity 第一个参数为任务的名称(唯一实例), 第二个参数表示任务组的名称
 		 *	加载我们的任务类, 与 HelloJob 进行任务绑定, 要求 HelloJob实现 Job 接口
 		 */
-		JobDetail jobDetail = JobBuilder.newJob(WebInfromationHeat.class)
+		JobDetail jobDetail = JobBuilder.newJob(WebInformationHeat.class)
 			.withIdentity("job1", "group1")
 			.usingJobData("message", "打印日志") // 传递参数  实质为传递了一个 Map
 			.build();

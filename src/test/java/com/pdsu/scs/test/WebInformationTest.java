@@ -41,7 +41,7 @@ public class WebInformationTest {
 		WebInformation information = new WebInformation();
 		information.setSubTime(SimpleUtils.getSimpleDateSecond());
 		information.setTitle("Java字符串");
-		information.setUid(181360241);
+		information.setUid(181360226);
 		information.setWebData(("## Java字符串操作\r\n" + 
 				"**在Java中，把字符串当作对象处理，主要原因是Java是一种面向对象的程序设计语言。通常可以使用类String和StringBuffer的对象来表示和处理字符串。**\r\n" + 
 				"\r\n" + 

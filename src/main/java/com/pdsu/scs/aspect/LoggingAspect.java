@@ -36,7 +36,7 @@ public class LoggingAspect {
 	 */
 	private UserInformation user = null;
 	
-	@Before(value = "execution(* com.pdsu.scs.service..*(..))")
+	//@Before(value = "execution(* com.pdsu.scs..service..*(..))")
 	public void before(JoinPoint joinPoint) {
 		String args = SimpleUtils.toString(joinPoint.getArgs());
 		user = ShiroUtils.getUserInformation() == null ? new UserInformation(0) : ShiroUtils.getUserInformation();
@@ -45,7 +45,7 @@ public class LoggingAspect {
 		log.info("开始执行 " + str + " 方法, 请求参数为: " + args + ", 请求人学号为: " + user.getUid());
 	}
 	
-	@AfterReturning(value = "execution(* com.pdsu.scs.service..*(..))", returning = "result")
+	//@AfterReturning(value = "execution(* com.pdsu.scs..service..*(..))", returning = "result")
 	public void afterReturn(JoinPoint joinPoint, Object result) {
 		if(result instanceof ArrayList) {
 			ArrayList<?> list = (ArrayList<?>) result;
@@ -65,7 +65,7 @@ public class LoggingAspect {
 		log.info("执行方法 " + str + " 成功" + ", 返回值为: " + result);
 	}
 	
-	@AfterThrowing(value = "execution(* com.pdsu.scs.service..*(..))", throwing = "ex")
+	//@AfterThrowing(value = "execution(* com.pdsu.scs..service..*(..))", throwing = "ex")
 	public void afterThrowing(JoinPoint joinPoint, Exception ex) {
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
