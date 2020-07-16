@@ -47,16 +47,17 @@
 					json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
 	2) 获取博客页面相关信息api 
-		请求路径: 域名(ip)/项目名称/blob/getblob
+		请求路径: 域名(ip)/项目名称/blob/{webid(网页号)}
 		请求方式：GET
 		请求头: Authorization
 			请求参数: 
 				id ：网页号
-				如: http://121.199.27.93/blob/getblob?id=2
+				如: http://121.199.27.93/blob/2
 				返回值:
-					成功： json{"code" : "200", "msg" : "success",
-						"web" : "网页信息", "webList" , "作者其余作品" , "user", "作者信息"
-						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量"}
+					成功：
+						 json{"code" : "200", "msg" : "success",
+						"web" : "网页信息", "webList" , "作者其余作品" , "author", "作者信息"
+						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量", "commentList" : "评论"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -71,7 +72,8 @@
 			 webid ：网页号
 			  如:http://121.199.27.93/blob/collection?bid=2&webid=3
 				返回值: 
-					成功：json{"code" : "200", "msg" : "success"}
+					成功：
+						json{"code" : "200", "msg" : "success"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -85,7 +87,8 @@
 				webid ：网页号
 				如: http://121.199.27.93/blob/decollection?webid=3
 				返回值：
-				成功：json{"code" : "200" , "msg" : "success"}
+				成功：
+					json{"code" : "200" , "msg" : "success"}
 				失败:
 					json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 				异常：
@@ -101,7 +104,8 @@
 					webDataString ：网页信息
 				如:http://121.199.27.93/blob/contribution?title=111&contype=1&webDataString=xxxx
 				返回值:
-					 成功：json{"code" : "200", "msg" : "success" , "exception" : "发布成功"}
+					 成功：
+					 	json{"code" : "200", "msg" : "success" , "exception" : "发布成功"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -114,7 +118,8 @@
 				webid ：网页号
 				如:http://121.199.27.93/blob/delete?webid=2
 				返回值:
-					成功： json{"code" : "200", "msg" : "success"}
+					成功：
+						 json{"code" : "200", "msg" : "success"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -130,11 +135,45 @@
 				webDataString ：网页信息
 				如:http://121.199.27.93/blob/updata?title=222&contype=1&webDataString=xxxx
 				返回值: 
-					成功： json{"code" : "200", "msg" : "success"}
+					成功：
+						 json{"code" : "200", "msg" : "success"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
 						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+				
+	10) 发布评论api
+		请求路径: 域名(ip)/项目名称/blob/comment
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				webid ：网页号
+				content ：发布内容
+				如:http://121.199.27.93/blob/comment?webid=2&contend=xxxx
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+				
+	11) 回复评论api
+		请求路径: 域名(ip)/项目名称/blob/commentreply
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				cid ：评论号
+				bid : 被回复人学号
+				content ：内容
+				如:http://121.199.27.93/blob/commentreply?cid=2&bid=3&contend=xxxx
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}			
 				
 2. WebHandler API相关
 
@@ -438,6 +477,22 @@
 					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	10) 更换用户名api
+		请求路径: 域名(ip)/项目名称/user/updatename
+		 请求方式：POST
+		 请求头: Authorization
+			请求参数: 
+				username : 用户名
+				如: http://121.199.27.93/blob/updatename?username=xxx
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
 
 3: FileHandler API相关
 
