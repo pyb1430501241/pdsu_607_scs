@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -157,9 +158,9 @@ public class BlobHandler {
 	 * @return
 	 */
 	@ResponseBody
-	@RequestMapping(value = "/getblob", method = RequestMethod.GET)
+	@RequestMapping(value = "/{webid}", method = RequestMethod.GET)
 	@CrossOrigin
-	public Result toBlob(@RequestParam(value = "webid", required = false)Integer id) {
+	public Result toBlob(@PathVariable("webid")Integer id) {
 		try {
 			//获取博客页面信息
 			WebInformation web = webInformationService.selectById(id);

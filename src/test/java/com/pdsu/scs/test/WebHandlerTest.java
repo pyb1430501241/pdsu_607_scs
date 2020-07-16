@@ -59,5 +59,13 @@ public class WebHandlerTest {
 		System.out.println(response.getContentAsString());
 	}
 	
+	@Test
+	public void testse() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/4"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
+	}
 }
 
