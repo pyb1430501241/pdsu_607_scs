@@ -19,14 +19,19 @@ import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.VisitInformation;
+import com.pdsu.scs.bean.WebComment;
+import com.pdsu.scs.bean.WebCommentReply;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.VisitInformationService;
+import com.pdsu.scs.service.WebCommentReplyService;
+import com.pdsu.scs.service.WebCommentService;
 import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebThumbsService;
 import com.pdsu.scs.utils.ShiroUtils;
@@ -76,6 +81,18 @@ public class BlobHandler {
 	 */
 	@Autowired
 	private MyCollectionService myConllectionService;
+	
+	/**
+	 * 评论相关
+	 */
+	@Autowired
+	private WebCommentService webCommentService;
+	
+	/**
+	 * 回复评论相关
+	 */
+	@Autowired
+	private WebCommentReplyService webCommentReplyService;
 	
 	private static final String EX = "exception";
 	
@@ -175,11 +192,25 @@ public class BlobHandler {
 			Integer thubms = webThubmsService.selectThumbsForWebId(web.getId());
 			//获取网页收藏量
 			Integer collections = myConllectionService.selectCollectionsByWebId(web.getId());
+			//获取文章评论
+			List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
+			List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebComments(commentList);
+			for(WebComment webcomment : commentList) {
+				WebComment b = webcomment;
+				List<WebCommentReply> webcommentReplyList = new ArrayList<>();
+				for(WebCommentReply reply : commentReplyList) {
+					if(reply.getCid() == b.getId()) {
+						webcommentReplyList.add(reply);
+					}
+				}
+				b.setCommentReplyList(webcommentReplyList);
+			}
 			return Result.success().add("web", web).add("webList", webList)
 				   .add("author", author)
 				   .add("visit", visits)
 				   .add("thubms", thubms)
-				   .add("collection", collections);
+				   .add("collection", collections)
+				   .add("commentList", commentList);
 		}catch (NotFoundUidException e) {
 			log.info("文章: " + id + e.getMessage());
 			return Result.fail().add(EX, "获取文章信息失败");
@@ -353,6 +384,68 @@ public class BlobHandler {
 		}catch (Exception e) {
 			log.info("更新文章失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未知原因");
+		}
+	}
+	
+	@RequestMapping(value = "/comment", method = RequestMethod.POST)
+	@ResponseBody
+	@CrossOrigin
+	public Result postComment(Integer webid, String content) {
+		UserInformation user = null;
+		try {
+			user =ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
+			boolean b = webCommentService.insert(new WebComment(webid, user.getUid(), 
+					content, 0, SimpleUtils.getSimpleDateSecond(), 0));
+			if(b) {
+				log.info("用户发布评论成功");
+				return Result.success();
+			}
+			log.warn("用户发布评论失败, 原因: 插入数据库失败");
+			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
+		} catch (NotFoundBlobIdException e) {
+			log.info("用户发布评论失败, 原因: 该博客已被删除");
+			return Result.fail().add(EX, "该博客不存在");
+		}catch (Exception e) {
+			if(user == null) {
+				log.info("用户发布评论失败, 原因: 未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}else {
+				log.error("用户: " + user.getUid() + "在博客: " + webid + "发布评论失败, 内容为: " + content);
+				return Result.fail().add(EX, "未定义类型错误");
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/commentreply", method = RequestMethod.POST)
+	@CrossOrigin
+	@ResponseBody
+	public Result postCommentReply(Integer cid, Integer bid, String content) {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
+			boolean b = webCommentReplyService.insert(new WebCommentReply(cid, user.getUid(), bid, content, 
+						0, SimpleUtils.getSimpleDateSecond()));
+			if(b) {
+				log.info("用户回复评论成功");
+				return Result.success();
+			}
+			log.warn("用户回复评论失败, 原因: 连接数据库失败");
+			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+		} catch (NotFoundBlobIdException e) {
+			log.info("用户回复评论失败, 原因: 该博客已被删除");
+			return Result.fail().add(EX, "该博客不存在");
+		} catch (NotFoundCommentIdException e) {
+			log.info("用户回复评论失败, 原因: 该评论已被删除");
+			return Result.fail().add(EX, "该评论不存在");
+		} catch (Exception e) {
+			if(user == null) {
+				log.info("用户回复评论失败, 原因: 未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}
+			log.info("用户: " + user.getUid() + " 回复评论: " + cid + " 失败, 被回复人: " + bid + ", 内容为:" + content);
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 }

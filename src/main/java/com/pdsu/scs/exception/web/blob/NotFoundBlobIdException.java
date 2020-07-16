@@ -17,5 +17,9 @@ public class NotFoundBlobIdException extends BlobException{
 	public NotFoundBlobIdException(String msg) {
 		super(msg);
 	}
+	
+	public NotFoundBlobIdException() {
+		this("该文章不存在");
+	}
 
 }

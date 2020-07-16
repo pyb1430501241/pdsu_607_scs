@@ -16,7 +16,7 @@ import com.pdsu.scs.service.WebInformationService;
  * @author Admin
  *
  */
-public class WebInfromationHeat implements Job{
+public class WebInformationHeat implements Job{
 	
 	@Autowired
 	private WebInformationService webInformationService;

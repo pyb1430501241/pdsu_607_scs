@@ -1,8 +1,6 @@
 package com.pdsu.scs.test;
 
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,5 +58,6 @@ public class WebHandlerTest {
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
 	}
+	
 }
 

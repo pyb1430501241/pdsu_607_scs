@@ -3,6 +3,8 @@ package com.pdsu.scs.service.impl;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,14 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Autowired
 	private EsDao esDao;
 	
+	
+	private String getDescriptionByWebData(String webdata) {
+		Pattern p = Pattern.compile("[/\\#`~\r\n*]");
+		Matcher m = p.matcher(webdata);
+		String str = m.replaceAll("");
+		return str.substring(0, 100);
+	}
+	
 	/*
 	 * 插入一个网页信息
 	 */
@@ -63,7 +73,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	public boolean insert(WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
-					information.getWebDataString().substring(0, 30), information.getTitle());
+						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
 			new Thread(()->{
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());

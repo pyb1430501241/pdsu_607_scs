@@ -182,6 +182,4 @@ public class SimpleUtils {
 		return getObjectByMap(map, getConstructorByClass(clazz));
 	}
 	
-	
-	
 }

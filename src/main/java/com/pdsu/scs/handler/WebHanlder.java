@@ -1,7 +1,10 @@
 package com.pdsu.scs.handler;
 
+import static org.hamcrest.CoreMatchers.nullValue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,13 +34,21 @@ import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.bean.WebComment;
+import com.pdsu.scs.bean.WebCommentReply;
+import com.pdsu.scs.exception.CodeSharingCommunityException;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.MyEmailService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.MyLikeService;
 import com.pdsu.scs.service.UserInformationService;
+import com.pdsu.scs.service.WebCommentReplyService;
+import com.pdsu.scs.service.WebCommentService;
 import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
 import com.pdsu.scs.utils.HashUtils;
@@ -56,15 +67,27 @@ public class WebHanlder {
 	
 	private static final String EX = "exception";
 	
+	/**
+	 * 用户信息相关
+	 */
 	@Autowired
 	private UserInformationService userInformationService;
 	
+	/**
+	 * 用户邮箱相关
+	 */
 	@Autowired
 	private MyEmailService myEmailService;
 	
+	/**
+	 * 关注相关
+	 */
 	@Autowired
 	private MyLikeService myLikeService;
 	
+	/**
+	 * 用户头像相关
+	 */
 	@Autowired
 	private MyImageService myImageService;
 	
@@ -120,7 +143,7 @@ public class WebHanlder {
 	@ResponseBody
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@CrossOrigin
-	public Result loginAjax(String uid, String password, String hit, String code, 
+	public Result login(String uid, String password, String hit, String code, 
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
 		log.info("账号: " + uid + "登录开始");
 		Subject subject = SecurityUtils.getSubject();
@@ -513,6 +536,10 @@ public class WebHanlder {
 			log.info("账号: " + uid + "修改密码成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
 			return Result.success();
 		}catch (Exception e) {
+			if(uid == null) {
+				log.info("修改密码失败, 用户未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}
 			log.error("账号: " + uid + "修改密码时发生错误");
 			return Result.fail().add(EX, "未知错误");
 		}
@@ -532,11 +559,10 @@ public class WebHanlder {
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result like(Integer likeId, Integer uid) {
-		//从session里获取当前登录的人的学号
-		//Integer likeId = null;
+	public Result like(Integer uid) {
+		Integer likeId = null;
 		try {
-			//likeId = ShiroUtils.getUserInformation().getUid();
+			likeId = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
 			//插入记录
 			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
@@ -550,6 +576,10 @@ public class WebHanlder {
 			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
 		} catch (Exception e) {
+			if(likeId == null) {
+				log.info("关注失败, 用户未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}
 			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
@@ -582,6 +612,9 @@ public class WebHanlder {
 			return Result.fail().add(EX, e.getMessage());
 		} catch (Exception e) {
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
+			if(likeId == null) {
+				return Result.fail().add(EX, "用户未登录");
+			}
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
@@ -612,18 +645,73 @@ public class WebHanlder {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + " 更换头像开始");
 			String name = HashUtils.getFileNameForHash(user.getUid()+"") + SimpleUtils.getSuffixName(img.getOriginalFilename());
-			FileUtils.writeByteArrayToFile(new File(FILEPATH + name), img.getBytes());
+			new Thread(()->{
+				byte [] by = null;
+				try {
+					by = FileUtils.readFileToByteArray(new File(FILEPATH + name));
+				} catch (IOException e1) {
+					log.info("原头像为默认头像");
+				}
+				try {
+					log.info("写入新头像");
+					FileUtils.writeByteArrayToFile(new File(FILEPATH + name), img.getBytes(), false);
+				} catch (IOException e) {
+					try {
+						log.info("写入新头像失败, 还原为原头像");
+						FileUtils.writeByteArrayToFile(new File(FILEPATH + name), by, false);
+					} catch (IOException e1) {
+						log.error("写入头像失败, 原因: " + e1.getMessage());
+					}
+				}
+			}).start();
 			log.info("用户: " + user.getUid() + " 更换头像成功, 开始写入数据库地址");
 			boolean b = myImageService.update(new MyImage(user.getUid(), name));
 			if(b) {
 				log.info("用户: " + user.getUid() + " 更换头像成功");
 				return Result.success().add("imgpath", name);
 			} else {
-				log.error("写入数据库失败!");
+				log.warn("写入数据库失败!");
 				return Result.fail().add(EX, "网络异常, 请稍后重试");
 			}
 		}catch (Exception e) {
+			log.error("用户更换头像失败, 原因: " + e.getMessage());
+			if(user == null) {
+				return Result.fail().add(EX, "用户未登录");
+			}
 			return Result.fail().add(EX, "未定义类型错误"); 
 		}		
+	}
+	
+	/**
+	 * 更换用户名
+	 * @param username
+	 * @return
+	 */
+	@RequestMapping(value = "/updatename", method = RequestMethod.POST)
+	public Result updateUserName(String username) {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + "更换用户名开始, 原用户名: " + user.getUsername());
+			boolean b = userInformationService.updateUserName(user.getUid(), username);
+			if(b) {
+				log.info("用户: " + user.getUid() + "更换用户名成功, 现用户名: " + username);
+				return Result.success();
+			}else {
+				log.warn("连接数据库失败");
+				return Result.fail().add(EX, "网络异常, 请稍候重试");
+			}
+		} catch (NotFoundUidException e) {
+			log.info(e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		}catch (Exception e) {
+			if(user == null) {
+				log.info("用户未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}else {
+				log.error("用户: " + user.getUid() + "更换用户名失败, 原因: " + e.getMessage());
+			}
+			return Result.fail().add(EX, "未定义类型错误");
+		}
 	}
 }

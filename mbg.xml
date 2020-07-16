@@ -49,5 +49,7 @@
         <table tableName="db_web_thumbs" domainObjectName="WebThumbs"></table>
         <table tableName="db_web_heat" domainObjectName="WebHeat"></table>
         <table tableName="db_web_file" domainObjectName="WebFile"></table>
+        <table tableName="db_comment" domainObjectName="WebComment"></table>
+        <table tableName="db_comment_reply" domainObjectName="WebCommentReply"></table>
     </context>
 </generatorConfiguration>
