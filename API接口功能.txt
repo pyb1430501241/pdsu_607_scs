@@ -49,7 +49,7 @@
 	2) 获取博客页面相关信息api 
 		请求路径: 域名(ip)/项目名称/blob/{webid(网页号)}
 		请求方式：GET
-		请求头: Authorization
+		请求头: Authorization(可不加)
 			请求参数: 
 				id ：网页号
 				如: http://121.199.27.93/blob/2
@@ -113,6 +113,7 @@
 				
 	8) 删除指定文章api
 		请求路径: 域名(ip)/项目名称/blob/delete
+		请求头: Authorization
 		请求方式：POST
 			请求参数: 
 				webid ：网页号
@@ -179,6 +180,7 @@
 
 	1)用户退出登录 API
 		路径: 域名(ip)/项目名称/user/logout
+		请求头: Authorization
 		请求方式: GET
 		返回值:
 			成功:
@@ -215,7 +217,7 @@
 						hit ：cache获取数据的key
 						code ： 前端输入验证码的 key
 						flag ：是否记住密码 (0代表不记住,1代表记住)
-						如:http://121.199.27.93/user/loginajax?uid=1&password=123456&hit=99code=78561&flag=1
+						如:http://121.199.27.93/user/login?uid=1&password=123456&hit=99&code=78561&flag=1
 						返回值:
 							成功：
 								json{"code" : "200", "msg" : "success" , "exception" : "登录成功"
