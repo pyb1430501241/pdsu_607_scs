@@ -67,7 +67,7 @@
 		请求路径:  域名(ip)/项目名称/blob/collection
 		请求方式：POST
 		请求头: Authorization
-			请求参数:
+			请求参数: 
 			 bid ： 博客号
 			 webid ：网页号
 			  如:http://121.199.27.93/blob/collection?bid=2&webid=3
