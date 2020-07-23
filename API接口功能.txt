@@ -338,18 +338,19 @@
 						 		json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
 						 	异常：
 					 			json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
-			 
+			  
 			3.找回密码api
 				 请求路径：域名(ip)/项目名称/user/retrieve
 				 请求方式：POST
 					 请求参数：
 					 	uid ：学号
+					 	password ：密码
 						token : 取出验证码的key
 						code : 前端输入验证码的key
-						 如：http://121.199.27.93/user/retrieve?uid=2&token=2222&code=2222
+						 如：http://121.199.27.93/user/retrieve?uid=2&password=123456&token=2222&code=2222
 					 返回值：
 						 成功：
-						 	json{"code" : "200" , "msg" : "success"}
+						 	json{"code" : "200" , "msg" : "success"  , "exception" : "找回成功"}
 						 失败：
 						 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
 						 异常：
