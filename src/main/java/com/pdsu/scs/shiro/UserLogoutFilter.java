@@ -32,7 +32,7 @@ public class UserLogoutFilter extends LogoutFilter{
 		try {
 			log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录");
 	        subject.logout();
-	    } catch (SessionException ise) {
+	    } catch (Exception ise) {
 	    	json.append("code", 404);
 	        json.append("msg", "fail");
 	        out.println(json);

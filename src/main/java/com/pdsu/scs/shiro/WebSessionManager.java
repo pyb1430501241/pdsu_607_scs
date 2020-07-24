@@ -11,7 +11,7 @@ import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.apache.shiro.web.util.WebUtils;
 
 /**
- * Session 管理器, 在用户登录后, 从请求头中获取 sessionId, 以确保每次访问的 Session都是同一Session
+ * Session 管理器, 在用户登录后, 从请求头中获取 sessionId, 以确保每次访问的 Session 都是同一Session
  * @author 半梦
  *
  */

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.pdsu.scs.bean.MyCollection;
 import com.pdsu.scs.service.MyCollectionService;
 
 @SpringJUnitConfig(locations = {"classpath:spring/spring.xml"})

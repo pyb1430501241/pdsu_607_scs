@@ -20,7 +20,7 @@ public interface WebInformationService {
 	 * @param information
 	 * @return  是否插入成功
 	 */
-	public boolean insert(WebInformation information) throws InsertException;
+	public int insert(WebInformation information) throws InsertException;
 	
 	/**
 	 * 根据网页id删除一个网页

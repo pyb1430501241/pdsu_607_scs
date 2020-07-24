@@ -182,4 +182,15 @@ public class SimpleUtils {
 		return getObjectByMap(map, getConstructorByClass(clazz));
 	}
 	
+	/**
+	 * 邮箱加密
+	 * @param str
+	 * @return
+	 */
+	public static String getAsteriskForString(String str) {
+		StringBuilder builder = new StringBuilder(str);
+		builder.replace(3, 7, "****");
+		return builder.toString();
+	}
+	
 }

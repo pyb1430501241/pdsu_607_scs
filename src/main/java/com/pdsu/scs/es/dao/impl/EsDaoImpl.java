@@ -74,7 +74,7 @@ public class EsDaoImpl implements EsDao{
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			throw new InsertException("请求服务器失败");
-		}
+		} 
 	}
 	
 	@Override

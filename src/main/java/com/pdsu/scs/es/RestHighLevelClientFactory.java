@@ -2,6 +2,7 @@ package com.pdsu.scs.es;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 
 /**
@@ -12,7 +13,8 @@ import org.elasticsearch.client.RestHighLevelClient;
 public class RestHighLevelClientFactory {
 
 	public RestHighLevelClient getRestHighLevelClient() {
-		return new RestHighLevelClient(RestClient.builder(new HttpHost("129.204.206.237", 9200, "http")));
+		RestClientBuilder builder = RestClient.builder(new HttpHost("129.204.206.237", 9200, "http"));
+		return new RestHighLevelClient(builder);
 	}
 
 }

@@ -34,15 +34,15 @@ public class EsBlobInformation {
 	}
 
 	public void setDescription(String description) {
-		this.description = description;
+		this.description = description.replace("\"", "\\\"");
 	}
 
 	@Override
 	public String toString() {
-		return "{\r\n" + 
+		return "{\n" + 
 				"  \"webid\" : " + webid + ",\r\n" + 
 				"  \"title\" : \"" + title + "\",\r\n" + 
-				"  \"description\" : \"" + description + "\"\r\n" + 
+				"  \"description\" : \"" + description + "\"\n" + 
 				"}";
 	}
 
@@ -50,7 +50,7 @@ public class EsBlobInformation {
 		super();
 		this.webid = webid;
 		this.title = title;
-		this.description = description;
+		this.description = description.replace("\"", "\\\"");
 	}
 	
 	public EsBlobInformation() {

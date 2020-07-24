@@ -170,7 +170,7 @@ import javax.imageio.ImageIO;
         String charOrNum = gen % 2 ==0 ? "char":"num";
         if ("char".equals(charOrNum)) {
             //字符
-            int temp = random.nextInt(2)%2==0?65:97;
+            int temp = random.nextInt(2) % 2 == 0 ? 65 : 97;
             int ascii = random.nextInt(26);
             value += (char)(ascii + temp);
         }else if ("num".equals(charOrNum)) {
@@ -202,7 +202,8 @@ import javax.imageio.ImageIO;
      * @param set
      * @return
      */
-    private static  String printSet(Set set){ //打印set的方法
+    @SuppressWarnings("rawtypes")
+	private static String printSet(Set set){ //打印set的方法
         Iterator iterator = set.iterator();
         String value = "";
         while (iterator.hasNext()) {

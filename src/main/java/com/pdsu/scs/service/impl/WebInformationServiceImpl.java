@@ -60,34 +60,38 @@ public class WebInformationServiceImpl implements WebInformationService {
 	
 	
 	private String getDescriptionByWebData(String webdata) {
-		Pattern p = Pattern.compile("[/\\#`~\r\n*]");
+		Pattern p = Pattern.compile("[/#`~\r\n\t *]");
 		Matcher m = p.matcher(webdata);
 		String str = m.replaceAll("");
-		return str.substring(0, 100);
+		return str.length() > 100 ? str.substring(0, 100) : str;
 	}
 	
 	/*
 	 * 插入一个网页信息
 	 */
 	@Override
-	public boolean insert(WebInformation information) throws InsertException {
+	public int insert(WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
 						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
-			new Thread(()->{
-				try {
-					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
-							getObjectByMapAndClass(map, EsUserInformation.class);
-					esuser.setBlobnum(esuser.getBlobnum()+1);
-					esDao.update(esuser, user.getId());
-				} catch (Exception e) {
-				}
-			}).start();
-			return esDao.insert(blob, information.getId());
+			System.out.println(blob);
+			if(esDao.insert(blob, information.getId())) {
+				new Thread(()->{
+					try {
+						UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
+						Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+						EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+								getObjectByMapAndClass(map, EsUserInformation.class);
+						esuser.setBlobnum(esuser.getBlobnum() + 1);
+						esDao.update(esuser, user.getId());
+					} catch (Exception e) {
+					}
+				}).start();
+				return information.getId();
+			}
+			return -1;
 		}
-		return false;
+		return -1;
 	}
 
 	/*
@@ -204,7 +208,19 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(web.getId());
-		int i = webInformationMapper.updateByExampleWithBLOBs(web, example);
+		int i = webInformationMapper.updateByExampleSelective(web, example);
+		if(i > 0) {
+			new Thread(()->{
+				try {
+					Map<String, Object> map = esDao.queryByTableNameAndId("blob", web.getId());
+					EsBlobInformation blob = (EsBlobInformation) SimpleUtils
+							.getObjectByMapAndClass(map, EsBlobInformation.class);
+					blob.setDescription(getDescriptionByWebData(web.getWebDataString()));
+					esDao.update(blob, blob.getWebid());
+				} catch (Exception e) {
+				}
+			}).start();
+		}
 		return i > 0 ? true : false;
 	}
 

@@ -124,8 +124,12 @@
 				/user/isexist = anon
 				/user/getcodeforretrieve = anon
 				/user/retrieve = anon
-				/blob/index = anon
-				/blob/getwebindex = anon
+				/blob/contribution = authc
+				/blob/delete = authc
+				/blob/update = authc
+				/blob/comment = authc
+				/blob/commentreply = authc
+				/blob/** = anon
 				/** = authc
 			</value>
 		</property>

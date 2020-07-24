@@ -1,5 +1,7 @@
 package com.pdsu.scs.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +54,8 @@ public class MyEmailServiceImpl implements MyEmailService{
 		MyEmailExample example = new MyEmailExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return myEmailMapper.selectByExample(example).get(0);
+		List<MyEmail> list = myEmailMapper.selectByExample(example);
+		return list.size() == 0 ? null : list.get(0);
 	}
 
 	@Override

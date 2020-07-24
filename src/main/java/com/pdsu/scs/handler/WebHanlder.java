@@ -1,11 +1,11 @@
 package com.pdsu.scs.handler;
 
-import static org.hamcrest.CoreMatchers.nullValue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,16 +29,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.pdsu.scs.bean.BlobInformation;
 import com.pdsu.scs.bean.MyEmail;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.WebComment;
-import com.pdsu.scs.bean.WebCommentReply;
-import com.pdsu.scs.exception.CodeSharingCommunityException;
-import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
-import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
+import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
@@ -47,14 +44,15 @@ import com.pdsu.scs.service.MyEmailService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.MyLikeService;
 import com.pdsu.scs.service.UserInformationService;
-import com.pdsu.scs.service.WebCommentReplyService;
-import com.pdsu.scs.service.WebCommentService;
+import com.pdsu.scs.service.VisitInformationService;
+import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.RandomUtils;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
+
 
 /**
  * 
@@ -90,6 +88,18 @@ public class WebHanlder {
 	 */
 	@Autowired
 	private MyImageService myImageService;
+	
+	/**
+	 * 用户博客相关
+	 */
+	@Autowired
+	private WebInformationService webInformationService;
+	
+	/**
+	 * 用户访问相关
+	 */
+	@Autowired
+	private VisitInformationService visitInformationService;
 	
 	private static final String FILEPATH = "pdsu/web/img/";
 	
@@ -146,7 +156,8 @@ public class WebHanlder {
 	public Result login(String uid, String password, String hit, String code, 
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
 		log.info("账号: " + uid + "登录开始");
-		Subject subject = SecurityUtils.getSubject();
+		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
+		System.out.println("传入: " + hit);
 		if(cache.get(hit) == null) {
 			return Result.fail().add(EX, "验证码已失效, 请刷新后重试");
 		}
@@ -158,10 +169,11 @@ public class WebHanlder {
 			return Result.fail().add(EX, "验证码错误");
 		}
 		
+		Subject subject = SecurityUtils.getSubject();
 		/**
 		 * 如果未认证
 		 */
-		if(!subject.isAuthenticated()) {
+		if(ShiroUtils.getUserInformation() == null) {
 			log.info("账号: " + uid + "开始登录认证");
 			UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
 			//是否记住
@@ -187,8 +199,9 @@ public class WebHanlder {
 					log.info("账号: " + uid + "登录失败, 原因: 账号已被注销");
 					return Result.fail().add(EX, "账号已被注销");
 				}
-				log.info("账号: " + uid + "登录成功");
-				return Result.success().add(EX, "登录成功")
+				log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
+				uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
+				return Result.success()
 						.add("user", uu)
 						.add("AccessToken", subject.getSession().getId());
 			}catch (IncorrectCredentialsException e) {
@@ -198,7 +211,7 @@ public class WebHanlder {
 				log.info("账号: " + uid + "不存在");
 				return Result.fail().add(EX, "账号不存在");
 			}catch (Exception e) {
-				log.error("账号: " + uid + "登录时发生未知错误");
+				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
 				return Result.fail().add(EX, "未知错误");
 			}
 		}
@@ -228,10 +241,12 @@ public class WebHanlder {
 			String src = "data:image/png;base64," + base64;
 			String token = RandomUtils.getUUID();
 			cache.put(token, verifyCode);
+			System.out.println("获取: " + token);
 			log.info("获取成功, 验证码为: " + verifyCode);
 			return Result.success()
 					.add("token", token)
-					.add("img", src);
+					.add("img", src)
+					.add("code", verifyCode);
 		} catch (Exception e) {
 			if(e instanceof InvocationTargetException) {
 				log.error(((InvocationTargetException)e).getTargetException().getMessage());
@@ -295,7 +310,7 @@ public class WebHanlder {
 			log.info("申请账号: " + user.getUid() + "开始");
 			//验证验证码
 			if(cache.get(token) == null) {
-				return Result.fail().add(EX, "验证码已过期");
+				return Result.fail().add(EX, "验证码已过期, 请重新获取");
 			}
 			String ss = (String) cache.get(token).get();
 			if(!ss.equals(code)) {
@@ -355,8 +370,16 @@ public class WebHanlder {
 			int i = userInformationService.countByUid(uid);
 			if(i != 0) {
 				log.info("账号: " + uid + "存在");
-				return Result.success().add("email", myEmailService.selectMyEmailByUid(uid))
-						.add("uid", uid);
+				MyEmail email = myEmailService.selectMyEmailByUid(uid);
+				if(cache == null) {
+					cache = cacheManager.getCache("code");
+				}
+				String token = RandomUtils.getUUID();
+				cache.put(token, email.getEmail());
+				email.setEmail(SimpleUtils.getAsteriskForString(email.getEmail()));
+				return Result.success().add("email", email)
+						.add("uid", uid)
+						.add("token", token);
 			}else {
 				log.info("账号: " + uid + "不存在");
 				return Result.fail().add(EX, "账号不存在, 是否申请?");
@@ -375,8 +398,13 @@ public class WebHanlder {
 	@RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result sendEmailForRetrieve(String email) {
+	public Result sendEmailForRetrieve(String token) {
+		String email = null;
 		try {
+			if(cache.get(token) == null) {
+				return Result.fail().add(EX, "验证信息已失效, 请重新验证");
+			}
+			email = (String) cache.get(token).get();
 			log.info("邮箱: " + email + " 开始发送找回密码的验证码");
 			EmailUtils utils = new EmailUtils();
 			//发送邮件
@@ -384,18 +412,16 @@ public class WebHanlder {
 					userInformationService.selectByUid(
 							myEmailService.selectMyEmailByEmail(email).getUid()).getUsername());
 			String text = utils.getText();
-			String token = RandomUtils.getUUID();
-			if(cache == null) {
-				cache = cacheManager.getCache("code");
-			}
-			cache.put(token, text);
+			String uuid = RandomUtils.getUUID();
+			cache.put(uuid, text);
 			log.info("发送验证码成功, 验证码为: " + text);
-			return Result.success().add("token", token);
+			return Result.success().add("token", uuid);
 		}catch (Exception e) {
 			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
+	
 	/**
 	 * 找回密码
 	 * @param uid
@@ -448,7 +474,7 @@ public class WebHanlder {
 	@CrossOrigin
 	public Result getModify() {
 		try {
-			log.info("修改密码开始, 用户信息从 session获取");
+			log.info("修改密码开始, 用户信息从 session 获取");
 			UserInformation user = ShiroUtils.getUserInformation();
 			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
 			log.info("信息获取成功");
@@ -599,8 +625,7 @@ public class WebHanlder {
 			likeId = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
 			//刪除记录
-			boolean b;
-				b = myLikeService.deleteByLikeIdAndUid(likeId, uid);
+			boolean b = myLikeService.deleteByLikeIdAndUid(likeId, uid);
 			if(b) {
 				log.info("用户: " + likeId + ", 取消关注: " + uid + "成功");
 				return Result.success();
@@ -711,6 +736,40 @@ public class WebHanlder {
 			}else {
 				log.error("用户: " + user.getUid() + "更换用户名失败, 原因: " + e.getMessage());
 			}
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
+	@CrossOrigin
+	@ResponseBody
+	public Result getBlobsByUid() {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + "获取自己的文章开始");
+			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid());
+			List<Integer> webids = new ArrayList<Integer>();
+			for (WebInformation web : weblist) {
+				webids.add(web.getId());
+			}
+			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
+			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+			for(int i = 0; i < weblist.size(); i++) {
+				blobList.add(new BlobInformation(
+						user, weblist.get(i), visitList.get(i), null, null
+				));
+			}
+			return Result.success().add("blobList", blobList);
+		} catch (NotFoundUidException e) {
+			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		}catch (Exception e) {
+			if(user == null) {
+				log.info("获取文章失败, 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}

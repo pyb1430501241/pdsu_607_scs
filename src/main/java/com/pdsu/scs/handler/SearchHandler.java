@@ -17,10 +17,8 @@ import com.pdsu.scs.bean.EsBlobInformation;
 import com.pdsu.scs.bean.EsFileInformation;
 import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.Result;
-import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.es.service.EsService;
 import com.pdsu.scs.exception.web.es.QueryException;
-import com.pdsu.scs.utils.ShiroUtils;
 
 /**
  * 搜索相关

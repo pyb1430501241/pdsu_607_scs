@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.pdsu.scs.bean.BlobInformation;
 import com.pdsu.scs.bean.MyCollection;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.Result;
@@ -109,8 +112,9 @@ public class BlobHandler {
 	@RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getWebForIndex() {
+	public Result getWebForIndex(@RequestParam(value = "p", defaultValue = "1") Integer p) {
 		try {
+			PageHelper.startPage(p, 10);
 			//获取按时间排序的投稿
 			List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
 			if(webList == null || webList.size() == 0) {
@@ -142,10 +146,23 @@ public class BlobHandler {
 			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
 			//获取文章收藏量
 			List<Integer> collectionList = myConllectionService.selectCollectionssByWebIds(webids);
-			return Result.success().add("webList", webList)
-					.add("userList", userList).add("visitList", visitList)
-					.add("thumbsList", thumbsList)
-					.add("collectionList", collectionList);
+			
+			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+			for (int i = 0; i < webList.size(); i++) {
+				BlobInformation blobInformation = new BlobInformation(
+						webList.get(i), visitList.get(i),
+						thumbsList.get(i), collectionList.get(i)
+				);
+				for(UserInformation user : userList) {
+					if(webList.get(i).getUid().equals(user.getUid())) {
+						blobInformation.setUser(user);;
+						break;
+					}
+				}
+				blobList.add(blobInformation);
+			}
+			PageInfo<BlobInformation> pageInfo = new PageInfo<BlobInformation>(blobList, 5);
+			return Result.success().add("blobList", pageInfo);
 		}catch (Exception e) {
 			log.error("获取首页数据失败, 原因为: " + e.getMessage());
 			return Result.fail();
@@ -213,8 +230,8 @@ public class BlobHandler {
 				   .add("collection", collections)
 				   .add("commentList", commentList);
 		}catch (NotFoundUidException e) {
-			log.info("文章: " + id + e.getMessage());
-			return Result.fail().add(EX, "获取文章信息失败");
+			log.info("获取文章信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "文章不见了");
 		} catch (UnsupportedEncodingException e) {
 			log.error("文章: " + id + "编码转换失败!!!");
 			return Result.fail().add(EX, "获取文章信息失败");
@@ -222,8 +239,8 @@ public class BlobHandler {
 			log.info("文章: " + id + e.getMessage());
 			return Result.fail().add(EX, "文章不见了");
 		} catch (Exception e) {
-			log.warn("发生未知错误!");
-			return Result.fail().add(EX, "未知错误");
+			log.warn("发生未知错误, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	
@@ -249,13 +266,18 @@ public class BlobHandler {
 				log.info("用户: " + uid + ", 收藏 " + webid + " 成功");
 				return Result.success();
 			}
-			log.info("收藏失败");
+			log.warn("收藏失败, 连接数据库失败");
 			return Result.fail().add(EX, "网络延迟, 请稍候重试");
 		}catch (UidAndWebIdRepetitionException e) {
 			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
-			log.warn("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "未知错误");
+			if(uid == null) {
+				log.info("用户收藏文章失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}else {
+				log.error("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
+				return Result.fail().add(EX, "未定义类型错误");
+			}
 		}
 	}
 
@@ -278,15 +300,20 @@ public class BlobHandler {
 				log.info("取消收藏成功");
 				return Result.success();
 			}else {
-				log.info("取消收藏失败");
-				return Result.fail();
+				log.warn("取消收藏失败, 原因: 连接服务器失败");
+				return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
 			}
 		}catch (UidAndWebIdRepetitionException e) {
 			log.info("用户: " + user.getUid() + ", 取消收藏失败");
 			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
-			log.info("用户: " + (user != null ? user.getUid() : "用户未登录") + "取消收藏博客失败, 原因: " + e.getMessage());
-			return Result.fail();
+			if(user == null) {
+				log.info("用户收藏文章失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			} else {
+				log.error("用户: " + user.getUid() + "取消收藏博客失败, 原因: " + e.getMessage());
+				return Result.fail().add(EX, "未定义类型错误");
+			}
 		}
 	}
 	
@@ -311,10 +338,10 @@ public class BlobHandler {
 			//设置文章投稿时间
 			web.setSubTime(SimpleUtils.getSimpleDateSecond());
 			//发布文章
-			boolean flag = webInformationService.insert(web);
-			if(flag) {
+			int flag = webInformationService.insert(web);
+			if(flag != -1) {
 				log.info("用户: " + uid + "发布文章成功, 文章标题为: " + web.getTitle());
-				return Result.success().add(EX, "发布成功");
+				return Result.success().add(EX, "发布成功").add("webid", flag);
 			}
 			log.info("用户: " + uid + "发布文章失败");
 			return Result.fail().add(EX, "发布失败");
@@ -322,8 +349,13 @@ public class BlobHandler {
 			log.warn("文章: " + web.getUid() + " 转码失败!!!");
 			return Result.fail().add(EX, "添加文章信息失败");
 		}catch (Exception e) {
-			log.error("用户: " + (uid == null ? "用户未登录" : uid) + ", 发布文章失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "发布失败, 未知原因");
+			if(uid == null) {
+				log.info("用户发布文章失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			} else {
+				log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
+				return Result.fail().add(EX, "发布失败, 未知原因");
+			}
 		}
 	}
 	
@@ -337,11 +369,13 @@ public class BlobHandler {
 	@CrossOrigin
 	public Result delete(Integer webid) {
 		//获取当前登录用户的信息
-		UserInformation user = ShiroUtils.getUserInformation();
+		UserInformation user = null;
 		try {
+			user = ShiroUtils.getUserInformation();
 			log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
 			WebInformation webInformation = webInformationService.selectById(webid);
 			if(user.getUid() != webInformation.getUid()) {
+				log.info("你: " + user.getUid() + " 无权删除文章: " + webid);
 				return Result.fail().add(EX, "您无权删除这篇文章");
 			}
 			boolean b = webInformationService.deleteById(webid);
@@ -356,8 +390,12 @@ public class BlobHandler {
 			log.info("删除文章失败, 文章不存在");
 			return Result.fail().add(EX, e.getMessage());
 		} catch (Exception e) {
-			log.info("删除文章失败, 文章不存在");
-			return Result.fail().add(EX, "删除失败, 未知原因");
+			if(user == null) {
+				log.info("用户删除文章失败, 原因: 未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("删除文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	
@@ -371,8 +409,9 @@ public class BlobHandler {
 	@CrossOrigin
 	public Result update(WebInformation web) {
 		//获取当前登录用户的信息
+		UserInformation user = null;
 		try {
-			UserInformation user = ShiroUtils.getUserInformation();
+			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId() + "作者: " + web.getUid());
 			boolean b = webInformationService.updateByWebId(web);
 			if(b) {
@@ -383,8 +422,13 @@ public class BlobHandler {
 				return Result.fail().add(EX, "网络异常, 请稍候重试");
 			}
 		}catch (Exception e) {
-			log.info("更新文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未知原因");
+			if(user == null) {
+				log.info("用户更新文章失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}else {
+				log.error("更新文章失败, 原因: " + e.getMessage());
+				return Result.fail().add(EX, "未知原因");
+			}
 		}
 	}
 	
@@ -412,7 +456,8 @@ public class BlobHandler {
 				log.info("用户发布评论失败, 原因: 未登录");
 				return Result.fail().add(EX, "用户未登录");
 			}else {
-				log.error("用户: " + user.getUid() + "在博客: " + webid + "发布评论失败, 内容为: " + content);
+				log.error("用户: " + user.getUid() + "在博客: " + webid + "发布评论失败, 内容为: " + content
+						+ "错误原因为: " + e.getMessage());
 				return Result.fail().add(EX, "未定义类型错误");
 			}
 		}
