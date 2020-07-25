@@ -9,23 +9,25 @@
 	2) user的 json 对应 json{"id" : "xx", "uid" : "用户学号", "password" : "null", "username" : "网名"
 		, "college" : "学院", "clazz" : "班级", "time" : "申请时间", "accountStatus" : "账号状态"
 		, "imgpath" : "头像地址"}
-	3) es的json 对应 json{ 
-						  "authorList" : {"uid" : "作者学号" , "username" : "用户名"， " imgpath" : "图片路径" " , "blobnum" : "博客编号" , "likenum": "喜爱编号"}], 
+	3) author 的 json 对应json {"uid" : "学号" , "username" : "昵称" , "imgpath" : "头像地址" , "original" : "原创数"
+		, "fans" : "粉丝数" , "thumbs" : "点赞数" , "comment" : "评论数" , "visits" : "访问量" , "collection" : "收藏量"}	
+	4) es的json 对应 json{ 
+						  "authorList" : {"uid" : "作者学号" , "username" : "用户名"， " imgpath" : "图片路径" " , "blobnum" : "博客编号" , 							"likenum": "喜爱编号"}], 
 						  "b1obList" :[{"webid" : "网页号", "title" : "标题" , "description" : "内容" }], 
 		                  "fi1eList":[{"fi1eid" : "文件名", "title" : "标题" , "description" : "内容"}]
 		                  }
-    4) MyEmail 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "email" : "作者邮箱"}
-    5) MyImage 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "imagePath" : "图片路径"}
-    6) MyLike 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "likeid" : "喜欢的作者id"}
-    7) PenaltyRecord 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "reasons" : "封禁原因" 
+    5) MyEmail 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "email" : "作者邮箱"}
+    6) MyImage 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "imagePath" : "图片路径"}
+    7) MyLike 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "likeid" : "喜欢的作者id"}
+    8) PenaltyRecord 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "reasons" : "封禁原因" 
     									， "time" : "封禁时间" ，" dutation" : "时长"}
-    8) webFile 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "title" : "标题" 
+    9) webFile 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "title" : "标题" 
     									, "filePath" : "下载路径" ，"creattime" : "创建时间"}
-    9) webHeat 的 json 对应 json{"id" : "xx" , "webid" : "网页号" , "heat" : "点击量"}
+    10) webHeat 的 json 对应 json{"id" : "xx" , "webid" : "网页号" , "heat" : "点击量"}
     									
-	10) visit的 json 对应 json{访问量}
-	11) thubms的 json 对应 json{点赞量}
-	12) collection的 json 对应 json{收藏量}
+	11) visit的 json 对应 json{访问量}
+	12) thubms的 json 对应 json{点赞量}
+	13) collection的 json 对应 json{收藏量}
 	
 	注:
 	1：后带List的均为此数据的集合形式  
@@ -56,7 +58,7 @@
 				返回值:
 					成功：
 						 json{"code" : "200", "msg" : "success",
-						"web" : "网页信息", "webList" , "作者其余作品" , "author", "作者信息"
+						"web" : "网页信息" , "webList" , "作者其余作品" 
 						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量", "commentList" : "评论"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
@@ -174,7 +176,23 @@
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
-						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}			
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	12) 获取作者信息api
+		请求路径: 域名(ip)/项目名称/blob/getauthor
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				uid ：作者学号
+				如:http://121.199.27.93/blob/getauthor?uid=1
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "author" : "作者信息"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}						
+									
 				
 2. WebHandler API相关
 
