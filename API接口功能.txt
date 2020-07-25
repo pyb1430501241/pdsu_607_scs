@@ -496,6 +496,19 @@
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 				 		
+	11) 获取文章api
+		请求路径: 域名(ip)/项目名称/user/getblobs
+		 请求方式：GET
+		 请求头: Authorization
+				如: http://121.199.27.93/blob/getblobs
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "blobList" : "博客集合"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
 
 3: FileHandler API相关
 
