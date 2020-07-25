@@ -196,6 +196,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
+		example.setOrderByClause("sub_time DESC");
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
 		return list;
 	}
@@ -216,6 +217,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 					EsBlobInformation blob = (EsBlobInformation) SimpleUtils
 							.getObjectByMapAndClass(map, EsBlobInformation.class);
 					blob.setDescription(getDescriptionByWebData(web.getWebDataString()));
+					System.out.println(blob);
 					esDao.update(blob, blob.getWebid());
 				} catch (Exception e) {
 				}
@@ -245,6 +247,15 @@ public class WebInformationServiceImpl implements WebInformationService {
 		com.pdsu.scs.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		return (int) userInformationMapper.countByExample(example);
+	}
+
+	@Override
+	public Integer countOriginalByUidAndContype(Integer uid, Integer contype) throws NotFoundUidException {
+		WebInformationExample example = new WebInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andContypeEqualTo(contype);
+		criteria.andUidEqualTo(uid);
+		return (int) webInformationMapper.countByExample(example);
 	}
 
 }

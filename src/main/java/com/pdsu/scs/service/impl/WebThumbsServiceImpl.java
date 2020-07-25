@@ -46,4 +46,15 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		return (int)l;
 	}
 
+	/**
+	 * 根据学号获取一个人的总点赞数
+	 */
+	@Override
+	public Integer countThumbsByUid(Integer uid) {
+		WebThumbsExample example = new WebThumbsExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		return (int) webThumbsMapper.countByExample(example);
+	}
+
 }

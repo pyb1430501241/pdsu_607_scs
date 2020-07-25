@@ -1,10 +1,16 @@
 package com.pdsu.scs.test;
 
+import java.io.UnsupportedEncodingException;
+
+import org.apache.shiro.SecurityUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.exception.web.es.InsertException;
@@ -12,20 +18,30 @@ import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.utils.SimpleUtils;
 
 
-@SpringJUnitConfig(locations = {"classpath:spring/spring.xml"})
+@SpringJUnitConfig(locations = {"classpath:spring/springmvc.xml", "classpath:spring/spring.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
+@WebAppConfiguration
 public class WebInformationTest {
 
 	@Autowired
 	private WebInformationService webInformationService;
 	
+	@Autowired
+	org.apache.shiro.mgt.SecurityManager securityManager;
+	
+	@Before
+	public void initMockMvc() {
+		SecurityUtils.setSecurityManager(securityManager);
+	}
+	
 	/*
 	 * 测试,根据主键获取对应的WebInformation
 	 */
 	@Test
-	public void getWebInformationByIdtest() {
-		
-		System.out.println(webInformationService.selectById(3));
+	public void getWebInformationByIdtest() throws UnsupportedEncodingException {
+		WebInformation selectById = webInformationService.selectById(38);
+		selectById.setWebDataString(new String(selectById.getWebData(), "utf-8"));
+		System.out.println(selectById);
 		
 	}
 	

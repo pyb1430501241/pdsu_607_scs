@@ -32,5 +32,12 @@ public interface WebCommentService {
 	 * @return
 	 */
 	public List<WebComment> selectCommentsByWebId(Integer webid) throws NotFoundBlobIdException;
+
+	/**
+	 * 根据学号获取一个人的总评论数
+	 * @param uid
+	 * @return
+	 */
+	public Integer countByUid(Integer uid);
 	
 }

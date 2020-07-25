@@ -57,5 +57,12 @@ public interface MyCollectionService {
 	 * @return
 	 */
 	public boolean countByWebId(Integer webid);
+
+	/**
+	 * 获取一个人的总收藏量
+	 * @param uid
+	 * @return
+	 */
+	public Integer countCollectionByUid(Integer uid);
 	
 }

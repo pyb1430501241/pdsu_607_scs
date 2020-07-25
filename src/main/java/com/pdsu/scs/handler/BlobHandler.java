@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.pdsu.scs.bean.Author;
 import com.pdsu.scs.bean.BlobInformation;
 import com.pdsu.scs.bean.MyCollection;
 import com.pdsu.scs.bean.MyImage;
@@ -32,6 +33,7 @@ import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
+import com.pdsu.scs.service.MyLikeService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.VisitInformationService;
 import com.pdsu.scs.service.WebCommentReplyService;
@@ -98,6 +100,12 @@ public class BlobHandler {
 	@Autowired
 	private WebCommentReplyService webCommentReplyService;
 	
+	/**
+	 * 关注相关
+	 */
+	@Autowired
+	private MyLikeService myLikeService;
+	
 	private static final String EX = "exception";
 	
 	/**
@@ -146,7 +154,6 @@ public class BlobHandler {
 			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
 			//获取文章收藏量
 			List<Integer> collectionList = myConllectionService.selectCollectionssByWebIds(webids);
-			
 			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
 			for (int i = 0; i < webList.size(); i++) {
 				BlobInformation blobInformation = new BlobInformation(
@@ -182,14 +189,17 @@ public class BlobHandler {
 			//获取博客页面信息
 			WebInformation web = webInformationService.selectById(id);
 			Integer uid = web.getUid();
-			//查询作者信息
-			UserInformation author = userInformationService.selectByUid(uid);
-			//获取作者头像
-			author.setImgpath(myInageService.selectImagePathByUid(uid).getImagePath());
-			//密码置空
-			author.setPassword(null);
 			//查询作者其余文章
 			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
+			List<WebInformation> webs = new ArrayList<WebInformation>();
+			int i = 0;
+			for (WebInformation webInformation : webList) {
+				if(i > 5) {
+					break;
+				}
+				webs.add(webInformation);
+				i++;
+			}
 			//把 byte字节码转化为 String
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
 			//byte字节码置空
@@ -217,14 +227,13 @@ public class BlobHandler {
 				WebComment b = webcomment;
 				List<WebCommentReply> webcommentReplyList = new ArrayList<>();
 				for(WebCommentReply reply : commentReplyList) {
-					if(reply.getCid() == b.getId()) {
+					if(reply.getCid().equals(b.getId())) {
 						webcommentReplyList.add(reply);
 					}
 				}
 				b.setCommentReplyList(webcommentReplyList);
 			}
-			return Result.success().add("web", web).add("webList", webList)
-				   .add("author", author)
+			return Result.success().add("web", web).add("webList", webs)
 				   .add("visit", visits)
 				   .add("thubms", thubms)
 				   .add("collection", collections)
@@ -412,7 +421,8 @@ public class BlobHandler {
 		UserInformation user = null;
 		try {
 			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId() + "作者: " + web.getUid());
+			log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
+			web.setWebData(web.getWebDataString().getBytes());
 			boolean b = webInformationService.updateByWebId(web);
 			if(b) {
 				log.info("更新文章成功");
@@ -491,6 +501,42 @@ public class BlobHandler {
 				return Result.fail().add(EX, "用户未登录");
 			}
 			log.info("用户: " + user.getUid() + " 回复评论: " + cid + " 失败, 被回复人: " + bid + ", 内容为:" + content);
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	
+	@RequestMapping(value = "/getauthor", method = RequestMethod.GET)
+	@ResponseBody
+	@CrossOrigin
+	public Result getAuthorByUid(Integer uid) {
+		try {
+			log.info("获取作者: " + uid + "信息开始");
+			UserInformation user = userInformationService.selectByUid(uid);
+			Author author = new Author();
+			author.setUid(user.getUid());
+			author.setUsername(user.getUsername());
+			String imgpath = myInageService.selectImagePathByUid(uid).getImagePath();
+			author.setImgpath(imgpath);
+			Integer fans = (int) myLikeService.countByLikeId(uid);
+			author.setFans(fans);
+			Integer thumbs = webThubmsService.countThumbsByUid(uid);
+			author.setThumbs(thumbs);
+			Integer comment = webCommentService.countByUid(uid);
+			author.setComment(comment);
+			Integer visits = visitInformationService.selectVisitsByVid(uid);
+			author.setVisits(visits);
+			Integer collection = myConllectionService.countCollectionByUid(uid);
+			author.setCollection(collection);
+			Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
+			author.setOriginal(original);
+			log.info("获取作者信息成功");
+			return Result.success().add("author", author);
+		} catch (NotFoundUidException e) {
+			log.info("获取作者信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			log.error("获取作者信息发生未知错误, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}

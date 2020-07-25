@@ -6,8 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.pdsu.scs.bean.EsUserInformation;
-import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.VisitInformationExample;
@@ -38,9 +36,6 @@ public class VisitInformationImpl implements VisitInformationService {
 	
 	@Autowired
 	private UserInformationMapper userInformationMapper;
-	
-	@Autowired
-	private EsDao esDao;
 	
 	/**
 	 * 根据网页的ID集合获取这些文章的访问量

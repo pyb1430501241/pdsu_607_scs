@@ -100,4 +100,12 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 		long l = webInformationMapper.countByExample(example);
 		return l <= 0 ? false : true;
 	}
+
+	@Override
+	public Integer countCollectionByUid(Integer uid) {
+		MyCollectionExample example = new MyCollectionExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andBidEqualTo(uid);
+		return (int) myCollectionMapper.countByExample(example);
+	}
 }

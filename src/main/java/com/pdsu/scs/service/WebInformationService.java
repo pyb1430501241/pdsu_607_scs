@@ -71,4 +71,12 @@ public interface WebInformationService {
 	 */
 	public int countByUid(Integer uid);
 	
+	/**
+	 * 获取用户原创数量
+	 * @param uid
+	 * @param i
+	 * @return
+	 */
+	public Integer countOriginalByUidAndContype(Integer uid, Integer contype)  throws NotFoundUidException;
+	
 }
