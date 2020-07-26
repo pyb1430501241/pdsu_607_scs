@@ -157,7 +157,6 @@ public class WebHanlder {
 			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
 		log.info("账号: " + uid + "登录开始");
 		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
-		System.out.println("传入: " + hit);
 		if(cache.get(hit) == null) {
 			return Result.fail().add(EX, "验证码已失效, 请刷新后重试");
 		}
@@ -241,11 +240,11 @@ public class WebHanlder {
 			String src = "data:image/png;base64," + base64;
 			String token = RandomUtils.getUUID();
 			cache.put(token, verifyCode);
-			System.out.println("获取: " + token);
 			log.info("获取成功, 验证码为: " + verifyCode);
 			return Result.success()
 					.add("token", token)
-					.add("img", src);
+					.add("img", src)
+					.add("code", verifyCode);
 		} catch (Exception e) {
 			if(e instanceof InvocationTargetException) {
 				log.error(((InvocationTargetException)e).getTargetException().getMessage());

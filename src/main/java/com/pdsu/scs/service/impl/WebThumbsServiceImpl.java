@@ -6,10 +6,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.bean.WebThumbsExample.Criteria;
 import com.pdsu.scs.dao.WebThumbsMapper;
+import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebThumbsService;
+
+import sun.awt.www.content.audio.wav;
 
 /**
  * 
@@ -21,6 +25,9 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	
 	@Autowired
 	private WebThumbsMapper webThumbsMapper;
+	
+	@Autowired
+	private WebInformationService webinformationService;
 	
 	/**
 	 * 根据网页ID集合获取这些文章的点赞数
@@ -55,6 +62,14 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		return (int) webThumbsMapper.countByExample(example);
+	}
+
+	@Override
+	public boolean insert(WebThumbs webThumbs) {
+		if(count) {
+			
+		}
+		return false;
 	}
 
 }

@@ -27,6 +27,7 @@ import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebComment;
 import com.pdsu.scs.bean.WebCommentReply;
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
@@ -377,7 +378,6 @@ public class BlobHandler {
 	@ResponseBody
 	@CrossOrigin
 	public Result delete(Integer webid) {
-		//获取当前登录用户的信息
 		UserInformation user = null;
 		try {
 			user = ShiroUtils.getUserInformation();
@@ -442,6 +442,12 @@ public class BlobHandler {
 		}
 	}
 	
+	/**
+	 * 处理评论请求
+	 * @param webid
+	 * @param content
+	 * @return
+	 */
 	@RequestMapping(value = "/comment", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
@@ -450,7 +456,7 @@ public class BlobHandler {
 		try {
 			user =ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
-			boolean b = webCommentService.insert(new WebComment(webid, user.getUid(), 
+			boolean b = webCommentService.insert(new WebComment(null, webid, user.getUid(), 
 					content, 0, SimpleUtils.getSimpleDateSecond(), 0));
 			if(b) {
 				log.info("用户发布评论成功");
@@ -473,6 +479,13 @@ public class BlobHandler {
 		}
 	}
 	
+	/**
+	 * 处理回复评论请求
+	 * @param cid
+	 * @param bid
+	 * @param content
+	 * @return
+	 */
 	@RequestMapping(value = "/commentreply", method = RequestMethod.POST)
 	@CrossOrigin
 	@ResponseBody
@@ -505,7 +518,11 @@ public class BlobHandler {
 		}
 	}
 	
-	
+	/**
+	 * 获取作者信息
+	 * @param uid
+	 * @return
+	 */
 	@RequestMapping(value = "/getauthor", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
@@ -516,18 +533,25 @@ public class BlobHandler {
 			Author author = new Author();
 			author.setUid(user.getUid());
 			author.setUsername(user.getUsername());
+			log.info("获取作者头像信息");
 			String imgpath = myInageService.selectImagePathByUid(uid).getImagePath();
 			author.setImgpath(imgpath);
+			log.info("获取作者粉丝数");
 			Integer fans = (int) myLikeService.countByLikeId(uid);
 			author.setFans(fans);
+			log.info("获取作者文章被点赞数");
 			Integer thumbs = webThubmsService.countThumbsByUid(uid);
 			author.setThumbs(thumbs);
+			log.info("获取作者文章总评论数");
 			Integer comment = webCommentService.countByUid(uid);
 			author.setComment(comment);
+			log.info("获取作者文章总访问量");
 			Integer visits = visitInformationService.selectVisitsByVid(uid);
 			author.setVisits(visits);
+			log.info("获取作者文章总收藏量");
 			Integer collection = myConllectionService.countCollectionByUid(uid);
 			author.setCollection(collection);
+			log.info("获取作者原创数量");
 			Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
 			author.setOriginal(original);
 			log.info("获取作者信息成功");
@@ -540,4 +564,22 @@ public class BlobHandler {
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
+	
+	/**
+	 * 处理点赞请求
+	 */
+	@RequestMapping("/thumbs")
+	@ResponseBody
+	@CrossOrigin
+	public Result thumbs(Integer webid, Integer bid) {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
+			boolean b = webThubmsService.insert(new WebThumbs());
+		}catch (Exception e) {
+		}
+		return Result.fail();
+	}
+	
 }

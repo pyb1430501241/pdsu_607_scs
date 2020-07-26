@@ -47,6 +47,7 @@
 			<tx:method name="*"/>
 			<!-- select 开头的所有方法被认为是只读方法 -->
 			<tx:method name="select*" read-only="true"/>
+			<tx:method name="count*" read-only="true"/>
 		</tx:attributes>
 	</tx:advice>
 	<aop:config >
@@ -94,11 +95,11 @@
 	<bean class = "org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
 		<property name="securityManager" ref="securityManager"></property>
 	</bean>
+	
 	<!-- 
 	 	配置 ShiroFilter
 	 	id 必须和 web.xml 文件中配置的 DelegatingFilterProxy 的 filter-name 一致
 	 -->
-	
 	<bean id = "logoutFilter" class = "com.pdsu.scs.shiro.UserLogoutFilter"></bean>
 	<bean id = "shiroFilter" class = "org.apache.shiro.spring.web.ShiroFilterFactoryBean">
 		<property name="filters">

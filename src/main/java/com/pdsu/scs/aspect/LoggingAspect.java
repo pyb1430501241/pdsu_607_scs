@@ -1,7 +1,5 @@
 package com.pdsu.scs.aspect;
 
-import java.util.ArrayList;
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -13,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
@@ -47,22 +44,22 @@ public class LoggingAspect {
 	
 	@AfterReturning(value = "execution(* com.pdsu.scs..service..*(..))", returning = "result")
 	public void afterReturn(JoinPoint joinPoint, Object result) {
-		if(result instanceof ArrayList) {
-			ArrayList<?> list = (ArrayList<?>) result;
-			if(list.size() == 0) {
-			}else if(list.get(0) instanceof WebInformation) {
-				@SuppressWarnings("unchecked")
-				ArrayList<WebInformation> webs = (ArrayList<WebInformation>) result;
-				for(WebInformation w : webs) {
-					WebInformation s = w;
-					s.setWebData(null);
-					s.setWebDataString(null);
-				}
-			}
-		}
+//		if(result instanceof ArrayList) {
+//			ArrayList<?> list = (ArrayList<?>) result;
+//			if(list.size() == 0) {
+//			}else if(list.get(0) instanceof WebInformation) {
+//				@SuppressWarnings("unchecked")
+//				ArrayList<WebInformation> webs = (ArrayList<WebInformation>) result;
+//				for(WebInformation w : webs) {
+//					WebInformation s = w;
+//					s.setWebData(null);
+//					s.setWebDataString(null);
+//				}
+//			}
+//		}
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
-		log.info("执行方法 " + str + " 成功" + ", 返回值为: " + result);
+		log.info("执行方法 " + str + " 成功");
 	}
 	
 	@AfterThrowing(value = "execution(* com.pdsu.scs..service..*(..))", throwing = "ex")
