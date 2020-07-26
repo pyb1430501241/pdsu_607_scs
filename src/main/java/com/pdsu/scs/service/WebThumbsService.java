@@ -3,6 +3,7 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.WebThumbs;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 
 /**
  * 该接口负责提供点赞相关的方法
@@ -31,10 +32,26 @@ public interface WebThumbsService {
 	 * @param webThumbs
 	 * @return
 	 */
-	public boolean insert(WebThumbs webThumbs);
+	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException;
 	
 	/**
 	 * 查询网页是否存在
 	 */
-	public boolean countByWebId(Integer webid);
+	public boolean countByWebId(Integer webid) ;
+
+	/**
+	 * 删除一条点赞记录
+	 * @param webid
+	 * @param uid
+	 * @return
+	 */
+	public boolean deletebyWebIdAndUid(Integer webid, Integer uid);
+
+	/**
+	 * 查询用户是否点赞
+	 * @param webid
+	 * @param uid
+	 * @return
+	 */
+	public boolean countByWebIdAndUid(Integer webid, Integer uid);
 }

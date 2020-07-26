@@ -6,14 +6,14 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.bean.WebThumbsExample.Criteria;
+import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
-import com.pdsu.scs.service.WebInformationService;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.service.WebThumbsService;
-
-import sun.awt.www.content.audio.wav;
 
 /**
  * 
@@ -27,7 +27,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	private WebThumbsMapper webThumbsMapper;
 	
 	@Autowired
-	private WebInformationService webinformationService;
+	private WebInformationMapper webinformationMapper;
 	
 	/**
 	 * 根据网页ID集合获取这些文章的点赞数
@@ -65,11 +65,36 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	}
 
 	@Override
-	public boolean insert(WebThumbs webThumbs) {
-		if(count) {
-			
+	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException {
+		if(!countByWebId(webThumbs.getWebid())) {
+			throw new NotFoundBlobIdException();
 		}
-		return false;
+		return webThumbsMapper.insertSelective(webThumbs) > 0 ? true : false;
 	}
 
+	@Override
+	public boolean countByWebId(Integer webid) {
+		WebInformationExample example = new WebInformationExample();
+		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(webid);
+		return webinformationMapper.countByExample(example) == 0 ? false : true;
+	}
+
+	@Override
+	public boolean deletebyWebIdAndUid(Integer webid, Integer uid) {
+		WebThumbsExample example = new WebThumbsExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andWebidEqualTo(webid);
+		criteria.andUidEqualTo(uid);
+		return webThumbsMapper.deleteByExample(example) > 0 ? true : false;
+	}
+	
+	@Override
+	public boolean countByWebIdAndUid(Integer webid, Integer uid) {
+		WebThumbsExample example = new WebThumbsExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andWebidEqualTo(webid);
+		criteria.andUidEqualTo(uid);
+		return webThumbsMapper.countByExample(example) == 0 ? false : true;
+	}
 }

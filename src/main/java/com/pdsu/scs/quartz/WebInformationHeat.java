@@ -24,11 +24,6 @@ public class WebInformationHeat implements Job{
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		
-//		List<WebInformation> webs = webInformationService.selectWebInformationOrderByTimetest();
-//		for(WebInformation web : webs) {
-//			String start = web.getSubTime();
-//			String end = SimpleDateUtils.getSimpleDateSecond();
-//		}
 	}
 
 }

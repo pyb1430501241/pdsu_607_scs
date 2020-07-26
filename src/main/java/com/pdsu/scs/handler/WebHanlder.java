@@ -687,7 +687,7 @@ public class WebHanlder {
 					}
 				}
 			}).start();
-			log.info("用户: " + user.getUid() + " 更换头像成功, 开始写入数据库地址");
+			log.info("用户: " + user.getUid() + " 写入新头像成功, 开始写入数据库地址");
 			boolean b = myImageService.update(new MyImage(user.getUid(), name));
 			if(b) {
 				log.info("用户: " + user.getUid() + " 更换头像成功");
@@ -697,10 +697,11 @@ public class WebHanlder {
 				return Result.fail().add(EX, "网络异常, 请稍后重试");
 			}
 		}catch (Exception e) {
-			log.error("用户更换头像失败, 原因: " + e.getMessage());
 			if(user == null) {
+				log.info("用户更换头像失败, 原因: 未登录");
 				return Result.fail().add(EX, "用户未登录");
 			}
+			log.error("用户更换头像失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误"); 
 		}		
 	}

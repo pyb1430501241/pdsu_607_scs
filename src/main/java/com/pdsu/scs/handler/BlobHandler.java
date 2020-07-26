@@ -568,7 +568,7 @@ public class BlobHandler {
 	/**
 	 * 处理点赞请求
 	 */
-	@RequestMapping("/thumbs")
+	@RequestMapping(value = "/thumbs", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result thumbs(Integer webid, Integer bid) {
@@ -576,10 +576,77 @@ public class BlobHandler {
 		try {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
-			boolean b = webThubmsService.insert(new WebThumbs());
+			boolean b = webThubmsService.insert(new WebThumbs(user.getUid(), bid, webid));
+			if(b) {
+				log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
+				return Result.success();
+			}
+			log.warn("用户点赞文章失败, 连接数据库失败");
+			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+		} catch (NotFoundBlobIdException e) {
+			log.info("用户点赞文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
+			if(user == null) {
+				log.info("用户点赞文章失败, 原因: 未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}
+			log.error("用户点赞文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
 		}
-		return Result.fail();
+	}
+	
+	/**
+	 * 处理取消点赞请求
+	 */
+	@RequestMapping(value = "/dethumbs", method = RequestMethod.POST)
+	@ResponseBody
+	@CrossOrigin
+	public Result dethumbs(Integer webid) {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + "取消点赞文章: " + webid);
+			boolean b = webThubmsService.deletebyWebIdAndUid(webid, user.getUid());
+			if(b) {
+				log.info("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
+				return Result.success();
+			}
+			log.warn("用户取消点赞文章失败, 连接数据库失败");
+			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+		} catch (Exception e) {
+			if(user == null) {
+				log.info("用户取消点赞文章失败, 原因: 未登录");
+				return Result.fail().add(EX, "用户未登录");
+			}
+			log.error("用户取消点赞文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 查询用户是否点赞
+	 * @param webid
+	 * @return
+	 */
+	@RequestMapping(value = "/thumbsstatus", method = RequestMethod.GET)
+	@ResponseBody
+	@CrossOrigin
+	public Result thumbsStatus(Integer webid) {
+		Integer uid = null;
+		try {
+			log.info("获取用户是否点赞此篇文章");
+			uid = ShiroUtils.getUserInformation().getUid();
+			boolean b = webThubmsService.countByWebIdAndUid(webid, uid);
+			if(b) {
+				log.info("用户已点赞该文章");
+				return Result.success();
+			}
+			log.warn("连接数据库失败!");
+		} catch (Exception e) {
+			log.error("查询用户是否点赞文章失败, 原因: " + e.getMessage());
+		}
+		return Result.fail().add(EX, "未点赞");
 	}
 	
 }

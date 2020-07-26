@@ -14,7 +14,7 @@ import org.apache.shiro.web.session.mgt.WebSessionKey;
 import com.pdsu.scs.bean.UserInformation;
 
 /**
- * 
+ *  shiro 框架工具类
  * @author 半梦
  *
  */
@@ -37,7 +37,7 @@ public class ShiroUtils {
 	}
 	
 	 /**
-     * 根据 sessionid 获取用户信息
+	  * 根据 sessionid 获取用户信息
      * @param sessionID
      * @param request
      * @param response
@@ -50,7 +50,6 @@ public class ShiroUtils {
         //org.apache.shiro.subject.SimplePrincipalCollection cannot be cast to com.hncxhd.bywl.entity.manual.UserInfo
         SimplePrincipalCollection coll = (SimplePrincipalCollection) obj;
         UserInformation userInformation = (UserInformation)coll.getPrimaryPrincipal();
-
         if(userInformation!=null){
         	UserInformation user = (UserInformation) se.getAttribute("user");
             if(user==null){

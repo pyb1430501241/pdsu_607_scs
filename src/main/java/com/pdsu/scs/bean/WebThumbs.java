@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * 点赞相关
- * @author Admin
+ * @author 半梦
  *
  */
 public class WebThumbs implements Serializable{
@@ -52,4 +52,27 @@ public class WebThumbs implements Serializable{
     public void setWebid(Integer webid) {
         this.webid = webid;
     }
+
+	@Override
+	public String toString() {
+		return "WebThumbs [id=" + id + ", uid=" + uid + ", bid=" + bid + ", webid=" + webid + "]";
+	}
+
+	public WebThumbs(Integer id, Integer uid, Integer bid, Integer webid) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.bid = bid;
+		this.webid = webid;
+	}
+
+	public WebThumbs(Integer uid, Integer bid, Integer webid) {
+		super();
+		this.uid = uid;
+		this.bid = bid;
+		this.webid = webid;
+	}
+    
+    public WebThumbs() {
+	}
 }
