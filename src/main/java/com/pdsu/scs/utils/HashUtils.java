@@ -17,12 +17,12 @@ public class HashUtils {
 		return simpleHash.toString();
 	}
 	
-	//根据文件名生成一个20位的hash名称，去代表该文件名
+	//根据文件名生成一个hash名称，去代表该文件名
 	public static String getFileNameForHash(String title) {
 			
 		SimpleHash simpleHash = new SimpleHash("MD5", title);
 			
-		return simpleHash.toString().substring(0, 20);
+		return simpleHash.toString();
 	}
 	
 }

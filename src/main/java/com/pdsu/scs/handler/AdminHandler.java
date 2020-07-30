@@ -7,10 +7,11 @@
  */
 package com.pdsu.scs.handler;
 
-
 /**
  * @author 半梦
  */
 public class AdminHandler {
-
+	
+	
+	
 }

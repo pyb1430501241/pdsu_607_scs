@@ -35,10 +35,16 @@ public class LoggingAspect {
 	
 	@Before(value = "execution(* com.pdsu.scs..service..*(..))")
 	public void before(JoinPoint joinPoint) {
-		String args = SimpleUtils.toString(joinPoint.getArgs());
 		user = ShiroUtils.getUserInformation() == null ? new UserInformation(0) : ShiroUtils.getUserInformation();
+		String name = ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
 		String str = joinPoint.getTarget().getClass().getName() + "." 
-					+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
+					+ name;
+		String args = SimpleUtils.toString(joinPoint.getArgs());
+		if(name.equals("WebInformation")) {
+			if(args.length() > 60) {
+				args = "WebInformation [......" + args.substring(10, 60) + "......]";
+			}
+		}
 		log.info("开始执行 " + str + " 方法, 请求参数为: " + args + ", 请求人学号为: " + user.getUid());
 	}
 	

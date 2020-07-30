@@ -1,5 +1,8 @@
 package com.pdsu.scs.handler;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -41,8 +46,12 @@ import com.pdsu.scs.service.WebCommentReplyService;
 import com.pdsu.scs.service.WebCommentService;
 import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebThumbsService;
+import com.pdsu.scs.utils.HashUtils;
+import com.pdsu.scs.utils.RandomUtils;
 import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
+
+import net.coobird.thumbnailator.Thumbnails;
 
 /**
  * 
@@ -108,6 +117,10 @@ public class BlobHandler {
 	private MyLikeService myLikeService;
 	
 	private static final String EX = "exception";
+	
+	private static final String FILEPATH = "/pdsu/web/blob/img/";
+	
+	private static final String SUFFIX = ".jpg";
 	
 	/**
 	 * 日志
@@ -187,10 +200,10 @@ public class BlobHandler {
 	@CrossOrigin
 	public Result toBlob(@PathVariable("webid")Integer id) {
 		try {
-			//获取博客页面信息
+			log.info("开始获取博客页面信息");
 			WebInformation web = webInformationService.selectById(id);
 			Integer uid = web.getUid();
-			//查询作者其余文章
+			log.info("获取作者其余文章");
 			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
 			List<WebInformation> webs = new ArrayList<WebInformation>();
 			int i = 0;
@@ -201,29 +214,63 @@ public class BlobHandler {
 				webs.add(webInformation);
 				i++;
 			}
-			//把 byte字节码转化为 String
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
-			//byte字节码置空
 			web.setWebData(null);
-			//从Session里获取当前登录用户
 			UserInformation user = ShiroUtils.getUserInformation();
-			//如果没有用户登录
 			if(user == null) {
-				//默认访问人为 181360226
 				user = new UserInformation(181360226);
 			}
-			//添加一个访问记录
+			log.info("添加访问信息");
 			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
 			log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
-			//获取网页访问量
+			log.info("获取网页访问量");
 			Integer visits = visitInformationService.selectvisitByWebId(web.getId());
-			//获取网页点赞数
+			log.info("获取文章点赞数");
 			Integer thubms = webThubmsService.selectThumbsForWebId(web.getId());
-			//获取网页收藏量
+			log.info("获取文章收藏量");
 			Integer collections = myConllectionService.selectCollectionsByWebId(web.getId());
-			//获取文章评论
+			log.info("获取文章评论");
 			List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
 			List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebComments(commentList);
+			List<Integer> uids = new ArrayList<>();
+			for(WebComment webComment : commentList) {
+				uids.add(webComment.getUid());
+			}
+			for(WebCommentReply reply : commentReplyList) {
+				uids.add(reply.getUid());
+			}
+			log.info("获取评论者信息");
+			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
+			log.info("获取评论者头像信息");
+			List<MyImage> imageList = myInageService.selectImagePathByUids(uids);
+			for(MyImage img : imageList) {
+				for (UserInformation us : userList) {
+					if(img.getUid().equals(us.getUid())) {
+						us.setImgpath(img.getImagePath());
+						break;
+					}
+				}
+			}
+			for(WebComment webComment : commentList) {
+				WebComment webc = webComment;
+				for(UserInformation us : userList) {
+					if(webc.getUid().equals(us.getUid())) {
+						webc.setUsername(us.getUsername());
+						webc.setImgpath(us.getImgpath());
+						break;
+					}
+				}
+			}
+			for(WebCommentReply reply : commentReplyList) {
+				WebCommentReply webc = reply;
+				for(UserInformation us : userList) {
+					if(webc.getUid().equals(us.getUid())) {
+						webc.setUsername(us.getUsername());
+						webc.setImgpath(us.getImgpath());
+						break;
+					}
+				}
+			}
 			for(WebComment webcomment : commentList) {
 				WebComment b = webcomment;
 				List<WebCommentReply> webcommentReplyList = new ArrayList<>();
@@ -460,7 +507,9 @@ public class BlobHandler {
 					content, 0, SimpleUtils.getSimpleDateSecond(), 0));
 			if(b) {
 				log.info("用户发布评论成功");
-				return Result.success();
+				return Result.success().add("username", user.getUsername())
+						.add("createtime", SimpleUtils.getSimpleDateSecond())
+						.add("imgpath", myInageService.selectImagePathByUid(user.getUid()).getImagePath());
 			}
 			log.warn("用户发布评论失败, 原因: 插入数据库失败");
 			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
@@ -498,7 +547,9 @@ public class BlobHandler {
 						0, SimpleUtils.getSimpleDateSecond()));
 			if(b) {
 				log.info("用户回复评论成功");
-				return Result.success();
+				return Result.success().add("username", user.getUsername())
+						.add("createtime", SimpleUtils.getSimpleDateSecond())
+						.add("imgpath", myInageService.selectImagePathByUid(user.getUid()).getImagePath());
 			}
 			log.warn("用户回复评论失败, 原因: 连接数据库失败");
 			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
@@ -649,4 +700,40 @@ public class BlobHandler {
 		return Result.fail().add(EX, "未点赞");
 	}
 	
+	static {
+		File file = new File(FILEPATH);
+		if(file.exists()) {
+			file.mkdirs();
+		}
+	}
+
+	/**
+	 * 处理博客页面图片
+	 * @param img
+	 * @return
+	 */
+	@PostMapping(value = "/blobimg")
+	@ResponseBody
+	@CrossOrigin
+	public Result postBlobImg(MultipartFile img) {
+		try {
+			log.info("用户博客页面上传图片");
+			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SUFFIX;
+			log.info("用户博客页面上传图片成功, 图片名为: " + name);
+			InputStream input = img.getInputStream();
+			Thumbnails.of(input)
+			.scale(1f)
+			.outputQuality(0.8f)
+			.outputFormat("jpg")
+			.toFile(FILEPATH + name);;
+			log.info("上传并压缩成功");
+			return Result.success().add("img", name);
+		} catch (IOException e) {
+			log.info("用户博客页面上传图片失败, 原因为: " + e.getMessage());
+			return Result.fail().add(EX, "上传图片失败");
+		} catch (Exception e) {
+			log.error("用户博客页面上传图片失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
 }

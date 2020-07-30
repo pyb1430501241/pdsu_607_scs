@@ -1,12 +1,12 @@
 package com.pdsu.scs.shiro;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.activiti.engine.impl.util.json.JSONObject;
-import org.apache.shiro.session.SessionException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.LogoutFilter;
 import org.slf4j.Logger;
@@ -24,9 +24,14 @@ public class UserLogoutFilter extends LogoutFilter{
 	 private static final Logger log = LoggerFactory.getLogger(UserLogoutFilter.class);
 	
 	@Override
-	protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+	protected boolean preHandle(ServletRequest request, ServletResponse response) {
 		Subject subject = getSubject(request, response);
-		PrintWriter out = response.getWriter();
+		PrintWriter out = null;
+		try {
+			out = response.getWriter();
+		} catch (IOException e) {
+			return false;
+		}
 		response.setCharacterEncoding("UTF-8");
         JSONObject json = new JSONObject();
 		try {

@@ -101,7 +101,7 @@ public class WebHanlder {
 	@Autowired
 	private VisitInformationService visitInformationService;
 	
-	private static final String FILEPATH = "pdsu/web/img/";
+	private static final String FILEPATH = "/pdsu/web/img/";
 	
 	/**
 	 * 日志
@@ -211,7 +211,7 @@ public class WebHanlder {
 				return Result.fail().add(EX, "账号不存在");
 			}catch (Exception e) {
 				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
-				return Result.fail().add(EX, "未知错误");
+				return Result.fail().add(EX, "未定义类型错误");
 			}
 		}
 		log.info("账号: " + uid + "已登录");
@@ -243,8 +243,7 @@ public class WebHanlder {
 			log.info("获取成功, 验证码为: " + verifyCode);
 			return Result.success()
 					.add("token", token)
-					.add("img", src)
-					.add("code", verifyCode);
+					.add("img", src);
 		} catch (Exception e) {
 			if(e instanceof InvocationTargetException) {
 				log.error(((InvocationTargetException)e).getTargetException().getMessage());
@@ -739,6 +738,10 @@ public class WebHanlder {
 		}
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
 	@CrossOrigin
 	@ResponseBody

@@ -63,7 +63,6 @@ public class EsBlobServiceImpl implements EsService<EsBlobInformation>{
 			return (List<EsBlobInformation>) SimpleUtils.getObjectBySearchHit(searchHits, EsBlobInformation.class);
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
-			System.out.println(e.getMessage());
 			throw new QueryException("解析博客失败");
 		}
 	}

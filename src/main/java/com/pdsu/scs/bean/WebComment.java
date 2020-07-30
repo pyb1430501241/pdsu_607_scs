@@ -25,6 +25,10 @@ public class WebComment implements Serializable{
      * 评论人uid
      */
     private Integer uid;
+    
+    private String username;
+    
+    private String imgpath;
 
     /**
      * 评论内容
@@ -127,8 +131,9 @@ public class WebComment implements Serializable{
 
 	@Override
 	public String toString() {
-		return "WebComment [id=" + id + ", wid=" + wid + ", uid=" + uid + ", content=" + content + ", thumb=" + thumb
-				+ ", createtime=" + createtime + ", state=" + state + ", commentReplyList=" + commentReplyList + "]";
+		return "WebComment [id=" + id + ", wid=" + wid + ", uid=" + uid + ", username=" + username + ", imgpath="
+				+ imgpath + ", content=" + content + ", thumb=" + thumb + ", createtime=" + createtime + ", state="
+				+ state + ", commentReplyList=" + commentReplyList + "]";
 	}
 
 	public WebComment(Integer id, Integer wid, Integer uid, String content, Integer thumb, String createtime,
@@ -155,4 +160,36 @@ public class WebComment implements Serializable{
     
     public WebComment() {
 	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getImgpath() {
+		return imgpath;
+	}
+
+	public void setImgpath(String imgpath) {
+		this.imgpath = imgpath;
+	}
+
+	public WebComment(Integer wid, Integer uid, String username, String imgpath, String content, Integer thumb,
+			String createtime, Integer state, List<WebCommentReply> commentReplyList) {
+		super();
+		this.wid = wid;
+		this.uid = uid;
+		this.username = username;
+		this.imgpath = imgpath;
+		this.content = content;
+		this.thumb = thumb;
+		this.createtime = createtime;
+		this.state = state;
+		this.commentReplyList = commentReplyList;
+	}
+    
+    
 }

@@ -1,6 +1,7 @@
 package com.pdsu.scs.test;
 
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -26,7 +28,7 @@ import org.springframework.web.context.WebApplicationContext;
 @SpringJUnitConfig(locations = {"classpath:spring/springmvc.xml", "classpath:spring/spring.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-public class WebHandlerTest {
+public class HandlerTest {
 
 	@Autowired
 	WebApplicationContext context;
@@ -64,21 +66,21 @@ public class WebHandlerTest {
 	@Test
 	public void testLogin() throws Exception {
 		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/getcodeforlogin"))
-			.andReturn();
-		MockHttpServletResponse response = result.getResponse();
-		String[] split = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
-		List<String> list = new ArrayList<>(Arrays.asList(split));
-		list.removeAll(Arrays.asList(""));
-		list.remove("json");
-		MultiValueMap<String, String> t = new LinkedMultiValueMap<String, String>();
-		t.add("uid", "181360226");
-		t.add("password", "pyb***20000112");
-		t.add("hit", list.get(list.indexOf("token") + 1));
-		t.add("code", list.get(list.indexOf("code") + 1));
-		result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
-		response = result.getResponse();
-		response.setCharacterEncoding("UTF-8");
-		System.out.println(response.getContentAsString());
+				.andReturn();
+			MockHttpServletResponse response = result.getResponse();
+			String[] split = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
+			List<String> list = new ArrayList<>(Arrays.asList(split));
+			list.removeAll(Arrays.asList(""));
+			list.remove("json");
+			MultiValueMap<String, String> t = new LinkedMultiValueMap<String, String>();
+			t.add("uid", "181360226");
+			t.add("password", "pyb***20000112");
+			t.add("hit", list.get(list.indexOf("token") + 1));
+			t.add("code", list.get(list.indexOf("vicode") + 1));
+			result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
+			response = result.getResponse();
+			response.setCharacterEncoding("UTF-8");
+			System.out.println(response.getContentAsString());
 	}
 	
 	@Test
@@ -95,7 +97,7 @@ public class WebHandlerTest {
 	 */
 	@Test
 	public void testinsert() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/getcodeforlogin"))
+			MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/getcodeforlogin"))
 				.andReturn();
 			MockHttpServletResponse response = result.getResponse();
 			String[] split = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
@@ -124,6 +126,10 @@ public class WebHandlerTest {
 			System.out.println(response.getContentAsString());
 	}
 	
+	/**
+	 * 别忘了删验证码
+	 * @throws Exception
+	 */
 	@Test
 	public void testUpdate() throws Exception {
 		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/getcodeforlogin"))
@@ -137,7 +143,7 @@ public class WebHandlerTest {
 		t.add("uid", "181360226");
 		t.add("password", "pyb***20000112");
 		t.add("hit", list.get(list.indexOf("token") + 1));
-		t.add("code", list.get(list.indexOf("code") + 1));
+		t.add("code", list.get(list.indexOf("testcode") + 1));
 		result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
 		response = result.getResponse();
 		String [] login = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
@@ -149,7 +155,7 @@ public class WebHandlerTest {
 				.param("id", "38")
 				.param("title", "你好, 世界")
 				.param("contype", "1")
-				.param("webDataString", "你好你好你好")).andReturn();
+				.param("webDataString", "你好你好你好你好")).andReturn();
 		response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
@@ -171,7 +177,6 @@ public class WebHandlerTest {
 	}
 	
 	/**
-	 * 别忘了删验证码
 	 * @throws Exception
 	 */
 	@Test
@@ -199,6 +204,30 @@ public class WebHandlerTest {
 				.param("webid", "38")
 				.param("content", "你好, 世界")).andReturn();
 		response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
+	}
+	
+	@Test
+	public void testBlob() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/38"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
+	}
+	
+	/**
+	 * MockHttpServletRequestBuilder
+	 * @throws Exception
+	 */
+	@Test
+	public void testPostBlobImg() throws Exception {
+		FileInputStream fis = new FileInputStream("E:/装机/桌面/桌面背景/}ITM%JI9OIT03S7@(UE{{YN.png");
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.multipart("/blob/blobimg")
+				.file(new MockMultipartFile("img", "}ITM%JI9OIT03S7@(UE{{YN.png", "image/png", fis)))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
 	}

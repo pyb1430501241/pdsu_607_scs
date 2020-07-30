@@ -108,30 +108,10 @@
 			</map>
 		</property>
 		<property name="securityManager" ref="securityManager"></property>
-		<!-- 登录页面 -->
-		<property name="loginUrl" value="/user/login"></property>
-		<!-- 过滤器 -->
 		<property name="filterChainDefinitions">
 			<value>
-				/search = anon
-				/user/loginstatus = anon
 				/user/logout = logout
-				/js/** = anon
-				/img/** = anon
-				/user/login = anon
-				/user/getcodeforlogin = anon
-				/user/getcodeforapply = anon
-				/user/applynumber = anon
-				/user/isexist = anon
-				/user/getcodeforretrieve = anon
-				/user/retrieve = anon
-				/blob/contribution = authc
-				/blob/delete = authc
-				/blob/update = authc
-				/blob/comment = authc
-				/blob/commentreply = authc
-				/blob/** = anon
-				/** = authc
+				/** = anon
 			</value>
 		</property>
 	</bean>

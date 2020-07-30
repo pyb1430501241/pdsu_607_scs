@@ -68,6 +68,7 @@ public class SimpleUtils {
 	}
 	
 	/**
+	 * 获取文件后缀名
 	 * @param name
 	 * @return
 	 */

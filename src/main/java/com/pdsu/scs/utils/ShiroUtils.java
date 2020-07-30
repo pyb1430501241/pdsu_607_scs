@@ -25,7 +25,7 @@ public class ShiroUtils {
         //取出身份信息
         UserInformation userInformation = (UserInformation) subject.getPrincipal();
         if(userInformation != null){
-            Session session = subject.getSession();
+        	Session session = subject.getSession();
             UserInformation user = (UserInformation) session.getAttribute("user");
             if(user == null){
                 session.setAttribute("user", userInformation);

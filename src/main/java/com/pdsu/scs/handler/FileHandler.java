@@ -42,7 +42,7 @@ public class FileHandler {
 	/**
 	 * 文件上传地址
 	 */
-	private static final String FILEPATH = "pdsu/web/file/";
+	private static final String FILEPATH = "/pdsu/web/file/";
 	
 	private static final String EX = "exception";
 	

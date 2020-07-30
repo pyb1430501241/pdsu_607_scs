@@ -48,6 +48,7 @@ public class LoginRealm extends AuthorizingRealm{
 	 */
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+		System.out.println("doGetAuthorizationInfo...");
 		return null;
 	}
 
