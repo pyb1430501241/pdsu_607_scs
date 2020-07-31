@@ -43,6 +43,6 @@ public interface UserInformationService {
 	public int countByUserName(String username);
 
 	//更换用户名
-	public boolean updateUserName(Integer uid, String username) throws NotFoundUidException;
+	public boolean updateUserInformation(Integer uid, UserInformation user) throws NotFoundUidException;
 	
 }

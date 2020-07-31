@@ -247,7 +247,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		}
 		List<Integer> likeids = myLikeMapper.selectLikeIdByUid(uid);
 		if(likeids.size() == 0) {
-			return null;
+			return new ArrayList<>();
 		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
@@ -266,12 +266,14 @@ public class UserInformationServiceImpl implements UserInformationService {
 		}
 		List<Integer> uids = myLikeMapper.selectLikeIdByUid(likeId);
 		if(uids.size() == 0) {
-			return null;
+			return new ArrayList<UserInformation>();
 		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidIn(uids);
-		return userInformationMapper.selectByExample(example);
+		List<UserInformation> list = userInformationMapper.selectByExample(example);
+		System.out.println(list);
+		return list == null ? new ArrayList<UserInformation>() : list;
 	}
 
 	/**
@@ -324,24 +326,22 @@ public class UserInformationServiceImpl implements UserInformationService {
 	}
 
 	@Override
-	public boolean updateUserName(Integer uid, String username) throws NotFoundUidException {
+	public boolean updateUserInformation(Integer uid, UserInformation user) throws NotFoundUidException {
 		if(countByUid(uid) == 0) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		UserInformation userinformation = new UserInformation();
-		userinformation.setUsername(username);
-		boolean b = userInformationMapper.updateByExampleSelective(userinformation, example) == 0 ? false : true;
+		boolean b = userInformationMapper.updateByExampleSelective(user, example) == 0 ? false : true;
 		if(b) {
 			new Thread(()->{
 				try {
-					UserInformation user = userInformationMapper.selectUserByUid(uid);
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+					UserInformation userinfor = userInformationMapper.selectUserByUid(uid);
+					Map<String, Object> map = esDao.queryByTableNameAndId("user", userinfor.getId());
 					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
-					esuser.setUsername(username);
+					esuser.setUsername(user.getUsername() == null ? userinfor.getUsername() : user.getUsername());
 					esDao.update(esuser, user.getId());
 				} catch (Exception e) {
 				}

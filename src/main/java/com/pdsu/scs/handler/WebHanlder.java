@@ -23,12 +23,15 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.BlobInformation;
 import com.pdsu.scs.bean.MyEmail;
 import com.pdsu.scs.bean.MyImage;
@@ -243,7 +246,8 @@ public class WebHanlder {
 			log.info("获取成功, 验证码为: " + verifyCode);
 			return Result.success()
 					.add("token", token)
-					.add("img", src);
+					.add("img", src)
+					.add("vicode", verifyCode);
 		} catch (Exception e) {
 			if(e instanceof InvocationTargetException) {
 				log.error(((InvocationTargetException)e).getTargetException().getMessage());
@@ -658,7 +662,7 @@ public class WebHanlder {
 	 * @param img  上传头像文件
 	 * @return
 	 */
-	@RequestMapping(value = "/updateimage", method = RequestMethod.POST)
+	@RequestMapping(value = "/changeavatar", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
 	public Result updateImage(@RequestParam("img")MultipartFile img) {
@@ -706,50 +710,52 @@ public class WebHanlder {
 	}
 	
 	/**
-	 * 更换用户名
+	 * 修改用户信息
 	 * @param username
 	 * @return
 	 */
-	@RequestMapping(value = "/updatename", method = RequestMethod.POST)
-	public Result updateUserName(String username) {
-		UserInformation user = null;
+	@RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
+	public Result updateUserInformation(UserInformation user) {
+		UserInformation userinfor = null;
 		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + "更换用户名开始, 原用户名: " + user.getUsername());
-			boolean b = userInformationService.updateUserName(user.getUid(), username);
+			userinfor = ShiroUtils.getUserInformation();
+			log.info("用户: " + userinfor.getUid() + " 修改用户信息");
+			log.info("原信息为: " + userinfor);
+			boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
 			if(b) {
-				log.info("用户: " + user.getUid() + "更换用户名成功, 现用户名: " + username);
-				return Result.success();
-			}else {
-				log.warn("连接数据库失败");
-				return Result.fail().add(EX, "网络异常, 请稍候重试");
+				UserInformation information = userInformationService.selectByUid(userinfor.getUid());
+				log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + information);
+				return Result.success().add("user", information);
 			}
+			log.warn("用户: " + userinfor.getUid() + "修改信息失败, 原因: 连接数据库失败");
+			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
 		} catch (NotFoundUidException e) {
-			log.info(e.getMessage());
+			log.info("用户: " + userinfor.getUid() + "修改信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("用户未登录");
-				return Result.fail().add(EX, "用户未登录");
-			}else {
-				log.error("用户: " + user.getUid() + "更换用户名失败, 原因: " + e.getMessage());
+		} catch (Exception e) {
+			if(userinfor == null) {
+				log.info("用户修改信息失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
 			}
+			log.error("用户修改信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	
+	
 	/**
-	 * 
+	 * 获取自己的博客
 	 * @return
 	 */
-	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
+	@RequestMapping(value = "/getoneselfblobs", method = RequestMethod.GET)
 	@CrossOrigin
 	@ResponseBody
-	public Result getBlobsByUid() {
+	public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p) {
 		UserInformation user = null;
 		try {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + "获取自己的文章开始");
+			PageHelper.startPage(p, 10);
 			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid());
 			List<Integer> webids = new ArrayList<Integer>();
 			for (WebInformation web : weblist) {
@@ -762,7 +768,8 @@ public class WebHanlder {
 						user, weblist.get(i), visitList.get(i), null, null
 				));
 			}
-			return Result.success().add("blobList", blobList);
+			PageInfo<BlobInformation> blobs = new PageInfo<BlobInformation>(blobList);
+			return Result.success().add("blobList", blobs);
 		} catch (NotFoundUidException e) {
 			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
@@ -772,6 +779,235 @@ public class WebHanlder {
 				return Result.fail().add(EX, "未登录");
 			}
 			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 获取自己的粉丝
+	 * @param p
+	 * @return
+	 */
+	@CrossOrigin
+	@GetMapping("/getoneselffans")
+	@ResponseBody
+	public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
+			log.info("获取粉丝信息");
+			PageHelper.startPage(p, 15);
+			List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid());
+			log.info("获取粉丝学号");
+			List<Integer> uids = new ArrayList<>();
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				u.setPassword(null);
+				uids.add(u.getUid());
+			}
+			log.info("获取粉丝头像");
+			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				for(MyImage img : imgs) {
+					if(img.getUid().equals(u.getUid())) {
+						u.setImgpath(img.getImagePath());
+						break;
+					}
+				}
+			}
+			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+			log.info("获取粉丝信息成功");
+			return Result.success().add("userList", userList);
+		} catch (NotFoundUidException e) {
+			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			if(user == null) {
+				log.info("用户获取粉丝信息失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 获取自己的关注
+	 * @param p
+	 * @return
+	 */
+	@CrossOrigin
+	@GetMapping("/getoneselficons")
+	@ResponseBody
+	public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
+			log.info("获取关注人信息");
+			PageHelper.startPage(p, 15);
+			List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid());
+			log.info("获取关注人学号");
+			List<Integer> uids = new ArrayList<>();
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				u.setPassword(null);
+				uids.add(u.getUid());
+			}
+			log.info("获取关注人头像");
+			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				for(MyImage img : imgs) {
+					if(img.getUid().equals(u.getUid())) {
+						u.setImgpath(img.getImagePath());
+						break;
+					}
+				}
+			}
+			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+			log.info("获取关注人信息成功");
+			return Result.success().add("userList", userList);
+		} catch (NotFoundUidException e) {
+			log.info("获取关注人信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			if(user == null) {
+				log.info("用户获取关注人信息失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 获取用户的博客
+	 * @return
+	 */
+	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
+	@CrossOrigin
+	@ResponseBody
+	public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, Integer uid) {
+		try {
+			log.info("获取用户: " + uid + " 的文章开始");
+			PageHelper.startPage(p, 10);
+			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid);
+			List<Integer> webids = new ArrayList<Integer>();
+			for (WebInformation web : weblist) {
+				webids.add(web.getId());
+			}
+			log.info("获取访问量");
+			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
+			log.info("获取用户信息");
+			UserInformation user = userInformationService.selectByUid(uid);
+			log.info("获取用户头像");
+			MyImage img = myImageService.selectImagePathByUid(uid);
+			user.setPassword(null);
+			user.setImgpath(img.getImagePath());
+			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+			for(int i = 0; i < weblist.size(); i++) {
+				blobList.add(new BlobInformation(
+						user, weblist.get(i), visitList.get(i), null, null
+						));
+			}
+			PageInfo<BlobInformation> blobs = new PageInfo<BlobInformation>(blobList);
+			return Result.success().add("blobList", blobs);
+		} catch (NotFoundUidException e) {
+			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		}catch (Exception e) {
+			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 获取用户粉丝
+	 * @param p
+	 * @return
+	 */
+	@CrossOrigin
+	@GetMapping("/getfans")
+	@ResponseBody
+	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, Integer uid) {
+		try {
+			log.info("获取用户: " + uid + " 的粉丝信息");
+			PageHelper.startPage(p, 15);
+			log.info("获取粉丝信息");
+			List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
+			log.info("获取粉丝学号");
+			List<Integer> uids = new ArrayList<>();
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				u.setPassword(null);
+				uids.add(u.getUid());
+			}
+			log.info("获取粉丝头像");
+			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				for(MyImage img : imgs) {
+					if(img.getUid().equals(u.getUid())) {
+						u.setImgpath(img.getImagePath());
+						break;
+					}
+				}
+			}
+			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+			log.info("获取粉丝信息成功");
+			return Result.success().add("userList", userList);
+		} catch (NotFoundUidException e) {
+			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 获取用户的关注
+	 * @param p
+	 * @return
+	 */
+	@CrossOrigin
+	@GetMapping("/geticons")
+	@ResponseBody
+	public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, Integer uid) {
+		try {
+			log.info("获取用户: " + uid + " 的关注人信息");
+			log.info("获取关注人信息");
+			PageHelper.startPage(p, 15);
+			List<UserInformation> users = userInformationService.selectUsersByUid(uid);
+			log.info("获取关注人学号");
+			List<Integer> uids = new ArrayList<>();
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				u.setPassword(null);
+				uids.add(u.getUid());
+			}
+			log.info("获取关注人头像");
+			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+			for(UserInformation userinfor : users) {
+				UserInformation u = userinfor;
+				for(MyImage img : imgs) {
+					if(img.getUid().equals(u.getUid())) {
+						u.setImgpath(img.getImagePath());
+						break;
+					}
+				}
+			}
+			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+			log.info("获取关注人信息成功");
+			return Result.success().add("userList", userList);
+		} catch (NotFoundUidException e) {
+			log.info("获取关注人信息失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (Exception e) {
+			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}

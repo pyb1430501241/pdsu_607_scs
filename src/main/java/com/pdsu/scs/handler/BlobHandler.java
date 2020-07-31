@@ -1,5 +1,9 @@
 package com.pdsu.scs.handler;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,6 +56,7 @@ import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
 import net.coobird.thumbnailator.Thumbnails;
+import net.coobird.thumbnailator.geometry.Positions;
 
 /**
  * 
@@ -717,9 +722,8 @@ public class BlobHandler {
 	@CrossOrigin
 	public Result postBlobImg(MultipartFile img) {
 		try {
-			log.info("用户博客页面上传图片");
 			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SUFFIX;
-			log.info("用户博客页面上传图片成功, 图片名为: " + name);
+			log.info("用户博客页面上传图片, 图片名为: " + name);
 			InputStream input = img.getInputStream();
 			Thumbnails.of(input)
 			.scale(1f)
