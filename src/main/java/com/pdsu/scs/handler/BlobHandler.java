@@ -1,14 +1,11 @@
 package com.pdsu.scs.handler;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -187,6 +184,19 @@ public class BlobHandler {
 				}
 				blobList.add(blobInformation);
 			}
+			blobList.sort(new Comparator<BlobInformation>() {
+				@Override
+				public int compare(BlobInformation o1, BlobInformation o2) {
+					Integer hint1 = o1.getCollection()*5 + o1.getThumbs()*3 + o1.getVisit() 
+						- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
+					Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
+					- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
+					if(hint1 > hint2) {
+						return 1;
+					}
+					return -1;
+				}
+			});
 			PageInfo<BlobInformation> pageInfo = new PageInfo<BlobInformation>(blobList, 5);
 			return Result.success().add("blobList", pageInfo);
 		}catch (Exception e) {

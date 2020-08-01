@@ -61,6 +61,9 @@ public class SearchHandler {
 		} catch (QueryException e) {
 			log.error(e.getMessage());
 			return Result.fail().add(EX , "网络延迟, 请稍后重试");
+		} catch (Exception e) {
+			log.error("查询时发生未知错误, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 

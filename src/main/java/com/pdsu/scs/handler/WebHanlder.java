@@ -118,7 +118,7 @@ public class WebHanlder {
 	private CacheManager cacheManager; 
 	
 	/**
-	 * 缓存区, 用于存放验证码, 验证码有效期为五分钟
+	 * 缓存区
 	 */
 	private Cache cache = null;
 	
@@ -138,7 +138,7 @@ public class WebHanlder {
 				return Result.fail().add(EX, "未登录");
 			}
 			return Result.success().add("user", user);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			log.error("原因: " + e.getMessage());
 			return Result.fail().add(EX, "未知错误, 请稍候重试");
 		}
@@ -715,6 +715,8 @@ public class WebHanlder {
 	 * @return
 	 */
 	@RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
+	@ResponseBody
+	@CrossOrigin
 	public Result updateUserInformation(UserInformation user) {
 		UserInformation userinfor = null;
 		try {
@@ -1011,4 +1013,96 @@ public class WebHanlder {
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
+	
+	/**
+	 * 获取登录状态用户的邮箱
+	 * @return
+	 */
+	@RequestMapping("/loginemail")
+	@ResponseBody
+	@CrossOrigin
+	public Result getEmailByUid() {
+		UserInformation user = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("获取用户: " + user.getUid() + " 邮箱");
+			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
+			if(myEmail == null) {
+				log.info("获取失败, 该用户未绑定邮箱");
+				return Result.fail().add(EX, "该用户未绑定邮箱");
+			}
+			String email = SimpleUtils.getAsteriskForString(myEmail.getEmail());
+			return Result.success().add("email", email);
+		} catch (Exception e) {
+			if(user == null) {
+				log.info("获取邮箱失败, 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("获取邮箱失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 数据校验
+	 * @param data  需要校验的数据
+	 * @param type  数据校验的类型
+	 * 		取值为 4 种
+	 * 			1. uid 校验学号
+	 * 			2. username 校验用户名
+	 * 			3. password 校验密码
+	 * 			4. email 校验邮箱
+	 * @return
+	 */
+	@ResponseBody
+	@GetMapping("/datacheck")
+	@CrossOrigin
+	public Result dataCheck(String data, String type) {
+		boolean b;
+		switch (type) {
+			case "uid":
+				b = data.matches("^\\d+$");
+				if(b) {
+					int countByUid = userInformationService.countByUid(Integer.parseInt(data));
+					if(countByUid == 0) {
+						return Result.success();
+					}
+					return Result.fail().add(EX, "该学号已被使用");
+				}
+				return Result.fail().add(EX, "学号或工号应为纯数字");
+			case "username":
+				 b = data.matches("[\\u4e00-\\u9fa5_a-zA-Z0-9]{2,16}");
+				 if(b) {
+					 int countByUserName = userInformationService.countByUserName(data);
+					 if(countByUserName == 0) {
+						 return Result.success();
+					 }
+					 return Result.fail().add(EX, "用户名已存在");
+				 }
+				 return Result.fail().add(EX, "用户名为4~16英文字符, 数字, 或2~8个汉字");
+			case "password":
+				b = data.matches("([0-9A-Za-z\\[\\](){}!@#$%^&*,./;':\"<>\\?|`~+-_=]){6,20}");
+				if(b) {
+					b = data.matches("^\\d+$");
+					if(b) {
+						return Result.fail().add(EX, "密码不可为纯数字");
+					}
+					return Result.success();
+				}
+				return Result.fail().add(EX, "密码必须为6~20位字母, 数字, 字符的组合");
+			case "email":
+				b = data.matches("^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$");
+				if(b) {
+					boolean c = myEmailService.countByEmail(data);
+					if(!c) {
+						return Result.success();
+					}
+					return Result.fail().add(EX, "邮箱已被使用");
+				}
+				return Result.fail().add(EX, "邮箱不正确");
+			default:
+				return Result.fail().add(EX, "数据类型不正确");
+		}
+	}
+	
 }

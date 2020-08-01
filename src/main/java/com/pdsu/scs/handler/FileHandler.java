@@ -31,7 +31,6 @@ import com.pdsu.scs.utils.SimpleUtils;
 
 /**
  *  文件相关API
- *  只在数据库中储存相应的文件存储地址, 文件的储存由IO流下载到本地
  * @author 半梦
  *
  */
@@ -81,7 +80,7 @@ public class FileHandler {
 	@CrossOrigin
 	public Result sendcomment(@RequestParam("file")MultipartFile file, String title, String description) {
 		Integer uid = ShiroUtils.getUserInformation().getUid();
-		log.info("用户: " + uid + " 上传资源: " + title + " 开始" + ", 描述为:" + description);
+		log.info("用户: " + uid + " 上传文件: " + title + " 开始" + ", 描述为:" + description);
 		try {
 			byte [] s = file.getBytes();
 			String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
@@ -98,7 +97,7 @@ public class FileHandler {
 			}
 		} catch (UidAndTItleRepetitionException e) {
 			log.info("用户: " + uid + ", 上传资源: " + title + " 失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "无法上传同名资源, 请修改名称");
+			return Result.fail().add(EX, "无法上传同名文件, 请修改名称");
 		} catch (InsertException e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
 			return Result.fail().add(EX, "网络异常, 请稍候重试");
@@ -137,7 +136,7 @@ public class FileHandler {
 		}
 		catch (Exception e) {
 			log.error("下载遇到未知错误: " + e.getMessage());
-		}finally {
+		} finally {
 			if(out != null) {
 				try {
 					out.close();

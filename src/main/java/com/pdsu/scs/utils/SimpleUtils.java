@@ -166,6 +166,7 @@ public class SimpleUtils {
 	
 	/**
 	 * 根据类来拼装该类的对象
+	 * 仅支持 EsUserInformation, EsBlobInformation, EsFileInformation
 	 * @param map
 	 * @param clazz
 	 * @return
@@ -190,7 +191,7 @@ public class SimpleUtils {
 	 */
 	public static String getAsteriskForString(String str) {
 		StringBuilder builder = new StringBuilder(str);
-		builder.replace(3, 7, "****");
+		builder.replace(2, 8, "******");
 		return builder.toString();
 	}
 	
