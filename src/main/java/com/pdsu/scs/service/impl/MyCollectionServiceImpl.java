@@ -108,4 +108,12 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 		criteria.andBidEqualTo(uid);
 		return (int) myCollectionMapper.countByExample(example);
 	}
+
+	@Override
+	public List<MyCollection> selectWebIdsByUid(Integer uid) {
+		MyCollectionExample example = new MyCollectionExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		return myCollectionMapper.selectByExample(example);
+	}
 }

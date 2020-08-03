@@ -63,11 +63,13 @@ public class WebCommentServiceImpl implements WebCommentService{
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
+		System.out.println(uid);
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
 		List<Integer> webids = new ArrayList<Integer>();
 		for (WebInformation webInformation : list) {
-			webids.add(webInformation.getUid());
+			webids.add(webInformation.getId());
 		}
+		System.out.println(webids);
 		WebCommentExample example2 = new WebCommentExample();
 		Criteria createCriteria = example2.createCriteria();
 		createCriteria.andWidIn(webids);

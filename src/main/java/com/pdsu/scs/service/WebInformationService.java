@@ -78,5 +78,12 @@ public interface WebInformationService {
 	 * @return
 	 */
 	public Integer countOriginalByUidAndContype(Integer uid, Integer contype)  throws NotFoundUidException;
+
+	/**
+	 * 根据博客id获取博客
+	 * @param webids
+	 * @return
+	 */
+	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids);
 	
 }

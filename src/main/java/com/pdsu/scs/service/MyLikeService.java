@@ -37,4 +37,13 @@ public interface MyLikeService {
 
 	//根据 uid likeid 删除关注记录
 	public boolean deleteByLikeIdAndUid(Integer likeId, Integer uid) throws NotFoundUidAndLikeIdException;
+
+	/**
+	 * 获取自己是否关注这些人
+	 * 待优化, 目前算法很缓慢
+	 * @param uid
+	 * @param uids
+	 * @return
+	 */
+	public List<Boolean> countByUidAndLikeId(Integer uid, List<Integer> uids) throws NotFoundUidException;
 }

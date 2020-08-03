@@ -1,5 +1,6 @@
 package com.pdsu.scs.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.bean.MyLikeExample;
-import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.MyLikeExample.Criteria;
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.es.dao.EsDao;
@@ -118,7 +119,7 @@ public class MyLikeServiceImpl implements MyLikeService{
 	
 	@Override
 	public boolean deleteByLikeIdAndUid(Integer likeId, Integer uid) throws NotFoundUidAndLikeIdException {
-		if(!countByUidAndLikeId(uid, likeId)) {
+		if(!countByUidAndLikeId(likeId, uid)) {
 			throw new NotFoundUidAndLikeIdException("您并未关注该用户");
 		}
 		MyLikeExample example = new MyLikeExample();
@@ -141,4 +142,18 @@ public class MyLikeServiceImpl implements MyLikeService{
 		}
 		return b;
 	}
+
+	@Override
+	public List<Boolean> countByUidAndLikeId(Integer uid, List<Integer> uids) throws NotFoundUidException {
+		if(!isByUid(uid)) {
+			throw new NotFoundUidException("该用户不存在");
+		}
+		List<Boolean> islikes = new ArrayList<>();
+		for(Integer likeId : uids) {
+			islikes.add(countByUidAndLikeId(uid, likeId));
+		}
+		return islikes;
+	}
+	
+	
 }

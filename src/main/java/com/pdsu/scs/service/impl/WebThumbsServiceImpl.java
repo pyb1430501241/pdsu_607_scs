@@ -13,6 +13,7 @@ import com.pdsu.scs.bean.WebThumbsExample.Criteria;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 import com.pdsu.scs.service.WebThumbsService;
 
 /**
@@ -60,14 +61,17 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	public Integer countThumbsByUid(Integer uid) {
 		WebThumbsExample example = new WebThumbsExample();
 		Criteria criteria = example.createCriteria();
-		criteria.andUidEqualTo(uid);
+		criteria.andBidEqualTo(uid);
 		return (int) webThumbsMapper.countByExample(example);
 	}
 
 	@Override
-	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException {
+	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException, RepetitionThumbsException {
 		if(!countByWebId(webThumbs.getWebid())) {
 			throw new NotFoundBlobIdException();
+		}
+		if(countByWebIdAndUid(webThumbs.getWebid(), webThumbs.getUid())) {
+			throw new RepetitionThumbsException();
 		}
 		return webThumbsMapper.insertSelective(webThumbs) > 0 ? true : false;
 	}
@@ -76,12 +80,15 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	public boolean countByWebId(Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
-		criteria.andUidEqualTo(webid);
+		criteria.andIdEqualTo(webid);
 		return webinformationMapper.countByExample(example) == 0 ? false : true;
 	}
 
 	@Override
-	public boolean deletebyWebIdAndUid(Integer webid, Integer uid) {
+	public boolean deletebyWebIdAndUid(Integer webid, Integer uid) throws RepetitionThumbsException {
+		if(!countByWebIdAndUid(webid, uid)) {
+			throw new RepetitionThumbsException("你并未点赞该文章");
+		}
 		WebThumbsExample example = new WebThumbsExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWebidEqualTo(webid);

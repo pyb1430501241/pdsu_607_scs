@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -33,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.BlobInformation;
+import com.pdsu.scs.bean.FansInformation;
 import com.pdsu.scs.bean.MyEmail;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.MyLike;
@@ -189,30 +191,23 @@ public class WebHanlder {
 				subject.login(token);
 				UserInformation uu = (UserInformation) subject.getPrincipal();
 				uu.setPassword(null);
-				if(uu.getAccountStatus() == 2) {
-					log.info("账号: " + uid + "登录失败, 原因: 账号被冻结");
-					return Result.fail().add(EX, "账号被冻结");
-				}
-				if(uu.getAccountStatus() == 3) {
-					log.info("账号: " + uid + "登录失败, 原因: 账号被封禁");
-					return Result.fail().add(EX, "账号被封禁");
-				}
-				if(uu.getAccountStatus() == 4) {
-					log.info("账号: " + uid + "登录失败, 原因: 账号已被注销");
-					return Result.fail().add(EX, "账号已被注销");
-				}
 				log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
 				uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
+				uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
 				return Result.success()
 						.add("user", uu)
 						.add("AccessToken", subject.getSession().getId());
 			}catch (IncorrectCredentialsException e) {
-				log.info("账号: " + uid + "密码错误");
+				log.info("账号: " + uid + "账号或密码错误");
 				return Result.fail().add(EX, "账号或密码错误");
 			}catch (UnknownAccountException e) {
 				log.info("账号: " + uid + "不存在");
 				return Result.fail().add(EX, "账号不存在");
-			}catch (Exception e) {
+			} catch (AuthenticationException e) {
+				log.info("登录失败, 原因: " + e.getMessage());
+				return Result.fail().add(EX, e.getMessage());
+			} catch (Exception e) {
+				subject.logout();
 				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
 				return Result.fail().add(EX, "未定义类型错误");
 			}
@@ -591,7 +586,7 @@ public class WebHanlder {
 		try {
 			likeId = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
-			//插入记录
+			log.info("验证用户是否已关注此用户");
 			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
 			if(flag) {
 				log.info("用户: " + likeId + ", 关注: " + uid + "成功");
@@ -625,7 +620,6 @@ public class WebHanlder {
 		try {
 			likeId = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
-			//刪除记录
 			boolean b = myLikeService.deleteByLikeIdAndUid(likeId, uid);
 			if(b) {
 				log.info("用户: " + likeId + ", 取消关注: " + uid + "成功");
@@ -641,6 +635,31 @@ public class WebHanlder {
 			if(likeId == null) {
 				return Result.fail().add(EX, "用户未登录");
 			}
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 关注状态
+	 * @param uid
+	 * @return
+	 */
+	@GetMapping("/likestatus")
+	@ResponseBody
+	@CrossOrigin
+	public Result getLikeStatus(Integer uid) {
+		Integer likeId = null;
+		try {
+			log.info("判断用户是否已关注某用户");
+			likeId = ShiroUtils.getUserInformation().getUid();
+			boolean b = myLikeService.countByUidAndLikeId(likeId, uid);
+			return Result.success().add("status", b);
+		} catch (Exception e) {
+			if(likeId == null) {
+				log.info("判断用户是否关注发生错误, 原因: 未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("判断用户是否关注发生未知错误, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
@@ -694,6 +713,7 @@ public class WebHanlder {
 			boolean b = myImageService.update(new MyImage(user.getUid(), name));
 			if(b) {
 				log.info("用户: " + user.getUid() + " 更换头像成功");
+				ShiroUtils.getUserInformation().setImgpath(name);
 				return Result.success().add("imgpath", name);
 			} else {
 				log.warn("写入数据库失败!");
@@ -725,9 +745,17 @@ public class WebHanlder {
 			log.info("原信息为: " + userinfor);
 			boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
 			if(b) {
-				UserInformation information = userInformationService.selectByUid(userinfor.getUid());
-				log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + information);
-				return Result.success().add("user", information);
+				if(user.getUsername() != null && user.getUsername().trim().length() > 0) {
+					userinfor.setUsername(user.getUsername());
+				}
+				if(user.getClazz() != null && user.getClazz().trim().length() > 0) {
+					userinfor.setClazz(user.getClazz());
+				}
+				if(user.getCollege() != null && user.getCollege().trim().length() > 0) {
+					userinfor.setCollege(user.getCollege());
+				}
+				log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);
+				return Result.success().add("user", userinfor);
 			}
 			log.warn("用户: " + userinfor.getUid() + "修改信息失败, 原因: 连接数据库失败");
 			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
@@ -808,20 +836,24 @@ public class WebHanlder {
 				u.setPassword(null);
 				uids.add(u.getUid());
 			}
+			log.info("获取是否互关");
+			List<Boolean> islikes = myLikeService.countByUidAndLikeId(user.getUid(), uids);
 			log.info("获取粉丝头像");
 			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
+			List<FansInformation> fans = new ArrayList<>();
+			for(Integer i = 0; i < users.size(); i++) {
+				UserInformation u = users.get(i);
 				for(MyImage img : imgs) {
 					if(img.getUid().equals(u.getUid())) {
 						u.setImgpath(img.getImagePath());
 						break;
 					}
 				}
+				fans.add(new FansInformation(u, islikes.get(i)));
 			}
-			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+			PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
 			log.info("获取粉丝信息成功");
-			return Result.success().add("userList", userList);
+			return Result.success().add("fansList", userList);
 		} catch (NotFoundUidException e) {
 			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
@@ -936,9 +968,9 @@ public class WebHanlder {
 	@ResponseBody
 	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, Integer uid) {
 		try {
-			log.info("获取用户: " + uid + " 的粉丝信息");
-			PageHelper.startPage(p, 15);
+			log.info("用户: " + uid + " 获取自己的粉丝信息");
 			log.info("获取粉丝信息");
+			PageHelper.startPage(p, 15);
 			List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
 			log.info("获取粉丝学号");
 			List<Integer> uids = new ArrayList<>();
@@ -947,20 +979,24 @@ public class WebHanlder {
 				u.setPassword(null);
 				uids.add(u.getUid());
 			}
+			log.info("获取是否互关");
+			List<Boolean> islikes = myLikeService.countByUidAndLikeId(uid, uids);
 			log.info("获取粉丝头像");
 			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
+			List<FansInformation> fans = new ArrayList<>();
+			for(Integer i = 0; i < users.size(); i++) {
+				UserInformation u = users.get(i);
 				for(MyImage img : imgs) {
 					if(img.getUid().equals(u.getUid())) {
 						u.setImgpath(img.getImagePath());
 						break;
 					}
 				}
+				fans.add(new FansInformation(u, islikes.get(i)));
 			}
-			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+			PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
 			log.info("获取粉丝信息成功");
-			return Result.success().add("userList", userList);
+			return Result.success().add("fansList", userList);
 		} catch (NotFoundUidException e) {
 			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());

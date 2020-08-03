@@ -31,7 +31,32 @@ public class UserInformation implements Serializable {
     
     private String imgpath;
     
+    private String email;
+    
     public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
+			String time, Integer accountStatus, String imgpath, String email) {
+		super();
+		this.id = id;
+		this.uid = uid;
+		this.password = password;
+		this.username = username;
+		this.college = college;
+		this.clazz = clazz;
+		this.time = time;
+		this.accountStatus = accountStatus;
+		this.imgpath = imgpath;
+		this.email = email;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
 			String time, Integer accountStatus, String imgpath) {
 		super();
 		this.id = id;
@@ -121,7 +146,7 @@ public class UserInformation implements Serializable {
 	public String toString() {
 		return "UserInformation [id=" + id + ", uid=" + uid + ", password=" + password + ", username=" + username
 				+ ", college=" + college + ", clazz=" + clazz + ", time=" + time + ", accountStatus=" + accountStatus
-				+ ", imgpath=" + imgpath + "]";
+				+ ", imgpath=" + imgpath + ", email=" + email + "]";
 	}
 
 	public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,

@@ -264,7 +264,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 		if(countByUid(likeId) == 0) {
 			throw new NotFoundUidException("该用户不存在");
 		}
-		List<Integer> uids = myLikeMapper.selectLikeIdByUid(likeId);
+		List<Integer> uids = myLikeMapper.selectUidByLikeId(likeId);
 		if(uids.size() == 0) {
 			return new ArrayList<UserInformation>();
 		}
@@ -272,7 +272,6 @@ public class UserInformationServiceImpl implements UserInformationService {
 		Criteria criteria = example.createCriteria();
 		criteria.andUidIn(uids);
 		List<UserInformation> list = userInformationMapper.selectByExample(example);
-		System.out.println(list);
 		return list == null ? new ArrayList<UserInformation>() : list;
 	}
 

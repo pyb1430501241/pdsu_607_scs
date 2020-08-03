@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 
 /**
  * 该接口负责提供点赞相关的方法
@@ -32,7 +33,7 @@ public interface WebThumbsService {
 	 * @param webThumbs
 	 * @return
 	 */
-	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException;
+	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException, RepetitionThumbsException;
 	
 	/**
 	 * 查询网页是否存在
@@ -45,7 +46,7 @@ public interface WebThumbsService {
 	 * @param uid
 	 * @return
 	 */
-	public boolean deletebyWebIdAndUid(Integer webid, Integer uid);
+	public boolean deletebyWebIdAndUid(Integer webid, Integer uid) throws RepetitionThumbsException;
 
 	/**
 	 * 查询用户是否点赞

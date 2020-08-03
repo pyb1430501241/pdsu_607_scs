@@ -7,11 +7,18 @@
  */
 package com.pdsu.scs.handler;
 
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.pdsu.scs.bean.Result;
+
 /**
  * @author 半梦
  */
 public class AdminHandler {
 	
 	
+	public Result getUserInformationList(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+		return Result.fail();
+	}
 	
 }

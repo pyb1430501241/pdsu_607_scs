@@ -21,6 +21,11 @@ public class WebSessionManager extends DefaultWebSessionManager{
 	
 	private static final String REFERENCED_SESSION_ID_SOURCE  = "Stateless request";
 	
+	
+	public WebSessionManager() {
+		setGlobalSessionTimeout(MILLIS_PER_HOUR*24*7);
+	}
+	
 	@Override
 	protected Serializable getSessionId(ServletRequest request, ServletResponse response) {
 		String sessionId = WebUtils.toHttp(request).getHeader(AUTHORIZATION);

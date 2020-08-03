@@ -258,4 +258,12 @@ public class WebInformationServiceImpl implements WebInformationService {
 		return (int) webInformationMapper.countByExample(example);
 	}
 
+	@Override
+	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids) {
+		WebInformationExample example = new WebInformationExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andIdIn(webids);
+		return webInformationMapper.selectByExample(example);
+	}
+
 }

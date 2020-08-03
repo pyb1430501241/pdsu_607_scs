@@ -64,5 +64,12 @@ public interface MyCollectionService {
 	 * @return
 	 */
 	public Integer countCollectionByUid(Integer uid);
+
+	/**
+	 * 获取用户收藏的文章id
+	 * @param uid
+	 * @return
+	 */
+	public List<MyCollection> selectWebIdsByUid(Integer uid);
 	
 }

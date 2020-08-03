@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +36,7 @@ import com.pdsu.scs.bean.WebCommentReply;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
@@ -53,7 +55,6 @@ import com.pdsu.scs.utils.ShiroUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
 import net.coobird.thumbnailator.Thumbnails;
-import net.coobird.thumbnailator.geometry.Positions;
 
 /**
  * 
@@ -390,6 +391,32 @@ public class BlobHandler {
 	}
 	
 	/**
+	 * 获取收藏状态
+	 * @param webid
+	 * @return
+	 */
+	@GetMapping("/collectionstatuts")
+	@CrossOrigin
+	@ResponseBody
+	public Result collectionStatus(Integer webid) {
+		Integer uid = null;
+		try {
+			uid = ShiroUtils.getUserInformation().getUid();
+			log.info("查询用户是否已收藏文章");
+			boolean b = myConllectionService.countByUidAndWebId(uid, webid);
+			log.info("查询成功");
+			return Result.success().add("status", b);
+		} catch (Exception e) {
+			if(uid == null) {
+				log.info("查询用户是否收藏文章失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("查询用户是否收藏文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
 	 * 处理投稿请求
 	 * @param user
 	 * @return
@@ -403,6 +430,10 @@ public class BlobHandler {
 		try {
 			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + uid + "发布文章开始");
+			if(web.getTitle().length() >= 30) {
+				log.info("发布失败, 原因: 标题过长");
+				return Result.fail().add(EX, "文章标题应为30字以内");
+			}
 			//设置作者UID
 			web.setUid(uid);
 			//把网页主体内容转化为byte字节
@@ -445,9 +476,9 @@ public class BlobHandler {
 			user = ShiroUtils.getUserInformation();
 			log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
 			WebInformation webInformation = webInformationService.selectById(webid);
-			if(user.getUid() != webInformation.getUid()) {
-				log.info("你: " + user.getUid() + " 无权删除文章: " + webid);
-				return Result.fail().add(EX, "您无权删除这篇文章");
+			if(!user.getUid().equals(webInformation.getUid())) {
+				log.info("用户: " + user.getUid() + " 无权删除文章: " + webid);
+				return Result.fail().add(EX, "你无权删除这篇文章");
 			}
 			boolean b = webInformationService.deleteById(webid);
 			if(b) {
@@ -620,6 +651,9 @@ public class BlobHandler {
 			log.info("获取作者原创数量");
 			Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
 			author.setOriginal(original);
+			log.info("获取作者总关注数量");
+			Integer attention = (int) myLikeService.countByUid(uid);
+			author.setAttention(attention);
 			log.info("获取作者信息成功");
 			return Result.success().add("author", author);
 		} catch (NotFoundUidException e) {
@@ -627,6 +661,59 @@ public class BlobHandler {
 			return Result.fail().add(EX, e.getMessage());
 		} catch (Exception e) {
 			log.error("获取作者信息发生未知错误, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
+	/**
+	 * 获取用户收藏的文章
+	 * @param uid
+	 * @return
+	 */
+	@GetMapping("/getcollection")
+	@ResponseBody
+	@CrossOrigin
+	public Result getCollectionByUid(Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p) {
+		try {
+			log.info("获取用户: " + uid + " 收藏的文章");
+			PageHelper.startPage(p, 10);
+			List<MyCollection> collections = myConllectionService.selectWebIdsByUid(uid);
+			List<Integer> webids = new ArrayList<>();
+			List<Integer> uids = new ArrayList<>();
+			for (MyCollection collection : collections) {
+				webids.add(collection.getWid());
+				uids.add(collection.getBid());
+			}
+			log.info("获取文章信息");
+			List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids);
+			log.info("获取文章访问量");
+			List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
+			log.info("获取文章收藏量");
+			List<Integer> collection = myConllectionService.selectCollectionssByWebIds(webids);
+			log.info("获取作者信息");
+			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+			log.info("获取点赞量");
+			List<Integer> thumbs = webThubmsService.selectThumbssForWebId(webids);
+			List<BlobInformation> blobInformations = new ArrayList<BlobInformation>();
+			for (Integer i = 0; i < webs.size(); i++) {
+				BlobInformation blob = new BlobInformation();
+				blob.setWeb(webs.get(i));
+				blob.setVisit(visits.get(i));
+				blob.setThumbs(thumbs.get(i));
+				blob.setCollection(collection.get(i));
+				for(UserInformation user : users) {
+					if(webs.get(i).getUid().equals(user.getUid())) {
+						blob.setUser(user);
+						break;
+					}
+				}
+				blobInformations.add(blob);
+			}
+			PageInfo<BlobInformation> bloList = new PageInfo<BlobInformation>(blobInformations);
+			log.info("获取成功");
+			return Result.success().add("blobList", bloList);
+		} catch (Exception e) {
+			log.info("获取失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
@@ -650,6 +737,9 @@ public class BlobHandler {
 			log.warn("用户点赞文章失败, 连接数据库失败");
 			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
 		} catch (NotFoundBlobIdException e) {
+			log.info("用户点赞文章失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		} catch (RepetitionThumbsException e) {
 			log.info("用户点赞文章失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
 		}catch (Exception e) {
@@ -680,7 +770,10 @@ public class BlobHandler {
 			}
 			log.warn("用户取消点赞文章失败, 连接数据库失败");
 			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
-		} catch (Exception e) {
+		} catch (RepetitionThumbsException e) {
+			log.info("用户取消点赞失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, e.getMessage());
+		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户取消点赞文章失败, 原因: 未登录");
 				return Result.fail().add(EX, "用户未登录");

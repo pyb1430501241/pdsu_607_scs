@@ -81,7 +81,7 @@
 	<!-- 配置 securityManager -->
 	<bean id = "securityManager" class = "org.apache.shiro.web.mgt.DefaultWebSecurityManager">
 		<property name="sessionManager">
-			<bean class = "com.pdsu.scs.shiro.WebSessionManager"></bean>
+			<bean class = "com.pdsu.scs.shiro.WebSessionManager"/>
 		</property>
 		<property name="cacheManager" ref="ehcacheManager"></property>
 		<property name="realm" ref="loginRealm"></property>

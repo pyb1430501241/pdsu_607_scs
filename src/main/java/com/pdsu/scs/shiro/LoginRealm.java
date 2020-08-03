@@ -11,6 +11,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.service.UserInformationService;
 
@@ -37,6 +38,15 @@ public class LoginRealm extends AuthorizingRealm{
 			return null;
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
+		if(user.getAccountStatus() == 2) {
+			throw new AuthenticationException("账号被冻结");
+		}
+		if(user.getAccountStatus() == 3) {
+			throw new AuthenticationException("账号被封禁");
+		}
+		if(user.getAccountStatus() == 4) {
+			throw new AuthenticationException("账号已注销");
+		}
 		Object credentials = user.getPassword();
 		String realmName = getName();
 		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");
