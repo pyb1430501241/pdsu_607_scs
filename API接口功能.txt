@@ -24,10 +24,12 @@
     9) webFile 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "title" : "标题" 
     									, "filePath" : "下载路径" ，"creattime" : "创建时间"}
     10) webHeat 的 json 对应 json{"id" : "xx" , "webid" : "网页号" , "heat" : "点击量"}
-    									
-	11) visit的 json 对应 json{访问量}
-	12) thubms的 json 对应 json{点赞量}
-	13) collection的 json 对应 json{收藏量}
+    11) webcomment 的json对应 json{"id" : "xx" , "wid" : "文章ID" , "cid": "评论id" , 
+    					"uid" : "评论人UID" , "bid" : "被评论人UID" , "username" : "用户名" , 
+    					"imgpath" : "图片地址" , "content" : "回复评论" , "thumb" : "点赞" , "createtime" : "创建时间"}									
+	12) visit的 json 对应 json{访问量}
+	13) thubms的 json 对应 json{点赞量}
+	14) collection的 json 对应 json{收藏量}
 	
 	注:
 	1：后带List的均为此数据的集合形式  
@@ -58,7 +60,7 @@
 				返回值:
 					成功：
 						 json{"code" : "200", "msg" : "success",
-						"web" : "网页信息" , "webList" , "作者其余作品" 
+						"web" : "网页信息" ,  
 						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量", "commentList" : "评论"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
@@ -166,10 +168,11 @@
 		请求方式：POST
 		请求头: Authorization
 			请求参数: 
+				webid ：网页号
 				cid ：评论号
 				bid : 被回复人学号
 				content ：内容
-				如:http://121.199.27.93/blob/commentreply?cid=2&bid=3&contend=xxxx
+				如:http://121.199.27.93/blob/commentreply?webid=22&cid=2&bid=3&contend=xxxx
 				返回值: 
 					成功： 
 						json{"code" : "200", "msg" : "success"}
@@ -187,7 +190,7 @@
 				如:http://121.199.27.93/blob/getauthor?uid=1
 				返回值: 
 					成功： 
-						json{"code" : "200", "msg" : "success" , "author" : "作者信息"}
+						json{"code" : "200", "msg" : "success" , "author" : "作者信息" , "webList" : "网页集合"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
