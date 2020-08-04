@@ -38,7 +38,6 @@ public interface WebInformationService {
 	
 	/**
 	 * 根据时间查询网页集合
-	 * 待定, 回头会加入热度算法
 	 * @return
 	 */
 	public List<WebInformation> selectWebInformationOrderByTimetest();

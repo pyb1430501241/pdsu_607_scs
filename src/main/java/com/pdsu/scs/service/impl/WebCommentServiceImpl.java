@@ -69,7 +69,6 @@ public class WebCommentServiceImpl implements WebCommentService{
 		for (WebInformation webInformation : list) {
 			webids.add(webInformation.getId());
 		}
-		System.out.println(webids);
 		WebCommentExample example2 = new WebCommentExample();
 		Criteria createCriteria = example2.createCriteria();
 		createCriteria.andWidIn(webids);

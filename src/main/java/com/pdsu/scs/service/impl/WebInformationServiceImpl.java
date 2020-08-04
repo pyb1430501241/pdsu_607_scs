@@ -15,6 +15,8 @@ import com.pdsu.scs.bean.MyCollectionExample;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.VisitInformationExample;
+import com.pdsu.scs.bean.WebCommentExample;
+import com.pdsu.scs.bean.WebCommentReplyExample;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
@@ -22,6 +24,8 @@ import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.dao.MyCollectionMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.dao.VisitInformationMapper;
+import com.pdsu.scs.dao.WebCommentMapper;
+import com.pdsu.scs.dao.WebCommentReplyMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
 import com.pdsu.scs.es.dao.EsDao;
@@ -54,6 +58,12 @@ public class WebInformationServiceImpl implements WebInformationService {
 	
 	@Autowired
 	private VisitInformationMapper visitInformationMapper;
+	
+	@Autowired
+	private WebCommentMapper webCommentMapper;
+	
+	@Autowired
+	private WebCommentReplyMapper webCommentReplyMapper;
 	
 	@Autowired
 	private EsDao esDao;
@@ -101,6 +111,25 @@ public class WebInformationServiceImpl implements WebInformationService {
 	public boolean deleteById(Integer id) throws NotFoundBlobIdException, DeleteInforException{
 		if(!countByWebId(id)) {
 			throw new NotFoundBlobIdException("该文章不存在");
+		}
+		
+		/**
+		 * 删除网页相关的评论信息
+		 */
+		WebCommentReplyExample webCommentReplyExample = new WebCommentReplyExample();
+		com.pdsu.scs.bean.WebCommentReplyExample.Criteria criteria = webCommentReplyExample.createCriteria();
+		criteria.andWidEqualTo(id);
+		long webCommentReplyCount = webCommentReplyMapper.countByExample(webCommentReplyExample);
+		if(webCommentReplyMapper.deleteByExample(webCommentReplyExample) != webCommentReplyCount) {
+			throw new DeleteInforException("删除网页评论信息失败");
+		}
+		
+		WebCommentExample webCommentExample = new WebCommentExample();
+		com.pdsu.scs.bean.WebCommentExample.Criteria webCommentCriteria = webCommentExample.createCriteria();
+		webCommentCriteria.andWidEqualTo(id);
+		long webCommentCount = webCommentMapper.countByExample(webCommentExample);
+		if(webCommentMapper.deleteByExample(webCommentExample) != webCommentCount) {
+			throw new DeleteInforException("删除网页评论信息失败");
 		}
 		
 		/**
@@ -170,7 +199,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Override
 	public List<WebInformation> selectWebInformationOrderByTimetest() {
 		WebInformationExample example = new WebInformationExample();
-		example.setOrderByClause("sub_time");
+		example.setOrderByClause("sub_time DESC");
 		List<WebInformation> selectByExampleWithBLOBs = webInformationMapper.selectByExampleWithBLOBs(example);
 		for(WebInformation webInformation : selectByExampleWithBLOBs) {
 			WebInformation web = webInformation;

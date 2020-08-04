@@ -41,5 +41,20 @@ public interface WebCommentReplyService {
 	 * @return
 	 */
 	public List<WebCommentReply> selectCommentReplysByWebComments(List<WebComment> commentList);
+	
+	/**
+	 * 根据网页ID查询所有评论回复
+	 * @param webid
+	 * @return
+	 */
+	public List<WebCommentReply> selectCommentReplysByWebId(Integer webid) throws NotFoundBlobIdException;
+
+	/**
+	 * 根据用户所有文章和uid获取总共有多少评论回复
+	 * @param webs
+	 * @param uid
+	 * @return
+	 */
+	public Integer countByWebsAndUid(List<Integer> webs);
 
 }

@@ -202,7 +202,7 @@ public class BlobHandler {
 			return Result.success().add("blobList", pageInfo);
 		}catch (Exception e) {
 			log.error("获取首页数据失败, 原因为: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 	
@@ -219,17 +219,6 @@ public class BlobHandler {
 			log.info("开始获取博客页面信息");
 			WebInformation web = webInformationService.selectById(id);
 			Integer uid = web.getUid();
-			log.info("获取作者其余文章");
-			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
-			List<WebInformation> webs = new ArrayList<WebInformation>();
-			int i = 0;
-			for (WebInformation webInformation : webList) {
-				if(i > 5) {
-					break;
-				}
-				webs.add(webInformation);
-				i++;
-			}
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
 			web.setWebData(null);
 			UserInformation user = ShiroUtils.getUserInformation();
@@ -247,7 +236,7 @@ public class BlobHandler {
 			Integer collections = myConllectionService.selectCollectionsByWebId(web.getId());
 			log.info("获取文章评论");
 			List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
-			List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebComments(commentList);
+			List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebId(id);
 			List<Integer> uids = new ArrayList<>();
 			for(WebComment webComment : commentList) {
 				uids.add(webComment.getUid());
@@ -297,14 +286,11 @@ public class BlobHandler {
 				}
 				b.setCommentReplyList(webcommentReplyList);
 			}
-			return Result.success().add("web", web).add("webList", webs)
+			return Result.success().add("web", web)
 				   .add("visit", visits)
 				   .add("thubms", thubms)
 				   .add("collection", collections)
 				   .add("commentList", commentList);
-		}catch (NotFoundUidException e) {
-			log.info("获取文章信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "文章不见了");
 		} catch (UnsupportedEncodingException e) {
 			log.error("文章: " + id + "编码转换失败!!!");
 			return Result.fail().add(EX, "获取文章信息失败");
@@ -584,12 +570,12 @@ public class BlobHandler {
 	@RequestMapping(value = "/commentreply", method = RequestMethod.POST)
 	@CrossOrigin
 	@ResponseBody
-	public Result postCommentReply(Integer cid, Integer bid, String content) {
+	public Result postCommentReply(Integer webid, Integer cid, Integer bid, String content) {
 		UserInformation user = null;
 		try {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
-			boolean b = webCommentReplyService.insert(new WebCommentReply(cid, user.getUid(), bid, content, 
+			boolean b = webCommentReplyService.insert(new WebCommentReply(webid, cid, user.getUid(), bid, content, 
 						0, SimpleUtils.getSimpleDateSecond()));
 			if(b) {
 				log.info("用户回复评论成功");
@@ -630,6 +616,18 @@ public class BlobHandler {
 			Author author = new Author();
 			author.setUid(user.getUid());
 			author.setUsername(user.getUsername());
+			log.info("获取作者其余文章");
+			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
+			List<WebInformation> webs = new ArrayList<WebInformation>();
+			List<Integer> webids = new ArrayList<>();
+			int i = 0;
+			for (WebInformation webInformation : webList) {
+				if(i <= 5) {
+					webs.add(webInformation);
+				}
+				webids.add(webInformation.getId());
+				i++;
+			}
 			log.info("获取作者头像信息");
 			String imgpath = myInageService.selectImagePathByUid(uid).getImagePath();
 			author.setImgpath(imgpath);
@@ -641,7 +639,8 @@ public class BlobHandler {
 			author.setThumbs(thumbs);
 			log.info("获取作者文章总评论数");
 			Integer comment = webCommentService.countByUid(uid);
-			author.setComment(comment);
+			Integer commentReply = webCommentReplyService.countByWebsAndUid(webids);
+			author.setComment(comment + commentReply);
 			log.info("获取作者文章总访问量");
 			Integer visits = visitInformationService.selectVisitsByVid(uid);
 			author.setVisits(visits);
@@ -655,7 +654,7 @@ public class BlobHandler {
 			Integer attention = (int) myLikeService.countByUid(uid);
 			author.setAttention(attention);
 			log.info("获取作者信息成功");
-			return Result.success().add("author", author);
+			return Result.success().add("author", author).add("webList", webs);
 		} catch (NotFoundUidException e) {
 			log.info("获取作者信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
@@ -832,7 +831,7 @@ public class BlobHandler {
 			.scale(1f)
 			.outputQuality(0.8f)
 			.outputFormat("jpg")
-			.toFile(FILEPATH + name);;
+			.toFile(FILEPATH + name);
 			log.info("上传并压缩成功");
 			return Result.success().add("img", name);
 		} catch (IOException e) {

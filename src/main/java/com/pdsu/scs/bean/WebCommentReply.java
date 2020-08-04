@@ -3,7 +3,7 @@ package com.pdsu.scs.bean;
 import java.io.Serializable;
 
 /**
- * 回复评论相关
+ * 回复评论
  * @author 半梦
  *
  */
@@ -16,45 +16,65 @@ public class WebCommentReply implements Serializable{
 	private Integer id;
 
     /**
-     * 评论id
+         * 文章ID
+     */
+    private Integer wid;
+
+    /**
+         *  评论ID
      */
     private Integer cid;
 
     /**
-     * 评论人uid
+         * 评论人UID
      */
     private Integer uid;
-
+    
+    /**
+         * 被评论人UID
+     */
+    private Integer bid;
+    
     private String username;
     
     private String imgpath;
-    
-    /**
-     * 被评论人id
-     */
-    private Integer bid;
 
-    /**
-     * 内容
-     */
     private String content;
 
-    /**
-     * 点赞数
-     */
     private Integer thumb;
 
-    /**
-     * 回复时间
-     */
     private String createtime;
 
-    public Integer getId() {
+    public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getImgpath() {
+		return imgpath;
+	}
+
+	public void setImgpath(String imgpath) {
+		this.imgpath = imgpath;
+	}
+
+	public Integer getId() {
         return id;
     }
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getWid() {
+        return wid;
+    }
+
+    public void setWid(Integer wid) {
+        this.wid = wid;
     }
 
     public Integer getCid() {
@@ -107,15 +127,15 @@ public class WebCommentReply implements Serializable{
 
 	@Override
 	public String toString() {
-		return "WebCommentReply [id=" + id + ", cid=" + cid + ", uid=" + uid + ", username=" + username + ", imgpath="
-				+ imgpath + ", bid=" + bid + ", content=" + content + ", thumb=" + thumb + ", createtime=" + createtime
-				+ "]";
+		return "WebCommentReply [id=" + id + ", wid=" + wid + ", cid=" + cid + ", uid=" + uid + ", bid=" + bid
+				+ ", content=" + content + ", thumb=" + thumb + ", createtime=" + createtime + "]";
 	}
 
-	public WebCommentReply(Integer id, Integer cid, Integer uid, Integer bid, String content, Integer thumb,
-			String createtime) {
+	public WebCommentReply(Integer id, Integer wid, Integer cid, Integer uid, Integer bid, String content,
+			Integer thumb, String createtime) {
 		super();
 		this.id = id;
+		this.wid = wid;
 		this.cid = cid;
 		this.uid = uid;
 		this.bid = bid;
@@ -133,37 +153,19 @@ public class WebCommentReply implements Serializable{
 		this.thumb = thumb;
 		this.createtime = createtime;
 	}
-    
-    public WebCommentReply() {
-	}
-
-	public WebCommentReply(Integer cid, Integer uid, String username, String imgpath, Integer bid, String content,
-			Integer thumb, String createtime) {
+	
+	public WebCommentReply(Integer wid, Integer cid, Integer uid, Integer bid, String content, Integer thumb,
+			String createtime) {
 		super();
+		this.wid = wid;
 		this.cid = cid;
 		this.uid = uid;
-		this.username = username;
-		this.imgpath = imgpath;
 		this.bid = bid;
 		this.content = content;
 		this.thumb = thumb;
 		this.createtime = createtime;
 	}
 
-	public String getUsername() {
-		return username;
+	public WebCommentReply() {
 	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getImgpath() {
-		return imgpath;
-	}
-
-	public void setImgpath(String imgpath) {
-		this.imgpath = imgpath;
-	}
-    
 }

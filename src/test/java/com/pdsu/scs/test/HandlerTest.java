@@ -208,6 +208,40 @@ public class HandlerTest {
 		System.out.println(response.getContentAsString());
 	}
 	
+	/**
+	 * @throws Exception
+	 */
+	@Test
+	public void testCommentReply() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/getcodeforlogin"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		String[] split = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
+		List<String> list = new ArrayList<>(Arrays.asList(split));
+		list.removeAll(Arrays.asList(""));
+		list.remove("json");
+		MultiValueMap<String, String> t = new LinkedMultiValueMap<String, String>();
+		t.add("uid", "181360226");
+		t.add("password", "pyb***20000112");
+		t.add("hit", list.get(list.indexOf("token") + 1));
+		t.add("code", list.get(list.indexOf("vicode") + 1));
+		result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
+		response = result.getResponse();
+		String [] login = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
+		List<String> loginlist = new ArrayList<String>(Arrays.asList(login));
+		loginlist.removeAll(Arrays.asList(""));
+		loginlist.remove("json");
+		result = mvc.perform(MockMvcRequestBuilders.post("/blob/commentreply")
+				.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
+				.param("webid", "38")
+				.param("cid", "1")
+				.param("bid", "181360226")
+				.param("content", "Hello, World!")).andReturn();
+		response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
+	}
+	
 	@Test
 	public void testBlob() throws Exception {
 		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/38"))

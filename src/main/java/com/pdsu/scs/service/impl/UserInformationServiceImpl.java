@@ -16,6 +16,8 @@ import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.bean.UserInformationExample.Criteria;
 import com.pdsu.scs.bean.VisitInformationExample;
+import com.pdsu.scs.bean.WebCommentExample;
+import com.pdsu.scs.bean.WebCommentReplyExample;
 import com.pdsu.scs.bean.WebFileExample;
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebThumbsExample;
@@ -25,6 +27,8 @@ import com.pdsu.scs.dao.MyImageMapper;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.dao.VisitInformationMapper;
+import com.pdsu.scs.dao.WebCommentMapper;
+import com.pdsu.scs.dao.WebCommentReplyMapper;
 import com.pdsu.scs.dao.WebFileMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
@@ -73,6 +77,12 @@ public class UserInformationServiceImpl implements UserInformationService {
 	private WebInformationMapper webInformationMapper;
 	
 	@Autowired
+	private WebCommentMapper webCommentMapper;
+	
+	@Autowired
+	private WebCommentReplyMapper webCommentReplyMapper;
+	
+	@Autowired
 	private EsDao esDao;
 	
 	/**
@@ -99,6 +109,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	}
 
 	/**
+	 * 该方法不提供使用
 	 * 删除一个用户信息
 	 * 由于用户信息绑定了自身发布的博客页面
 	 * 以及自身的访问量，头像，实名认证，邮箱绑定
@@ -200,6 +211,28 @@ public class UserInformationServiceImpl implements UserInformationService {
 		long myLikeCount = myLikeMapper.countByExample(myLikeExample);
 		if(myLikeMapper.deleteByExample(myLikeExample) != myLikeCount) {
 			throw new DeleteInforException("删除用户关注信息失败");
+		}
+		
+		/**
+		 * 删除用户相关的评论信息
+		 */
+		WebCommentReplyExample webCommentReplyExample = new WebCommentReplyExample();
+		com.pdsu.scs.bean.WebCommentReplyExample.Criteria webCommentReplyCriteria1 = webCommentReplyExample.createCriteria();
+		webCommentReplyCriteria1.andUidEqualTo(uid);
+		com.pdsu.scs.bean.WebCommentReplyExample.Criteria webCommentReplyCriteria2 = webCommentReplyExample.createCriteria();
+		webCommentReplyCriteria2.andBidEqualTo(uid);
+		webCommentReplyExample.or(webCommentReplyCriteria2);
+		long webCommentReplyCount = webCommentReplyMapper.countByExample(webCommentReplyExample);
+		if(webCommentReplyMapper.deleteByExample(webCommentReplyExample) != webCommentReplyCount) {
+			throw new DeleteInforException("删除用户评论信息失败");
+		}
+		
+		WebCommentExample webCommentExample = new WebCommentExample();
+		com.pdsu.scs.bean.WebCommentExample.Criteria webCommentCriteria = webCommentExample.createCriteria();
+		webCommentCriteria.andUidEqualTo(uid);
+		long webCommentCount = webCommentMapper.countByExample(webCommentExample);
+		if(webCommentMapper.deleteByExample(webCommentExample) != webCommentCount) {
+			throw new DeleteInforException("删除用户评论信息失败");
 		}
 		
 		/**

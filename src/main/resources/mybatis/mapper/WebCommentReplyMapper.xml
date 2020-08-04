@@ -3,6 +3,7 @@
 <mapper namespace="com.pdsu.scs.dao.WebCommentReplyMapper">
   <resultMap id="BaseResultMap" type="com.pdsu.scs.bean.WebCommentReply">
     <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="wid" jdbcType="INTEGER" property="wid" />
     <result column="cid" jdbcType="INTEGER" property="cid" />
     <result column="uid" jdbcType="INTEGER" property="uid" />
     <result column="bid" jdbcType="INTEGER" property="bid" />
@@ -69,7 +70,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, cid, uid, bid, content, thumb, createtime
+    id, wid, cid, uid, bid, content, thumb, createtime
   </sql>
   <select id="selectByExample" parameterType="com.pdsu.scs.bean.WebCommentReplyExample" resultMap="BaseResultMap">
     select
@@ -101,19 +102,24 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.WebCommentReply">
-    insert into db_comment_reply (id, cid, uid, 
-      bid, content, thumb, 
-      createtime)
-    values (#{id,jdbcType=INTEGER}, #{cid,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, 
-      #{bid,jdbcType=INTEGER}, #{content,jdbcType=VARCHAR}, #{thumb,jdbcType=INTEGER}, 
-      #{createtime,jdbcType=VARCHAR})
+  <insert id="insert" parameterType="com.pdsu.scs.bean.WebCommentReply"
+  	useGeneratedKeys="true" keyProperty="id">
+    insert into db_comment_reply (id, wid, cid, 
+      uid, bid, content, 
+      thumb, createtime)
+    values (#{id,jdbcType=INTEGER}, #{wid,jdbcType=INTEGER}, #{cid,jdbcType=INTEGER}, 
+      #{uid,jdbcType=INTEGER}, #{bid,jdbcType=INTEGER}, #{content,jdbcType=VARCHAR}, 
+      #{thumb,jdbcType=INTEGER}, #{createtime,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebCommentReply">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.WebCommentReply"
+  	useGeneratedKeys="true" keyProperty="id">
     insert into db_comment_reply
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
         id,
+      </if>
+      <if test="wid != null">
+        wid,
       </if>
       <if test="cid != null">
         cid,
@@ -137,6 +143,9 @@
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
         #{id,jdbcType=INTEGER},
+      </if>
+      <if test="wid != null">
+        #{wid,jdbcType=INTEGER},
       </if>
       <if test="cid != null">
         #{cid,jdbcType=INTEGER},
@@ -170,6 +179,9 @@
       <if test="record.id != null">
         id = #{record.id,jdbcType=INTEGER},
       </if>
+      <if test="record.wid != null">
+        wid = #{record.wid,jdbcType=INTEGER},
+      </if>
       <if test="record.cid != null">
         cid = #{record.cid,jdbcType=INTEGER},
       </if>
@@ -196,6 +208,7 @@
   <update id="updateByExample" parameterType="map">
     update db_comment_reply
     set id = #{record.id,jdbcType=INTEGER},
+      wid = #{record.wid,jdbcType=INTEGER},
       cid = #{record.cid,jdbcType=INTEGER},
       uid = #{record.uid,jdbcType=INTEGER},
       bid = #{record.bid,jdbcType=INTEGER},
@@ -209,6 +222,9 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.pdsu.scs.bean.WebCommentReply">
     update db_comment_reply
     <set>
+      <if test="wid != null">
+        wid = #{wid,jdbcType=INTEGER},
+      </if>
       <if test="cid != null">
         cid = #{cid,jdbcType=INTEGER},
       </if>
@@ -232,7 +248,8 @@
   </update>
   <update id="updateByPrimaryKey" parameterType="com.pdsu.scs.bean.WebCommentReply">
     update db_comment_reply
-    set cid = #{cid,jdbcType=INTEGER},
+    set wid = #{wid,jdbcType=INTEGER},
+      cid = #{cid,jdbcType=INTEGER},
       uid = #{uid,jdbcType=INTEGER},
       bid = #{bid,jdbcType=INTEGER},
       content = #{content,jdbcType=VARCHAR},

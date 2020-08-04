@@ -38,7 +38,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	
 	@Override
 	public boolean insert(WebCommentReply webCommentReply) throws NotFoundBlobIdException, NotFoundCommentIdException {
-		if(!countByWebid(webCommentReply.getBid())) {
+		if(!countByWebid(webCommentReply.getWid())) {
 			throw new NotFoundBlobIdException();
 		}
 		if(!countByCid(webCommentReply.getCid())) {
@@ -76,6 +76,25 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 		Criteria criteria = example.createCriteria();
 		criteria.andCidIn(commentid);
 		return webCommentReplyMapper.selectByExample(example);
+	}
+	
+	@Override
+	public List<WebCommentReply> selectCommentReplysByWebId(Integer webid) throws NotFoundBlobIdException {
+		if(!countByWebid(webid)) {
+			throw new NotFoundBlobIdException();
+		}
+		WebCommentReplyExample example = new WebCommentReplyExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andWidEqualTo(webid);
+		return webCommentReplyMapper.selectByExample(example);
+	}
+
+	@Override
+	public Integer countByWebsAndUid(List<Integer> webs) {
+		WebCommentReplyExample example = new WebCommentReplyExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andWidIn(webs);
+		return (int) webCommentReplyMapper.countByExample(example);
 	}
 	
 }

@@ -164,6 +164,66 @@ public class WebCommentReplyExample {
             return (Criteria) this;
         }
 
+        public Criteria andWidIsNull() {
+            addCriterion("wid is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidIsNotNull() {
+            addCriterion("wid is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidEqualTo(Integer value) {
+            addCriterion("wid =", value, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidNotEqualTo(Integer value) {
+            addCriterion("wid <>", value, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidGreaterThan(Integer value) {
+            addCriterion("wid >", value, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidGreaterThanOrEqualTo(Integer value) {
+            addCriterion("wid >=", value, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidLessThan(Integer value) {
+            addCriterion("wid <", value, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidLessThanOrEqualTo(Integer value) {
+            addCriterion("wid <=", value, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidIn(List<Integer> values) {
+            addCriterion("wid in", values, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidNotIn(List<Integer> values) {
+            addCriterion("wid not in", values, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidBetween(Integer value1, Integer value2) {
+            addCriterion("wid between", value1, value2, "wid");
+            return (Criteria) this;
+        }
+
+        public Criteria andWidNotBetween(Integer value1, Integer value2) {
+            addCriterion("wid not between", value1, value2, "wid");
+            return (Criteria) this;
+        }
+
         public Criteria andCidIsNull() {
             addCriterion("cid is null");
             return (Criteria) this;
