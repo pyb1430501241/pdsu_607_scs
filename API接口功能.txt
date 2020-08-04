@@ -782,7 +782,7 @@
 					uid ：学号
 					title ：标题
 					如：http://121.199.27.93/file/download?uid=2&title=xxx
-			
+		
 4.SearchHandler API相关
 	1)搜索相关api
 		请求路径：域名(ip)/项目名称/search
