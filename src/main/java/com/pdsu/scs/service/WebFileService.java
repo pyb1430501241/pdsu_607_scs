@@ -1,5 +1,7 @@
 package com.pdsu.scs.service;
 
+import java.util.List;
+
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.FileException;
@@ -42,5 +44,11 @@ public interface WebFileService {
 	 * @return
 	 */
 	public Integer countByUid(Integer uid);
+
+	/**
+	 * 获取文件首页数据
+	 * @return
+	 */
+	public List<WebFile> selectFilesOrderByTime();
 	
 }

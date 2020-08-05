@@ -87,7 +87,8 @@ public class HandlerTest {
 	
 	@Test
 	public void testBlobList() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/getwebindex"))
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/getwebindex")
+				.param("lid", "11"))
 				.andReturn();
 			MockHttpServletResponse response = result.getResponse();
 			response.setCharacterEncoding("UTF-8");
@@ -247,7 +248,7 @@ public class HandlerTest {
 	
 	@Test
 	public void testBlob() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/46"))
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/82"))
 				.andReturn();
 		MockHttpServletResponse response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");

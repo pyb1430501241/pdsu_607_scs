@@ -83,6 +83,6 @@ public interface WebInformationService {
 	 * @param webids
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids);
+	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids, boolean flag);
 	
 }

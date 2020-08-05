@@ -20,7 +20,6 @@ public class MbgUtils {
 		DefaultShellCallback callback = new DefaultShellCallback(overwrite);
 		MyBatisGenerator batisGenerator = new MyBatisGenerator(conf, callback, warnings);
 		batisGenerator.generate(null);
-		
 	}
 	
 }

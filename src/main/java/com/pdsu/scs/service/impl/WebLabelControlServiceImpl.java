@@ -50,4 +50,16 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 		return labelIds;
 	}
 
+	@Override
+	public List<Integer> selectWebIdsByLid(Integer lid) {
+		WebLabelControlExample example = new WebLabelControlExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andLidEqualTo(lid);
+		List<Integer> webids = new ArrayList<Integer>();
+		for (WebLabelControl label : webLabelControlMapper.selectByExample(example)) {
+			webids.add(label.getWid());
+		}
+		return webids;
+	}
+
 }

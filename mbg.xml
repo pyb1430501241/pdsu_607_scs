@@ -52,5 +52,6 @@
         <table tableName="db_comment_reply" domainObjectName="WebCommentReply"></table>
         <table tableName="db_web_label" domainObjectName="WebLabel"></table>
         <table tableName="db_web_label_control" domainObjectName="WebLabelControl"></table>
+        <table tableName="db_file_download" domainObjectName="FileDownload"></table>
     </context>
 </generatorConfiguration>

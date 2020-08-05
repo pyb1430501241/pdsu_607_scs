@@ -1,6 +1,7 @@
 package com.pdsu.scs.service.impl;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -21,7 +22,6 @@ import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
 import com.pdsu.scs.bean.WebLabelControlExample;
-import com.pdsu.scs.bean.WebLabelExample;
 import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.dao.MyCollectionMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
@@ -37,7 +37,6 @@ import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.WebInformationService;
-import com.pdsu.scs.service.WebLabelControlService;
 import com.pdsu.scs.utils.SimpleUtils;
 
 /**
@@ -306,10 +305,16 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids) {
+	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids, boolean flag) {
+		if(webids == null || webids.size() == 0) {
+			return new ArrayList<>();
+		}
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andIdIn(webids);
+		if(flag) {
+			example.setOrderByClause("sub_time DESC");
+		}
 		return webInformationMapper.selectByExample(example);
 	}
 

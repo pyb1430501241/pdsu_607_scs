@@ -14,16 +14,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.github.pagehelper.PageHelper;
+import com.pdsu.scs.bean.FileDownload;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
+import com.pdsu.scs.service.FileDownloadService;
 import com.pdsu.scs.service.WebFileService;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
@@ -58,6 +62,9 @@ public class FileHandler {
 	@Autowired
 	private WebFileService webFileService;
 	
+	@Autowired
+	private FileDownloadService fileDownloadService;
+	
 	/**
 	 * 日志
 	 */
@@ -91,7 +98,7 @@ public class FileHandler {
 			if(b) {
 				log.info("上传成功");
 				return Result.success();
-			}else {
+			} else {
 				log.error("上传失败");
 				return Result.fail().add(EX, "网络异常, 请稍候重试");
 			}
@@ -132,6 +139,7 @@ public class FileHandler {
 			out = response.getOutputStream(); 
 			out.write(in.readAllBytes()); 
 			out.flush();
+			fileDownloadService.insert(new FileDownload(webfile.getId(), uid, ShiroUtils.getUserInformation().getUid()));
 			log.info("下载成功");
 		}
 		catch (Exception e) {
@@ -141,16 +149,30 @@ public class FileHandler {
 				try {
 					out.close();
 				} catch (IOException e) {
-					log.error("输出流关闭失败");
+					log.warn("输出流关闭失败");
 				}
 			}
 			if(in != null) {
 				try {
 					in.close();
 				} catch (IOException e) {
-					log.error("输入流关闭失败");
+					log.warn("输入流关闭失败");
 				}
 			}
+		}
+	}
+	
+	@ResponseBody
+	@GetMapping("/getfileindex")
+	@CrossOrigin
+	public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) {
+		try {
+			log.info("获取首页文件");
+			PageHelper.startPage(p, 15);
+			webFileService.selectFilesOrderByTime();
+			return Result.success();
+		} catch (Exception e) {
+			return Result.fail();
 		}
 	}
 }

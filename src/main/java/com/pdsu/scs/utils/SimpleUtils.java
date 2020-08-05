@@ -51,8 +51,6 @@ public class SimpleUtils {
 			Date end = dateFormat.parse(endDate);
 			diff = (end.getTime() - start.getTime())/1000;
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		return diff;
 	}

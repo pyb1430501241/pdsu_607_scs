@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +41,7 @@ import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
+import com.pdsu.scs.service.FileDownloadService;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.MyLikeService;
@@ -136,6 +136,9 @@ public class BlobHandler {
 	@Autowired
 	private WebLabelControlService webLabelControlService;
 	
+	@Autowired
+	private FileDownloadService fileDownloadService;
+	
 	private static final String EX = "exception";
 	
 	private static final String FILEPATH = "/pdsu/web/blob/img/";
@@ -154,25 +157,44 @@ public class BlobHandler {
 	@RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getWebForIndex(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+	public Result getWebForIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
+			, @RequestParam(defaultValue = "0") Integer lid) {
 		try {
-			PageHelper.startPage(p, 10);
 			//获取按时间排序的投稿
-			List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
+			List<WebInformation> webList = new ArrayList<WebInformation>();
+			switch (lid) {
+				case 0:
+					log.info("获取首页数据");
+					PageHelper.startPage(p, 10);
+					webList = webInformationService.selectWebInformationOrderByTimetest();
+					break;
+				case 1: case 2: case 3:
+				case 4: case 5: case 6:
+				case 7: case 8: case 9:
+				case 10: case 11:
+					log.info("按标签获取首页数据");
+					List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
+					PageHelper.startPage(p, 10);
+					webList = webInformationService.selectWebInformationsByIds(wids, true);
+					break;
+				default:
+					log.warn("无此类标签");
+					return Result.fail().add(EX, "无此类标签数据");
+			}
 			if(webList == null || webList.size() == 0) {
 				log.info("首页没有数据");
 				return Result.accepted();
 			}
-			//根据投稿的投稿人 uid 获取这些投稿人的信息
 			List<Integer> uids = new ArrayList<Integer>();
 			List<Integer> webids = new ArrayList<Integer>();
 			for(WebInformation w : webList) {
 				uids.add(w.getUid());
 				webids.add(w.getId());
 			}
+			log.info("获取博客作者信息");
 			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
+			log.info("获取博客作者头像");
 			List<MyImage> imgpaths = myInageService.selectImagePathByUids(uids);
-			//密码置为 null, 并添加头像地址
 			for(UserInformation user : userList) {
 				UserInformation t  = user;
 				t.setPassword(null);
@@ -182,11 +204,11 @@ public class BlobHandler {
 					}
 				}
 			}
-			//获取文章的点赞数
+			log.info("获取首页文章点赞量");
 			List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
-			//获取文章访问量
+			log.info("获取首页文章访问量");
 			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-			//获取文章收藏量
+			log.info("获取首页文章收藏量");
 			List<Integer> collectionList = myConllectionService.selectCollectionssByWebIds(webids);
 			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
 			for (int i = 0; i < webList.size(); i++) {
@@ -205,7 +227,7 @@ public class BlobHandler {
 			blobList.sort(new Comparator<BlobInformation>() {
 				@Override
 				public int compare(BlobInformation o1, BlobInformation o2) {
-					Integer hint1 = o1.getCollection()*5 + o1.getThumbs()*3 + o1.getVisit() 
+					Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000 
 						- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
 					Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
 					- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
@@ -701,6 +723,9 @@ public class BlobHandler {
 			log.info("获取作者文件总数量");
 			Integer files = webFileService.countByUid(uid);
 			author.setFiles(files);
+			log.info("获取作者文件被下载量");
+			Integer downloads = fileDownloadService.countByBid(uid);
+			author.setDownloads(downloads);
 			log.info("获取作者信息成功");
 			return Result.success().add("author", author).add("webList", webs);
 		} catch (NotFoundUidException e) {
@@ -732,7 +757,7 @@ public class BlobHandler {
 				uids.add(collection.getBid());
 			}
 			log.info("获取文章信息");
-			List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids);
+			List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
 			log.info("获取文章访问量");
 			List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
 			log.info("获取文章收藏量");

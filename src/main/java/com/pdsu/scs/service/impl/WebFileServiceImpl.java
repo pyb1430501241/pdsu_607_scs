@@ -91,4 +91,10 @@ public class WebFileServiceImpl implements WebFileService{
 		return (int) webFileMapper.countByExample(example);
 	}
 
+	@Override
+	public List<WebFile> selectFilesOrderByTime() {
+		
+		return null;
+	}
+
 }

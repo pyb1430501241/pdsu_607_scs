@@ -241,8 +241,7 @@ public class WebHanlder {
 			log.info("获取成功, 验证码为: " + verifyCode);
 			return Result.success()
 					.add("token", token)
-					.add("img", src)
-					.add("vicode", verifyCode);
+					.add("img", src);
 		} catch (Exception e) {
 			if(e instanceof InvocationTargetException) {
 				log.error(((InvocationTargetException)e).getTargetException().getMessage());

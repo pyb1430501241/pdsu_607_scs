@@ -29,4 +29,11 @@ public interface WebLabelControlService {
 	 */
 	public List<Integer> selectLabelIdByWebId(Integer webid);
 
+	/**
+	 * 根据标签获取文章
+	 * @param lid
+	 * @return
+	 */
+	public List<Integer> selectWebIdsByLid(Integer lid);
+
 }
