@@ -10,7 +10,8 @@
 		, "college" : "学院", "clazz" : "班级", "time" : "申请时间", "accountStatus" : "账号状态"
 		, "imgpath" : "头像地址"}
 	3) author 的 json 对应json {"uid" : "学号" , "username" : "昵称" , "imgpath" : "头像地址" , "original" : "原创数"
-		, "fans" : "粉丝数" , "thumbs" : "点赞数" , "comment" : "评论数" , "visits" : "访问量" , "collection" : "收藏量" ，"attention" : "关注量"}	
+		, "fans" : "粉丝数" , "thumbs" : "点赞数" , "comment" : "评论数" , "visits" : "访问量" , "collection" : "收藏量" 
+		，"attention" : "关注量" ，"files" : "上传文件数"}	
 	4) es的json 对应 json{ 
 						  "authorList" : {"uid" : "作者学号" , "username" : "用户名"， " imgpath" : "图片路径" " , "blobnum" : "博客编号" , 							"likenum": "喜爱编号"}], 
 						  "b1obList" :[{"webid" : "网页号", "title" : "标题" , "description" : "内容" }], 
@@ -27,6 +28,8 @@
     11) webcomment 的json对应 json{"id" : "xx" , "wid" : "文章ID" , "cid": "评论id" , 
 					"uid" : "评论人UID" , "bid" : "被评论人UID" , "username" : "用户名" , 
 					"imgpath" : "图片地址" , "content" : "回复评论" , "thumb" : "点赞" , "createtime" : "创建时间"}										
+	12) weblable 的 json 对应 josn{"id" : "xx" , "lable" : "标签"}
+	13) weblablecontrol 的 json 对应 json{"id" : "xx" , "wid" : "文章id" , "lid" : "标签id"}
 	12) visit的 json 对应 json{访问量}
 	13) thubms的 json 对应 json{点赞量}
 	14) collection的 json 对应 json{收藏量}
@@ -60,8 +63,8 @@
 				返回值:
 					成功：
 						 json{"code" : "200", "msg" : "success",
-						"web" : "网页信息" , "webList" , "作者其余作品" 
-						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量", "commentList" : "评论"}
+						"web" : "网页信息" , "webList" , "作者其余作品" , "visit" : "访问量" , "thubms" : "点赞量" 
+						 , "collection" : "收藏量", "commentList" : "评论" , "lables" : "标签"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -106,6 +109,7 @@
 					title ：文章标题
 					contype ：投稿类型
 					webDataString ：网页信息
+					labelList ：标签集合 （可不加）
 				如:http://121.199.27.93/blob/contribution?title=111&contype=1&webDataString=xxxx
 				返回值:
 					 成功：
@@ -138,6 +142,7 @@
 				title ：文章标题
 				contype ：投稿类型
 				webDataString ：网页信息
+				labelList ：标签集合 （可不加）
 				如:http://121.199.27.93/blob/updata?title=222&contype=1&webDataString=xxxx
 				返回值: 
 					成功：
@@ -284,6 +289,20 @@
 				返回值: 
 					成功： 
 						json{"code" : "200", "msg" : "success" , "blobList" : "文章集合"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	19) 获取文章标签api
+		请求路径: 域名(ip)/项目名称/blob/getlabel
+		请求方式：POST
+		请求头: Authorization(可不加)
+			请求参数: 
+				如:http://121.199.27.93/blob/getlabel
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "labelList" : "标签集合"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
