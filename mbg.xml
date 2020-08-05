@@ -47,9 +47,10 @@
         <table tableName="db_visit_information" domainObjectName="VisitInformation"></table>
         <table tableName="db_web_information" domainObjectName="WebInformation"></table>
         <table tableName="db_web_thumbs" domainObjectName="WebThumbs"></table>
-        <table tableName="db_web_heat" domainObjectName="WebHeat"></table>
         <table tableName="db_web_file" domainObjectName="WebFile"></table>
         <table tableName="db_comment" domainObjectName="WebComment"></table>
         <table tableName="db_comment_reply" domainObjectName="WebCommentReply"></table>
+        <table tableName="db_web_label" domainObjectName="WebLabel"></table>
+        <table tableName="db_web_label_control" domainObjectName="WebLabelControl"></table>
     </context>
 </generatorConfiguration>

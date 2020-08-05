@@ -20,6 +20,8 @@ import com.pdsu.scs.bean.WebCommentReplyExample;
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebInformationExample.Criteria;
+import com.pdsu.scs.bean.WebLabelControlExample;
+import com.pdsu.scs.bean.WebLabelExample;
 import com.pdsu.scs.bean.WebThumbsExample;
 import com.pdsu.scs.dao.MyCollectionMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
@@ -27,6 +29,7 @@ import com.pdsu.scs.dao.VisitInformationMapper;
 import com.pdsu.scs.dao.WebCommentMapper;
 import com.pdsu.scs.dao.WebCommentReplyMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
+import com.pdsu.scs.dao.WebLabelControlMapper;
 import com.pdsu.scs.dao.WebThumbsMapper;
 import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.DeleteInforException;
@@ -34,6 +37,7 @@ import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.WebInformationService;
+import com.pdsu.scs.service.WebLabelControlService;
 import com.pdsu.scs.utils.SimpleUtils;
 
 /**
@@ -64,6 +68,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 	
 	@Autowired
 	private WebCommentReplyMapper webCommentReplyMapper;
+	
+	@Autowired
+	private WebLabelControlMapper webLabelControlMapper;
 	
 	@Autowired
 	private EsDao esDao;
@@ -111,6 +118,17 @@ public class WebInformationServiceImpl implements WebInformationService {
 	public boolean deleteById(Integer id) throws NotFoundBlobIdException, DeleteInforException{
 		if(!countByWebId(id)) {
 			throw new NotFoundBlobIdException("该文章不存在");
+		}
+		
+		/**
+		 * 删除文章对应的标签信息
+		 */
+		WebLabelControlExample webLabelControlExample = new WebLabelControlExample();
+		com.pdsu.scs.bean.WebLabelControlExample.Criteria webLabelControlCriteria = webLabelControlExample.createCriteria();
+		webLabelControlCriteria.andWidEqualTo(id);
+		long webLabelControlCount = webLabelControlMapper.countByExample(webLabelControlExample);
+		if(webLabelControlMapper.deleteByExample(webLabelControlExample) != webLabelControlCount) {
+			throw new DeleteInforException("删除网页标签信息失败");
 		}
 		
 		/**

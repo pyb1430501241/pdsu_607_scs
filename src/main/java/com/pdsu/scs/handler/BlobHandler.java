@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,6 +35,7 @@ import com.pdsu.scs.bean.VisitInformation;
 import com.pdsu.scs.bean.WebComment;
 import com.pdsu.scs.bean.WebCommentReply;
 import com.pdsu.scs.bean.WebInformation;
+import com.pdsu.scs.bean.WebLabel;
 import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
@@ -47,7 +49,10 @@ import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.VisitInformationService;
 import com.pdsu.scs.service.WebCommentReplyService;
 import com.pdsu.scs.service.WebCommentService;
+import com.pdsu.scs.service.WebFileService;
 import com.pdsu.scs.service.WebInformationService;
+import com.pdsu.scs.service.WebLabelControlService;
+import com.pdsu.scs.service.WebLabelService;
 import com.pdsu.scs.service.WebThumbsService;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.RandomUtils;
@@ -114,10 +119,22 @@ public class BlobHandler {
 	private WebCommentReplyService webCommentReplyService;
 	
 	/**
+	 * 文件相关
+	 */
+	@Autowired
+	private WebFileService webFileService;
+	
+	/**
 	 * 关注相关
 	 */
 	@Autowired
 	private MyLikeService myLikeService;
+	
+	@Autowired
+	private WebLabelService webLabelService;
+	
+	@Autowired
+	private WebLabelControlService webLabelControlService;
 	
 	private static final String EX = "exception";
 	
@@ -286,11 +303,15 @@ public class BlobHandler {
 				}
 				b.setCommentReplyList(webcommentReplyList);
 			}
+			log.info("获取文章标签");
+			List<Integer> labelids = webLabelControlService.selectLabelIdByWebId(id);
+			List<WebLabel> webLabels = webLabelService.selectByLabelIds(labelids);
 			return Result.success().add("web", web)
 				   .add("visit", visits)
 				   .add("thubms", thubms)
 				   .add("collection", collections)
-				   .add("commentList", commentList);
+				   .add("commentList", commentList)
+				   .add("labels", webLabels);
 		} catch (UnsupportedEncodingException e) {
 			log.error("文章: " + id + "编码转换失败!!!");
 			return Result.fail().add(EX, "获取文章信息失败");
@@ -410,8 +431,14 @@ public class BlobHandler {
 	@RequestMapping(value = "/contribution", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result insert(WebInformation web) {
+	public Result insert(WebInformation web, @RequestParam(required = false)List<Integer> labelList) {
 		//获取当前登录用户的UID
+		if(labelList != null) {
+			if(labelList.size() > 3) {
+				log.info("发布文章失败, 文章只可添加至多三个标签");
+				return Result.fail().add(EX, "文章最多添加三个标签");
+			}
+		}
 		Integer uid = null;
 		try {
 			uid = ShiroUtils.getUserInformation().getUid();
@@ -429,12 +456,18 @@ public class BlobHandler {
 			//发布文章
 			int flag = webInformationService.insert(web);
 			if(flag != -1) {
+				if(labelList != null) {
+					boolean b = webLabelControlService.insert(web.getId(), labelList);
+					if(!b) {
+						log.info("插入文章标签失败");
+					}
+				}
 				log.info("用户: " + uid + "发布文章成功, 文章标题为: " + web.getTitle());
-				return Result.success().add(EX, "发布成功").add("webid", flag);
+				return Result.success().add("webid", web.getId());
 			}
 			log.info("用户: " + uid + "发布文章失败");
 			return Result.fail().add(EX, "发布失败");
-		}catch (UnsupportedEncodingException e) {
+		} catch (UnsupportedEncodingException e) {
 			log.warn("文章: " + web.getUid() + " 转码失败!!!");
 			return Result.fail().add(EX, "添加文章信息失败");
 		}catch (Exception e) {
@@ -448,6 +481,8 @@ public class BlobHandler {
 		}
 	}
 	
+	
+
 	/**
 	 * 删除文章
 	 * @param webid  文章id
@@ -495,9 +530,15 @@ public class BlobHandler {
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result update(WebInformation web) {
+	public Result update(WebInformation web, @RequestParam(required = false)List<Integer> labelList) {
 		//获取当前登录用户的信息
 		UserInformation user = null;
+		if(labelList != null) {
+			if(labelList.size() > 3) {
+				log.info("发布文章失败, 文章只可添加至多三个标签");
+				return Result.fail().add(EX, "文章最多添加三个标签");
+			}
+		}
 		try {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
@@ -505,6 +546,10 @@ public class BlobHandler {
 			boolean b = webInformationService.updateByWebId(web);
 			if(b) {
 				log.info("更新文章成功");
+				if(labelList != null) {
+					webLabelControlService.deleteByWebId(web.getId());
+					webLabelControlService.insert(web.getId(), labelList);
+				}
 				return Result.success();
 			}else {
 				log.info("更新文章失败");
@@ -653,6 +698,9 @@ public class BlobHandler {
 			log.info("获取作者总关注数量");
 			Integer attention = (int) myLikeService.countByUid(uid);
 			author.setAttention(attention);
+			log.info("获取作者文件总数量");
+			Integer files = webFileService.countByUid(uid);
+			author.setFiles(files);
 			log.info("获取作者信息成功");
 			return Result.success().add("author", author).add("webList", webs);
 		} catch (NotFoundUidException e) {
@@ -842,4 +890,24 @@ public class BlobHandler {
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
+	
+	/**
+	 * 获取文章标签
+	 * @return
+	 */
+	@ResponseBody
+	@CrossOrigin
+	@GetMapping("/getlabel")
+	public Result getLabel() {
+		try {
+			log.info("获取所有标签");
+			List<WebLabel> label = webLabelService.selectLabel();
+			log.info("获取标签成功");
+			return Result.success().add("labelList", label);
+		} catch (Exception e) {
+			log.error("获取标签失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+	
 }

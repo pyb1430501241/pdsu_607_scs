@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.activiti.engine.impl.util.json.JSONObject;
 import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -108,7 +110,7 @@ public class HandlerTest {
 			t.add("uid", "181360226");
 			t.add("password", "pyb***20000112");
 			t.add("hit", list.get(list.indexOf("token") + 1));
-			t.add("code", list.get(list.indexOf("code") + 1));
+			t.add("code", list.get(list.indexOf("vicode") + 1));
 			result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
 			response = result.getResponse();
 			String [] login = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
@@ -120,7 +122,8 @@ public class HandlerTest {
 					.param("title", "你好, 世界")
 					.param("contype", "1")
 					.param("webDataString", "System.out.println(\"Hello World\");\nSystem.out.println(\"Hello World\");\nSystem.out.println(\"Hello World\");"
-							+ "\nSystem.out.println(\"Hello World\");")).andReturn();
+							+ "\nSystem.out.println(\"Hello World\");")
+					).andReturn();
 			response = result.getResponse();
 			response.setCharacterEncoding("UTF-8");
 			System.out.println(response.getContentAsString());
@@ -244,7 +247,7 @@ public class HandlerTest {
 	
 	@Test
 	public void testBlob() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/38"))
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/46"))
 				.andReturn();
 		MockHttpServletResponse response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
@@ -398,6 +401,15 @@ public class HandlerTest {
 				.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
 				.param("username", "半梦")).andReturn();
 		response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
+	}
+	
+	@Test
+	public void testGetLabel() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/getlabel"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
 	}

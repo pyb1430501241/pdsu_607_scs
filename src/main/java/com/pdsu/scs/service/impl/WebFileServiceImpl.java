@@ -83,4 +83,12 @@ public class WebFileServiceImpl implements WebFileService{
 		return webFileMapper.countByExample(example) <= 0 ? false : true;
 	}
 
+	@Override
+	public Integer countByUid(Integer uid) {
+		WebFileExample example = new WebFileExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		return (int) webFileMapper.countByExample(example);
+	}
+
 }

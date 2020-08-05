@@ -56,6 +56,11 @@ public class Author {
 	 * 关注数
 	 */
 	private Integer attention;
+	
+	/**
+	 * 上传文件数
+	 */
+	private Integer files;
 
 	public Integer getUid() {
 		return uid;
@@ -121,6 +126,31 @@ public class Author {
 		this.collection = collection;
 	}
 
+	
+	public Author(Integer uid, String username, String imgpath, Integer original, Integer fans, Integer thumbs,
+			Integer comment, Integer visits, Integer collection, Integer attention, Integer files) {
+		super();
+		this.uid = uid;
+		this.username = username;
+		this.imgpath = imgpath;
+		this.original = original;
+		this.fans = fans;
+		this.thumbs = thumbs;
+		this.comment = comment;
+		this.visits = visits;
+		this.collection = collection;
+		this.attention = attention;
+		this.files = files;
+	}
+
+	public Integer getFiles() {
+		return files;
+	}
+
+	public void setFiles(Integer files) {
+		this.files = files;
+	}
+
 	public Author(Integer uid, String username, String imgpath, Integer original, Integer fans, Integer thumbs,
 			Integer comment, Integer visits, Integer collection) {
 		super();
@@ -147,7 +177,7 @@ public class Author {
 	public String toString() {
 		return "Author [uid=" + uid + ", username=" + username + ", imgpath=" + imgpath + ", original=" + original
 				+ ", fans=" + fans + ", thumbs=" + thumbs + ", comment=" + comment + ", visits=" + visits
-				+ ", collection=" + collection + ", attention=" + attention + "]";
+				+ ", collection=" + collection + ", attention=" + attention + ", files=" + files + "]";
 	}
 
 	public Author(Integer uid, String username, Integer original, Integer fans, Integer thumbs, Integer comment,

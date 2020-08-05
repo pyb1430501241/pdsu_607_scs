@@ -35,5 +35,12 @@ public interface WebFileService {
 	 * @return
 	 */
 	public boolean countByUidAndTitle(Integer uid, String title);
+
+	/**
+	 * 获取用户上传文件总量
+	 * @param uid
+	 * @return
+	 */
+	public Integer countByUid(Integer uid);
 	
 }
