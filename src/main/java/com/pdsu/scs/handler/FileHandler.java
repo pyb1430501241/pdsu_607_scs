@@ -172,7 +172,7 @@ public class FileHandler {
 			webFileService.selectFilesOrderByTime();
 			return Result.success();
 		} catch (Exception e) {
-			return Result.fail();
+			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
 }
