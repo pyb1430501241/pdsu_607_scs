@@ -788,7 +788,8 @@
 					description ：内容
 				如：http://121.199.27.93/file/upload?file=xxxx&title=xxxx&description=xxxx
 				返回值：
-					 成功：json{"code" : "200" , "msg" : "success"}
+					 成功：
+					 	json{"code" : "200" , "msg" : "success"}
 					 失败：
 					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
@@ -810,6 +811,13 @@
 				请求参数：
 					p : 1 （页码默认）
 					如：http://121.199.27.93/file/getfileindex?p=1
+					返回值：
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" ， "fileList" : "fileList"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 					
 	
 		
