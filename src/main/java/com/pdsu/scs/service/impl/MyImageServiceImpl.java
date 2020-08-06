@@ -93,7 +93,7 @@ public class MyImageServiceImpl implements MyImageService {
 		MyImageExample example = new MyImageExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(myImage.getUid());
-		boolean b = myImageMapper.updateByExample(myImage, example) == 0 ? false : true;
+		boolean b = myImageMapper.updateByExampleSelective(myImage, example) == 0 ? false : true;
 		if(b) {
 			new Thread(()->{
 				try {

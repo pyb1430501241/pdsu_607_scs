@@ -93,8 +93,9 @@ public class WebFileServiceImpl implements WebFileService{
 
 	@Override
 	public List<WebFile> selectFilesOrderByTime() {
-		
-		return null;
+		WebFileExample example = new WebFileExample();
+		example.setOrderByClause("creattime DESC");
+		return webFileMapper.selectByExample(example);
 	}
 
 }

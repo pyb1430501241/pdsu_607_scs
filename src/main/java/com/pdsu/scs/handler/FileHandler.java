@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,12 +24,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.FileDownload;
+import com.pdsu.scs.bean.FileInformation;
 import com.pdsu.scs.bean.Result;
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
 import com.pdsu.scs.service.FileDownloadService;
+import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.WebFileService;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.ShiroUtils;
@@ -64,6 +70,9 @@ public class FileHandler {
 	
 	@Autowired
 	private FileDownloadService fileDownloadService;
+	
+	@Autowired
+	private UserInformationService userInformationService;
 	
 	/**
 	 * 日志
@@ -162,6 +171,11 @@ public class FileHandler {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param p
+	 * @return
+	 */
 	@ResponseBody
 	@GetMapping("/getfileindex")
 	@CrossOrigin
@@ -169,8 +183,32 @@ public class FileHandler {
 		try {
 			log.info("获取首页文件");
 			PageHelper.startPage(p, 15);
-			webFileService.selectFilesOrderByTime();
-			return Result.success();
+			List<WebFile> list = webFileService.selectFilesOrderByTime();
+			List<Integer> uids = new ArrayList<Integer>();
+			List<Integer> fileids = new ArrayList<Integer>();
+			for(WebFile file : list) {
+				uids.add(file.getUid());
+				fileids.add(file.getId());
+			}
+			log.info("获取作者信息");
+			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+			log.info("获取文件下载量");
+			List<Integer> downloads = fileDownloadService.selectDownloadsByFileIds(fileids);
+			List<FileInformation> files = new ArrayList<FileInformation>();
+			for (int i = 0; i < list.size(); i++) {
+				FileInformation fileInformation = new FileInformation();
+				fileInformation.setWebfile(list.get(i));
+				fileInformation.setDownloads(downloads.get(i));
+				for (UserInformation user : users) {
+					if(user.getUid().equals(list.get(i).getUid())) {
+						fileInformation.setUser(user);
+						break;
+					}
+				}
+				files.add(fileInformation);
+			}
+			PageInfo<FileInformation> fileList = new PageInfo<FileInformation>(files);
+			return Result.success().add("fileList", fileList);
 		} catch (Exception e) {
 			return Result.fail().add(EX, "未定义类型错误");
 		}

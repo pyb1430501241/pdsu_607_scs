@@ -414,5 +414,15 @@ public class HandlerTest {
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
 	}
+	
+	@Test
+	public void testFileList() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/file/getfileindex")
+				)
+				.andReturn();
+			MockHttpServletResponse response = result.getResponse();
+			response.setCharacterEncoding("UTF-8");
+			System.out.println(response.getContentAsString());
+	}
 }
 
