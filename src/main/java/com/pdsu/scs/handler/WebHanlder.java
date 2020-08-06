@@ -329,7 +329,7 @@ public class WebHanlder {
 			user.setImgpath("01.png");
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
-				myImageService.insert(new MyImage(user.getUid(), "01.png"));
+				myImageService.insert(new MyImage(user.getUid(), "422696839bb3222a73a48d7c97b1bba4.jpg"));
 				myEmailService.insert(new MyEmail(null, user.getUid(), email));
 				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 				return Result.success();

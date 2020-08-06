@@ -26,6 +26,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.pdsu.scs.utils.HashUtils;
+import com.pdsu.scs.utils.SimpleUtils;
+
 
 @SpringJUnitConfig(locations = {"classpath:spring/springmvc.xml", "classpath:spring/spring.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -167,14 +170,27 @@ public class HandlerTest {
 	
 	@Test
 	public void testgetAuthor() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/19"))
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/getcodeforlogin"))
 				.andReturn();
 		MockHttpServletResponse response = result.getResponse();
-		response.setCharacterEncoding("UTF-8");
-		System.out.println(response.getContentAsString());
+		String[] split = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
+		List<String> list = new ArrayList<>(Arrays.asList(split));
+		list.removeAll(Arrays.asList(""));
+		list.remove("json");
+		MultiValueMap<String, String> t = new LinkedMultiValueMap<String, String>();
+		t.add("uid", "181360226");
+		t.add("password", "pyb***20000112");
+		t.add("hit", list.get(list.indexOf("token") + 1));
+		t.add("code", list.get(list.indexOf("vicode") + 1));
+		result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
+		response = result.getResponse();
+		String [] login = response.getContentAsString().replaceAll("[{}:,]", "").split("\"");
+		List<String> loginlist = new ArrayList<String>(Arrays.asList(login));
+		loginlist.removeAll(Arrays.asList(""));
+		loginlist.remove("json");
 		result = mvc.perform(MockMvcRequestBuilders.get("/blob/getauthor")
-				.param("uid", "181360226"))
-				.andReturn();
+				.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
+				.param("uid", "181360241")).andReturn();
 		response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
@@ -416,8 +432,17 @@ public class HandlerTest {
 	}
 	
 	@Test
+	public void testGetContype() throws Exception {
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/getcontype"))
+				.andReturn();
+		MockHttpServletResponse response = result.getResponse();
+		response.setCharacterEncoding("UTF-8");
+		System.out.println(response.getContentAsString());
+	}
+	
+	@Test
 	public void testFileList() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/file/getfileindex")
+			MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/file/getfileindex")
 				)
 				.andReturn();
 			MockHttpServletResponse response = result.getResponse();

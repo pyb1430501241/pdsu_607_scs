@@ -91,6 +91,9 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 
 	@Override
 	public Integer countByWebsAndUid(List<Integer> webs) {
+		if(webs == null || webs.size() == 0) {
+			return 0;
+		}
 		WebCommentReplyExample example = new WebCommentReplyExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWidIn(webs);

@@ -8,10 +8,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +30,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.Author;
 import com.pdsu.scs.bean.BlobInformation;
+import com.pdsu.scs.bean.Contype;
 import com.pdsu.scs.bean.MyCollection;
 import com.pdsu.scs.bean.MyImage;
 import com.pdsu.scs.bean.Result;
@@ -41,6 +46,7 @@ import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
+import com.pdsu.scs.service.ContypeService;
 import com.pdsu.scs.service.FileDownloadService;
 import com.pdsu.scs.service.MyCollectionService;
 import com.pdsu.scs.service.MyImageService;
@@ -92,7 +98,7 @@ public class BlobHandler {
 	 * 头像相关逻辑处理
 	 */
 	@Autowired
-	private MyImageService myInageService;
+	private MyImageService myImageService;
 	
 	/**
 	 * 访问相关逻辑处理
@@ -130,20 +136,34 @@ public class BlobHandler {
 	@Autowired
 	private MyLikeService myLikeService;
 	
+	/**
+	 * 标签相关
+	 */
 	@Autowired
 	private WebLabelService webLabelService;
 	
+	/**
+	 * 标签文章对照
+	 */
 	@Autowired
 	private WebLabelControlService webLabelControlService;
 	
+	/**
+	 * 文件下载记录相关
+	 */
 	@Autowired
 	private FileDownloadService fileDownloadService;
+	
+	@Autowired
+	private ContypeService contypeService;
 	
 	private static final String EX = "exception";
 	
 	private static final String FILEPATH = "/pdsu/web/blob/img/";
 	
 	private static final String SUFFIX = ".jpg";
+	
+	private static final String AUTHORIZATION = "Authorization";
 	
 	/**
 	 * 日志
@@ -194,7 +214,7 @@ public class BlobHandler {
 			log.info("获取博客作者信息");
 			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
 			log.info("获取博客作者头像");
-			List<MyImage> imgpaths = myInageService.selectImagePathByUids(uids);
+			List<MyImage> imgpaths = myImageService.selectImagePathByUids(uids);
 			for(UserInformation user : userList) {
 				UserInformation t  = user;
 				t.setPassword(null);
@@ -286,7 +306,7 @@ public class BlobHandler {
 			log.info("获取评论者信息");
 			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
 			log.info("获取评论者头像信息");
-			List<MyImage> imageList = myInageService.selectImagePathByUids(uids);
+			List<MyImage> imageList = myImageService.selectImagePathByUids(uids);
 			for(MyImage img : imageList) {
 				for (UserInformation us : userList) {
 					if(img.getUid().equals(us.getUid())) {
@@ -608,7 +628,7 @@ public class BlobHandler {
 				log.info("用户发布评论成功");
 				return Result.success().add("username", user.getUsername())
 						.add("createtime", SimpleUtils.getSimpleDateSecond())
-						.add("imgpath", myInageService.selectImagePathByUid(user.getUid()).getImagePath());
+						.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 			}
 			log.warn("用户发布评论失败, 原因: 插入数据库失败");
 			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
@@ -648,7 +668,7 @@ public class BlobHandler {
 				log.info("用户回复评论成功");
 				return Result.success().add("username", user.getUsername())
 						.add("createtime", SimpleUtils.getSimpleDateSecond())
-						.add("imgpath", myInageService.selectImagePathByUid(user.getUid()).getImagePath());
+						.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 			}
 			log.warn("用户回复评论失败, 原因: 连接数据库失败");
 			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
@@ -676,7 +696,7 @@ public class BlobHandler {
 	@RequestMapping(value = "/getauthor", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getAuthorByUid(Integer uid) {
+	public Result getAuthorByUid(HttpServletRequest request, Integer uid) {
 		try {
 			log.info("获取作者: " + uid + "信息开始");
 			UserInformation user = userInformationService.selectByUid(uid);
@@ -696,7 +716,7 @@ public class BlobHandler {
 				i++;
 			}
 			log.info("获取作者头像信息");
-			String imgpath = myInageService.selectImagePathByUid(uid).getImagePath();
+			String imgpath = myImageService.selectImagePathByUid(uid).getImagePath();
 			author.setImgpath(imgpath);
 			log.info("获取作者粉丝数");
 			Integer fans = (int) myLikeService.countByLikeId(uid);
@@ -727,7 +747,15 @@ public class BlobHandler {
 			Integer downloads = fileDownloadService.countByBid(uid);
 			author.setDownloads(downloads);
 			log.info("获取作者信息成功");
-			return Result.success().add("author", author).add("webList", webs);
+			Result result = Result.success().add("author", author).add("webList", webs);
+			if(!StringUtils.isEmpty(WebUtils.toHttp(request).getHeader(AUTHORIZATION))) {
+				boolean b = true;
+				if(!ShiroUtils.getUserInformation().getUid().equals(uid)) {
+					b = myLikeService.countByUidAndLikeId(ShiroUtils.getUserInformation().getUid(), uid);
+				}
+				result.add("islike", b);
+			}
+			return result;
 		} catch (NotFoundUidException e) {
 			log.info("获取作者信息失败, 原因: " + e.getMessage());
 			return Result.fail().add(EX, e.getMessage());
@@ -935,4 +963,22 @@ public class BlobHandler {
 		}
 	}
 	
+	/**
+	 * 获取文章类型
+	 * @return
+	 */
+	@ResponseBody
+	@GetMapping("/getcontype")
+	@CrossOrigin
+	public Result getContype() {
+		try {
+			log.info("获取文章类型列表");
+			List<Contype> contypes = contypeService.selectContypes();
+			log.info("获取文章类型列表成功");
+			return Result.success().add("contypeList", contypes);
+		} catch (Exception e) {
+			log.error("获取文章类型列表失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
 }
