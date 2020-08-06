@@ -196,7 +196,8 @@
 				如:http://121.199.27.93/blob/getauthor?uid=1
 				返回值: 
 					成功： 
-						json{"code" : "200", "msg" : "success" , "author" : "作者信息" , "webList" : "网页集合"}
+						json{"code" : "200", "msg" : "success" , "author" : "作者信息" 
+						, "webList" : "网页集合" ，"islike" : "是否关注"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -304,6 +305,20 @@
 				返回值: 
 					成功： 
 						json{"code" : "200", "msg" : "success" , "labelList" : "标签集合"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	20) 获取文章类型api
+		请求路径: 域名(ip)/项目名称/blob/getcontype
+		请求方式：GET
+		请求头: Authorization(可不加)
+			请求参数: 
+				如:http://121.199.27.93/blob/getcontype
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "contypeList" : "类型集合"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
