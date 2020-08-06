@@ -42,16 +42,17 @@
 	1) 获取首页数据api
 		请求路径: 域名(ip)/项目名称/blob/getwebindex
 		请求方式：GET
-			如: http://121.199.27.93/blob/getwebindex
-			返回值: 
-				成功：
-					json{"code" : "200", "msg" : "success",
-					"webList" : "网页信息集合", "userList", "用户信息集合", "visitList", "访问量集合"
-					, "thumbsList" : "点赞量集合", "collectionList" : "收藏量集合"}
-				失败:
-					json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
-				异常：
-					json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+			请求参数：
+				p : 1（默认）
+				lid ：标签id（可不加）
+				如: http://121.199.27.93/blob/getwebindex?p=1
+				返回值: 
+					成功：
+						json{"code" : "200", "msg" : "success", "blobLis" : "博客集合"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
 	2) 获取博客页面相关信息api 
 		请求路径: 域名(ip)/项目名称/blob/{webid(网页号)}
@@ -296,7 +297,7 @@
 						
 	19) 获取文章标签api
 		请求路径: 域名(ip)/项目名称/blob/getlabel
-		请求方式：POST
+		请求方式：GET
 		请求头: Authorization(可不加)
 			请求参数: 
 				如:http://121.199.27.93/blob/getlabel
@@ -576,7 +577,7 @@
 		 请求头: Authorization
 			请求参数: 
 				uid : 学号
-				如: http://121.199.27.93/blob/like?uid=2
+				如: http://121.199.27.93/user/like?uid=2
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success"}
@@ -591,7 +592,7 @@
 		 请求头: Authorization
 			请求参数: 
 				uid : 学号
-				如: http://121.199.27.93/blob/delike?uid=2
+				如: http://121.199.27.93/user/delike?uid=2
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success"}
@@ -602,12 +603,12 @@
 				 		
 				 		
 	9) 更换头像api
-		请求路径: 域名(ip)/项目名称/user/updateimage
+		请求路径: 域名(ip)/项目名称/user/changeavatar
 		 请求方式：POST
 		 请求头: Authorization
 			请求参数: 
 				img : 图片
-				如: http://121.199.27.93/blob/updateimage?img=xx.png
+				如: http://121.199.27.93/user/changeavatar?img=xx.png
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success", "imgpath" : "name"}
@@ -626,7 +627,7 @@
 				username : 用户名
 				college : 学院
 				clazz : 班级
-				如: http://121.199.27.93/blob/changeinfor?uid=123&username=asd&college=XX&clazz=xx
+				如: http://121.199.27.93/user/changeinfor?uid=123&username=asd&college=XX&clazz=xx
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success" , "user" : "用户信息"}
@@ -764,7 +765,7 @@
 		 请求头: Authorization
 			请求参数: 
 				uid : 用户账号
-				如: http://121.199.27.93/blob/likestatus?uid=2
+				如: http://121.199.27.93/user/likestatus?uid=2
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success" , "status" : "状态"}
@@ -801,6 +802,16 @@
 					uid ：学号
 					title ：标题
 					如：http://121.199.27.93/file/download?uid=2&title=xxx
+					
+	3) 获取文件信息首页api
+		请求路径：域名(ip)/项目名称/file/getfileindex
+		请求方式：GET
+		请求头: Authorization（可不加）
+				请求参数：
+					p : 1 （页码默认）
+					如：http://121.199.27.93/file/getfileindex?p=1
+					
+	
 		
 4.SearchHandler API相关
 	1)搜索相关api
