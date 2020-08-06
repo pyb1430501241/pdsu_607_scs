@@ -10,7 +10,8 @@
 		, "college" : "学院", "clazz" : "班级", "time" : "申请时间", "accountStatus" : "账号状态"
 		, "imgpath" : "头像地址"}
 	3) author 的 json 对应json {"uid" : "学号" , "username" : "昵称" , "imgpath" : "头像地址" , "original" : "原创数"
-		, "fans" : "粉丝数" , "thumbs" : "点赞数" , "comment" : "评论数" , "visits" : "访问量" , "collection" : "收藏量"}	
+		, "fans" : "粉丝数" , "thumbs" : "点赞数" , "comment" : "评论数" , "visits" : "访问量" , "collection" : "收藏量" 
+		，"attention" : "关注量" ，"files" : "上传文件数"}	
 	4) es的json 对应 json{ 
 						  "authorList" : {"uid" : "作者学号" , "username" : "用户名"， " imgpath" : "图片路径" " , "blobnum" : "博客编号" , 							"likenum": "喜爱编号"}], 
 						  "b1obList" :[{"webid" : "网页号", "title" : "标题" , "description" : "内容" }], 
@@ -24,10 +25,14 @@
     9) webFile 的 json 对应 json{"id" : "xx" , "uid" : "作者学号" , "title" : "标题" 
     									, "filePath" : "下载路径" ，"creattime" : "创建时间"}
     10) webHeat 的 json 对应 json{"id" : "xx" , "webid" : "网页号" , "heat" : "点击量"}
-    									
-	11) visit的 json 对应 json{访问量}
-	12) thubms的 json 对应 json{点赞量}
-	13) collection的 json 对应 json{收藏量}
+    11) webcomment 的json对应 json{"id" : "xx" , "wid" : "文章ID" , "cid": "评论id" , 
+					"uid" : "评论人UID" , "bid" : "被评论人UID" , "username" : "用户名" , 
+					"imgpath" : "图片地址" , "content" : "回复评论" , "thumb" : "点赞" , "createtime" : "创建时间"}										
+	12) weblable 的 json 对应 josn{"id" : "xx" , "lable" : "标签"}
+	13) weblablecontrol 的 json 对应 json{"id" : "xx" , "wid" : "文章id" , "lid" : "标签id"}
+	12) visit的 json 对应 json{访问量}
+	13) thubms的 json 对应 json{点赞量}
+	14) collection的 json 对应 json{收藏量}
 	
 	注:
 	1：后带List的均为此数据的集合形式  
@@ -37,16 +42,17 @@
 	1) 获取首页数据api
 		请求路径: 域名(ip)/项目名称/blob/getwebindex
 		请求方式：GET
-			如: http://121.199.27.93/blob/getwebindex
-			返回值: 
-				成功：
-					json{"code" : "200", "msg" : "success",
-					"webList" : "网页信息集合", "userList", "用户信息集合", "visitList", "访问量集合"
-					, "thumbsList" : "点赞量集合", "collectionList" : "收藏量集合"}
-				失败:
-					json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
-				异常：
-					json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+			请求参数：
+				p : 1（默认）
+				lid ：标签id（可不加）
+				如: http://121.199.27.93/blob/getwebindex?p=1
+				返回值: 
+					成功：
+						json{"code" : "200", "msg" : "success", "blobLis" : "博客集合"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
 				
 	2) 获取博客页面相关信息api 
 		请求路径: 域名(ip)/项目名称/blob/{webid(网页号)}
@@ -58,8 +64,8 @@
 				返回值:
 					成功：
 						 json{"code" : "200", "msg" : "success",
-						"web" : "网页信息" , "webList" , "作者其余作品" 
-						, "visit" : "访问量" , "thubms" : "点赞量"  , "collection" : "收藏量", "commentList" : "评论"}
+						"web" : "网页信息" , "webList" , "作者其余作品" , "visit" : "访问量" , "thubms" : "点赞量" 
+						 , "collection" : "收藏量", "commentList" : "评论" , "lables" : "标签"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
@@ -104,6 +110,7 @@
 					title ：文章标题
 					contype ：投稿类型
 					webDataString ：网页信息
+					labelList ：标签集合 （可不加）
 				如:http://121.199.27.93/blob/contribution?title=111&contype=1&webDataString=xxxx
 				返回值:
 					 成功：
@@ -136,6 +143,7 @@
 				title ：文章标题
 				contype ：投稿类型
 				webDataString ：网页信息
+				labelList ：标签集合 （可不加）
 				如:http://121.199.27.93/blob/updata?title=222&contype=1&webDataString=xxxx
 				返回值: 
 					成功：
@@ -166,10 +174,11 @@
 		请求方式：POST
 		请求头: Authorization
 			请求参数: 
+				webid ：网页号
 				cid ：评论号
 				bid : 被回复人学号
 				content ：内容
-				如:http://121.199.27.93/blob/commentreply?cid=2&bid=3&contend=xxxx
+				如:http://121.199.27.93/blob/commentreply?webid=22&cid=2&bid=3&contend=xxxx
 				返回值: 
 					成功： 
 						json{"code" : "200", "msg" : "success"}
@@ -187,11 +196,119 @@
 				如:http://121.199.27.93/blob/getauthor?uid=1
 				返回值: 
 					成功： 
-						json{"code" : "200", "msg" : "success" , "author" : "作者信息"}
+						json{"code" : "200", "msg" : "success" , "author" : "作者信息" , "webList" : "网页集合"}
 					失败:
 						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
 					异常：
-						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}						
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}	
+						
+						
+	13) 处理点赞请求api
+		请求路径: 域名(ip)/项目名称/blob/thumbs
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				webid ：文章id
+				bid : 作者
+				如:http://121.199.27.93/blob/thumbs?webid=2&bid=3
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	14) 处理取消点赞请求api
+		请求路径: 域名(ip)/项目名称/blob/dethumbs
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				webid ：文章id
+				如:http://121.199.27.93/blob/dethumbs?webid=2
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	15) 查询用户是否点赞api
+		请求路径: 域名(ip)/项目名称/blob/thumbsstatus
+		请求方式：GET
+		请求头: Authorization
+			请求参数: 
+				webid ：文章id
+				如:http://121.199.27.93/blob/thumbsstatus?webid=2
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	16) 处理博客页面图片api
+		请求路径: 域名(ip)/项目名称/blob/blobimg
+		请求方式：POST
+		请求头: Authorization(可不加)
+			请求参数: 
+				img ：图片
+				如:http://121.199.27.93/blob/blobimg?img=xx.png
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "img" : "图片名"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+			
+	17) 获取收藏状态api
+		请求路径: 域名(ip)/项目名称/blob/collectionstatuts
+		请求方式：POST
+		请求头: Authorization
+			请求参数: 
+				webid ：文章id
+				如:http://121.199.27.93/blob/collectionstatuts?webid=22
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "status" : "状态"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	18) 获取用户收藏的文章api
+		请求路径: 域名(ip)/项目名称/blob/getcollection
+		请求方式：POST
+		请求头: Authorization(可不加)
+			请求参数: 
+				uid ：学号
+				p : 1（第一页）
+				如:http://121.199.27.93/blob/getcollection?uid=11&p=1
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "blobList" : "文章集合"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+						
+	19) 获取文章标签api
+		请求路径: 域名(ip)/项目名称/blob/getlabel
+		请求方式：GET
+		请求头: Authorization(可不加)
+			请求参数: 
+				如:http://121.199.27.93/blob/getlabel
+				返回值: 
+					成功： 
+						json{"code" : "200", "msg" : "success" , "labelList" : "标签集合"}
+					失败:
+						json{"code" : "404", "msg" : "fail", "exception" : "失败原因"}
+					异常：
+						json{"code" : "404", "msg" : "fail", "exception" : "错误原因"}
+																		
 									
 				
 2. WebHandler API相关
@@ -381,7 +498,7 @@
 	 	*/
 		
 	6) 修改密码API集
-	
+  	
 	/**
 	 *
 	 * 修改密码 API 集 开始
@@ -460,7 +577,7 @@
 		 请求头: Authorization
 			请求参数: 
 				uid : 学号
-				如: http://121.199.27.93/blob/like?uid=2
+				如: http://121.199.27.93/user/like?uid=2
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success"}
@@ -475,7 +592,7 @@
 		 请求头: Authorization
 			请求参数: 
 				uid : 学号
-				如: http://121.199.27.93/blob/delike?uid=2
+				如: http://121.199.27.93/user/delike?uid=2
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success"}
@@ -484,13 +601,14 @@
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 				 		
+				 		
 	9) 更换头像api
-		请求路径: 域名(ip)/项目名称/user/updateimage
+		请求路径: 域名(ip)/项目名称/user/changeavatar
 		 请求方式：POST
 		 请求头: Authorization
 			请求参数: 
 				img : 图片
-				如: http://121.199.27.93/blob/updateimage?img=xx.png
+				如: http://121.199.27.93/user/changeavatar?img=xx.png
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success", "imgpath" : "name"}
@@ -499,26 +617,32 @@
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 				 		
-	10) 更换用户名api
-		请求路径: 域名(ip)/项目名称/user/updatename
+				 		
+	10) 修改用户信息api
+		请求路径: 域名(ip)/项目名称/user/changeinfor
 		 请求方式：POST
 		 请求头: Authorization
-			请求参数: 
+		 	请求参数：
+		 		uid:学号
 				username : 用户名
-				如: http://121.199.27.93/blob/updatename?username=xxx
+				college : 学院
+				clazz : 班级
+				如: http://121.199.27.93/user/changeinfor?uid=123&username=asd&college=XX&clazz=xx
 				返回值: 
 					 成功：
-					 	json{"code" : "200" , "msg" : "success"}
+					 	json{"code" : "200" , "msg" : "success" , "user" : "用户信息"}
 					 失败：
-					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
-				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
 				 		
-	11) 获取文章api
-		请求路径: 域名(ip)/项目名称/user/getblobs
+	11) 获取自己的博客api
+		请求路径: 域名(ip)/项目名称/user/getoneselfblobs
 		 请求方式：GET
 		 请求头: Authorization
-				如: http://121.199.27.93/blob/getblobs
+		 	请求参数：
+		 		p:1(默认第一页开始)
+				如: http://121.199.27.93/user/getoneselfblobs?p=1
 				返回值: 
 					 成功：
 					 	json{"code" : "200" , "msg" : "success" , "blobList" : "博客集合"}
@@ -526,6 +650,130 @@
 					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
 				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	12) 获取自己的粉丝api
+		请求路径: 域名(ip)/项目名称/user/getoneselffans
+		 请求方式：GET
+		 请求头: Authorization
+		 	请求参数：
+		 		p:1(默认第一页开始)
+				如: http://121.199.27.93/user/getoneselffans?p=1
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "userList" : "粉丝信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	13) 获取自己的关注api
+		请求路径: 域名(ip)/项目名称/user/getoneselficons
+		 请求方式：GET
+		 请求头: Authorization
+		 	请求参数：
+		 		p:1(默认第一页开始)
+				如: http://121.199.27.93/user/getoneselficons?p=1
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "userList" : "关注人信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	14) 获取用户的博客api
+		请求路径: 域名(ip)/项目名称/user/getblobs
+		 请求方式：GET
+		 请求头: Authorization(可不加)
+		 	请求参数：
+		 		p:1(默认第一页开始)
+		 		uid : 学号
+				如: http://121.199.27.93/user/getblobs?p=1&uid=2
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "blobList" : "博客信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	15) 获取用户粉丝api
+		请求路径: 域名(ip)/项目名称/user/getfans
+		 请求方式：GET
+		 请求头: Authorization(可不加)
+		 	请求参数：
+		 		p:1(默认第一页开始)
+		 		uid : 学号
+				如: http://121.199.27.93/user/getfans?p=1&uid=3
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "userList" : "粉丝信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	16) 获取用户的关注api
+		请求路径: 域名(ip)/项目名称/user/geticons
+		 请求方式：GET
+		 请求头: Authorization(可不加)
+		 	请求参数：
+		 		p:1(默认第一页开始)
+		 		uid : 学号
+				如: http://121.199.27.93/user/geticons?p=1&uid=2
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "userList" : "关注人信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	17) 获取登陆状态用户的邮箱api
+		请求路径: 域名(ip)/项目名称/user/loginemail
+		 请求方式：GET
+		 请求头: Authorization
+		 	请求参数：
+				如: http://121.199.27.93/user/loginemail
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "email" : "邮箱"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	18) 数据校验api
+		请求路径: 域名(ip)/项目名称/user/datacheck
+		 请求方式：GET
+		 请求头: Authorization(可不加)
+		 	请求参数：
+		 		data : 需要校验的数据
+		 		type : 数据校验的类型
+				如: http://121.199.27.93/user/datacheck?data=xxxx&type=x
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	  "新加" ) 关注状态api
+		请求路径: 域名(ip)/项目名称/user/likestatus
+		 请求方式：POST
+		 请求头: Authorization
+			请求参数: 
+				uid : 用户账号
+				如: http://121.199.27.93/user/likestatus?uid=2
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "status" : "状态"}
+					 失败：
+					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
 				 		
 
 3: FileHandler API相关
@@ -554,7 +802,17 @@
 					uid ：学号
 					title ：标题
 					如：http://121.199.27.93/file/download?uid=2&title=xxx
-			 
+					
+	3) 获取文件信息首页api
+		请求路径：域名(ip)/项目名称/file/getfileindex
+		请求方式：GET
+		请求头: Authorization（可不加）
+				请求参数：
+					p : 1 （页码默认）
+					如：http://121.199.27.93/file/getfileindex?p=1
+					
+	
+		
 4.SearchHandler API相关
 	1)搜索相关api
 		请求路径：域名(ip)/项目名称/search
@@ -570,5 +828,4 @@
 					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
-				 		
 				 		
