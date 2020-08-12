@@ -18,6 +18,7 @@ public class AdminHandler {
 	
 	
 	public Result getUserInformationList(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+		System.out.println("测试");
 		return Result.fail();
 	}
 	

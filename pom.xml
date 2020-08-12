@@ -3,7 +3,19 @@
   <groupId>pdsu_softwaregroup</groupId>
   <artifactId>pdsu_softwaregroup_scs</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>war</packaging>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>9</source>
+					<target>9</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<packaging>war</packaging>
   
   	<dependencies>
     	<!-- https://mvnrepository.com/artifact/org.apache.shiro/shiro-core -->
