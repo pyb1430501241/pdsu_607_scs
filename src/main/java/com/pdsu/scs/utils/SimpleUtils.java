@@ -1,5 +1,7 @@
 package com.pdsu.scs.utils;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
@@ -7,10 +9,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.elasticsearch.search.SearchHit;
 
@@ -39,6 +44,7 @@ public class SimpleUtils {
 	
 	/**
 	 * 返回一段时间的差值
+	 * 单位: 秒
 	 * @param startDate 开始的时间
 	 * @param endDate   结束的时间
 	 * @return
@@ -76,7 +82,9 @@ public class SimpleUtils {
 	
 	
 	private static final String USERINFORMATION = "EsUserInformation";
+	
 	private static final String BLOBINFORMATION = "EsBlobInformation";
+	
 	private static final String FILEINFORMATION = "EsFileInformation";
 	
 	/**
@@ -191,6 +199,82 @@ public class SimpleUtils {
 		StringBuilder builder = new StringBuilder(str);
 		builder.replace(2, 8, "******");
 		return builder.toString();
+	}
+	
+	/**
+	 * 1秒
+	 */
+	public static final long CSC_SECOND = 1;
+	
+	/**
+	 * 一分钟
+	 */
+	public static final long CSC_MINUTE = CSC_SECOND * 60;
+	
+	/**
+	 * 一小时
+	 */
+	public static final long CSC_HOURS = CSC_MINUTE * 60;
+	
+	/**
+	 * 一天
+	 */
+	public static final long CSC_DAY = CSC_HOURS * 24;
+	
+	/**
+	 * 一周
+	 */
+	public static final long CSC_WEEK = CSC_DAY * 7;
+	
+	/**
+	 * 一月
+	 */
+	public static final long CSC_MONTH = CSC_DAY * 30;
+	
+	/**
+	 * 一年
+	 */
+	public static final long CSC_YEAR = CSC_DAY * 365;
+	
+	private static final Map<Long, String> MAP = new HashMap<Long, String>();
+	
+	private static final Set<Long> KETSET = new TreeSet<Long>(Comparator.reverseOrder());
+	
+	static {
+		MAP.put(CSC_WEEK, "周前");
+		MAP.put(CSC_HOURS, "小时前");
+		MAP.put(CSC_MINUTE, "分钟前");
+		MAP.put(CSC_DAY, "天前");
+		KETSET.addAll(MAP.keySet());
+	}
+	
+	/**
+	 * 获取固定形式的时间
+	 * @param startDate
+	 * 	初始时间
+	 * @return
+	 * 	当时间差值小于一分钟时返回: 刚刚, 
+	 * 	当时间差值大于一月时返回: startDate, 
+	 *  当时间差值位于两者之间时返回: xxx前.
+	 */
+	public static String getSimpleDateDifferenceFormat(String startDate) {
+		long t = getSimpleDateDifference(startDate, getSimpleDateSecond());
+		StringBuilder builder = new StringBuilder();
+		if (t < CSC_MINUTE) {
+			builder.append("刚刚");
+			return builder.toString();
+		}
+		if (t >= CSC_MONTH) {
+			return startDate;
+		}
+		for(Long l : KETSET) {
+			if (t >= l) {
+				builder.append(t / l);
+				builder.append(MAP.get(l));
+				return builder.toString();
+			}
+		}
+		return startDate;
 	}
 	
 }

@@ -3,7 +3,7 @@ package com.pdsu.scs.utils;
 import org.apache.shiro.crypto.hash.SimpleHash;
 
 /**
- * 该类是一个Hash加密相关的工具类 
+ * Hash加密相关的工具类 
  * @author 半梦
  *
  */

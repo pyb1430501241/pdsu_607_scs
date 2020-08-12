@@ -47,7 +47,6 @@ public class ShiroUtils {
         SessionKey key = new WebSessionKey(sessionID,request,response);
         Session se = SecurityUtils.getSecurityManager().getSession(key);
         Object obj = se.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
-        //org.apache.shiro.subject.SimplePrincipalCollection cannot be cast to com.hncxhd.bywl.entity.manual.UserInfo
         SimplePrincipalCollection coll = (SimplePrincipalCollection) obj;
         UserInformation userInformation = (UserInformation)coll.getPrimaryPrincipal();
         if(userInformation!=null){

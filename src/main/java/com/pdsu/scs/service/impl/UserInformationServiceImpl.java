@@ -275,9 +275,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 */
 	@Override
 	public List<UserInformation> selectUsersByUid(Integer uid) throws NotFoundUidException {
-		if(countByUid(uid) == 0) {
-			throw new NotFoundUidException("该用户不存在");
-		}
+//		if(countByUid(uid) == 0) {
+//			throw new NotFoundUidException("该用户不存在");
+//		}
 		List<Integer> likeids = myLikeMapper.selectLikeIdByUid(uid);
 		if(likeids.size() == 0) {
 			return new ArrayList<>();
@@ -294,9 +294,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 */
 	@Override
 	public List<UserInformation> selectUsersByLikeId(Integer likeId) throws NotFoundUidException {
-		if(countByUid(likeId) == 0) {
-			throw new NotFoundUidException("该用户不存在");
-		}
+//		if(countByUid(likeId) == 0) {
+//			throw new NotFoundUidException("该用户不存在");
+//		}
 		List<Integer> uids = myLikeMapper.selectUidByLikeId(likeId);
 		if(uids.size() == 0) {
 			return new ArrayList<UserInformation>();

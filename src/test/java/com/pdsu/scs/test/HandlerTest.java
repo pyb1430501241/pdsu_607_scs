@@ -2,17 +2,17 @@ package com.pdsu.scs.test;
 
 
 import java.io.FileInputStream;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.activiti.engine.impl.util.json.JSONObject;
 import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -26,7 +26,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.SimpleUtils;
 
 
@@ -264,7 +263,7 @@ public class HandlerTest {
 	
 	@Test
 	public void testBlob() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/82"))
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/38"))
 				.andReturn();
 		MockHttpServletResponse response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
@@ -448,6 +447,14 @@ public class HandlerTest {
 			MockHttpServletResponse response = result.getResponse();
 			response.setCharacterEncoding("UTF-8");
 			System.out.println(response.getContentAsString());
+	}
+	
+	@Test
+	public void testTime() {
+		Instant start = Instant.now();
+		System.out.println(SimpleUtils.getSimpleDateDifferenceFormat("2019-08-12 13:56:28"));
+		Instant end = Instant.now();
+		System.out.println("耗时: " + Duration.between(start, end).toMillis());
 	}
 }
 

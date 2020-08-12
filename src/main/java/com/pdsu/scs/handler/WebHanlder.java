@@ -784,7 +784,7 @@ public class WebHanlder {
 		try {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + "获取自己的文章开始");
-			PageHelper.startPage(p, 10);
+			PageHelper.startPage(p, 15);
 			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid());
 			List<Integer> webids = new ArrayList<Integer>();
 			for (WebInformation web : weblist) {
@@ -826,7 +826,7 @@ public class WebHanlder {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
 			log.info("获取粉丝信息");
-			PageHelper.startPage(p, 15);
+			PageHelper.startPage(p, 30);
 			List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid());
 			log.info("获取粉丝学号");
 			List<Integer> uids = new ArrayList<>();
@@ -880,7 +880,7 @@ public class WebHanlder {
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
 			log.info("获取关注人信息");
-			PageHelper.startPage(p, 15);
+			PageHelper.startPage(p, 30);
 			List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid());
 			log.info("获取关注人学号");
 			List<Integer> uids = new ArrayList<>();
@@ -926,7 +926,7 @@ public class WebHanlder {
 	public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, Integer uid) {
 		try {
 			log.info("获取用户: " + uid + " 的文章开始");
-			PageHelper.startPage(p, 10);
+			PageHelper.startPage(p, 15);
 			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid);
 			List<Integer> webids = new ArrayList<Integer>();
 			for (WebInformation web : weblist) {
@@ -969,7 +969,7 @@ public class WebHanlder {
 		try {
 			log.info("用户: " + uid + " 获取自己的粉丝信息");
 			log.info("获取粉丝信息");
-			PageHelper.startPage(p, 15);
+			PageHelper.startPage(p, 30);
 			List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
 			log.info("获取粉丝学号");
 			List<Integer> uids = new ArrayList<>();
@@ -1017,7 +1017,7 @@ public class WebHanlder {
 		try {
 			log.info("获取用户: " + uid + " 的关注人信息");
 			log.info("获取关注人信息");
-			PageHelper.startPage(p, 15);
+			PageHelper.startPage(p, 30);
 			List<UserInformation> users = userInformationService.selectUsersByUid(uid);
 			log.info("获取关注人学号");
 			List<Integer> uids = new ArrayList<>();
@@ -1140,4 +1140,15 @@ public class WebHanlder {
 		}
 	}
 	
+	
+	/**
+	 * 获取自己的浏览记录
+	 * @return
+	 */
+	@ResponseBody
+	@GetMapping("/getbrowsingrecord")
+	@CrossOrigin
+	public Result getBrowsingRecord() {
+		return Result.fail();
+	}
 }

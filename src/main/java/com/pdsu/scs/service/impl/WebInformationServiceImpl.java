@@ -225,7 +225,6 @@ public class WebInformationServiceImpl implements WebInformationService {
 				web.setWebDataString(new String(b,"utf-8"));
 				web.setWebData(null);
 			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
 			}
 		}
 		return selectByExampleWithBLOBs;
@@ -236,9 +235,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 */
 	@Override
 	public List<WebInformation> selectWebInformationsByUid(Integer uid) throws NotFoundUidException {
-		if(countByUid(uid) == 0) {
-			throw new NotFoundUidException("该用户不存在");
-		}
+//		if(countByUid(uid) == 0) {
+//			throw new NotFoundUidException("该用户不存在");
+//		}
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);

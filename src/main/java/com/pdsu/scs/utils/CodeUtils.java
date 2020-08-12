@@ -13,20 +13,22 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import javax.imageio.ImageIO;
- public class CodeUtils{
-    //使用到Algerian字体，系统里没有的话需要安装字体，字体只显示大写，去掉了1,0,i,o几个容易混淆的字符
-    public static final String VERIFY_CODES = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+public class CodeUtils{
+	 
+    private static final String VERIFY_CODES = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
+    
     private static Random random = new Random();
+    
     /**
-     * 使用系统默认字符源生成验证码
      * @param verifySize    验证码长度
      * @return
      */
     public static String generateVerifyCode(int verifySize){
         return generateVerifyCode(verifySize, VERIFY_CODES);
     }
+    
     /**
-     * 使用指定源生成验证码
      * @param verifySize    验证码长度
      * @param sources   验证码字符源
      * @return
@@ -43,8 +45,8 @@ import javax.imageio.ImageIO;
         }
         return verifyCode.toString();
     }
+    
     /**
-     * 生成随机验证码文件,并返回验证码值
      * @param w
      * @param h
      * @param outputFile
@@ -57,8 +59,8 @@ import javax.imageio.ImageIO;
         outputImage(w, h, outputFile, verifyCode);
         return verifyCode;
     }
+    
     /**
-     * 输出随机验证码图片流,并返回验证码值
      * @param w
      * @param h
      * @param os
@@ -71,8 +73,8 @@ import javax.imageio.ImageIO;
         outputImage(w, h, os, verifyCode);
         return verifyCode;
     } 
+    
     /**
-     * 生成指定验证码图像文件
      * @param w 
      * @param h
      * @param outputFile
@@ -96,8 +98,8 @@ import javax.imageio.ImageIO;
             throw e;
         }
     }
+    
     /**
-     * 输出指定验证码图片流
      * @param w
      * @param h
      * @param os
@@ -159,8 +161,8 @@ import javax.imageio.ImageIO;
         g2.dispose();
         ImageIO.write(image, "jpg", os);
     }
+    
     /**
-     * 随机生成字符 或 者数字
      * @return
      */
     private static String getRandom(){
@@ -179,8 +181,8 @@ import javax.imageio.ImageIO;
         }
         return value;
     }
+    
     /**
-     * 随机生成字符串（包含字符和数字）
      * @param length 指定长度
      * @return 返回set
      */
@@ -197,8 +199,8 @@ import javax.imageio.ImageIO;
         }
         return set;
     }
+    
     /**
-     * 存放在set中的字符组拼接成字符串
      * @param set
      * @return
      */
@@ -212,8 +214,8 @@ import javax.imageio.ImageIO;
         }
         return value;
     }
+    
     /**
-     * 返回生成的随机字符串
      * @param length 指定随机字符串长度
      * @return 指定长度 大于零 返回指定长度随机字符，小于等于零 返回null
      */
@@ -230,6 +232,7 @@ import javax.imageio.ImageIO;
             return value;
         }
     }
+    
     private static Color getRandColor(int fc, int bc) {
         if (fc > 255)
             fc = 255;
@@ -240,6 +243,7 @@ import javax.imageio.ImageIO;
         int b = fc + random.nextInt(bc - fc);
         return new Color(r, g, b);
     }
+    
     private static int getRandomIntColor() {
         int[] rgb = getRandomRgb();
         int color = 0;
@@ -249,6 +253,7 @@ import javax.imageio.ImageIO;
         }
         return color;
     }
+    
     private static int[] getRandomRgb() {
         int[] rgb = new int[3];
         for (int i = 0; i < 3; i++) {
@@ -256,10 +261,12 @@ import javax.imageio.ImageIO;
         }
         return rgb;
     }
+    
     private static void shear(Graphics g, int w1, int h1, Color color) {
         shearX(g, w1, h1, color);
         shearY(g, w1, h1, color);
     }
+    
     private static void shearX(Graphics g, int w1, int h1, Color color) {
         int period = random.nextInt(2);
         boolean borderGap = true;
@@ -278,6 +285,7 @@ import javax.imageio.ImageIO;
             }
         }
     }
+    
     private static void shearY(Graphics g, int w1, int h1, Color color) {
         int period = random.nextInt(40) + 10; // 50;
         boolean borderGap = true;

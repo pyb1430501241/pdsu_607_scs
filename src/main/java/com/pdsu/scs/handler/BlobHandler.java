@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -60,6 +59,7 @@ import com.pdsu.scs.service.WebInformationService;
 import com.pdsu.scs.service.WebLabelControlService;
 import com.pdsu.scs.service.WebLabelService;
 import com.pdsu.scs.service.WebThumbsService;
+import com.pdsu.scs.shiro.WebSessionManager;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.RandomUtils;
 import com.pdsu.scs.utils.ShiroUtils;
@@ -154,6 +154,9 @@ public class BlobHandler {
 	@Autowired
 	private FileDownloadService fileDownloadService;
 	
+	/**
+	 * 文章类型
+	 */
 	@Autowired
 	private ContypeService contypeService;
 	
@@ -162,8 +165,6 @@ public class BlobHandler {
 	private static final String FILEPATH = "/pdsu/web/blob/img/";
 	
 	private static final String SUFFIX = ".jpg";
-	
-	private static final String AUTHORIZATION = "Authorization";
 	
 	/**
 	 * 日志
@@ -244,10 +245,8 @@ public class BlobHandler {
 				}
 				blobList.add(blobInformation);
 			}
-			blobList.sort(new Comparator<BlobInformation>() {
-				@Override
-				public int compare(BlobInformation o1, BlobInformation o2) {
-					Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000 
+			blobList.sort((o1, o2) -> {
+				Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000 
 						- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
 					Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
 					- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
@@ -255,9 +254,8 @@ public class BlobHandler {
 						return 1;
 					}
 					return -1;
-				}
 			});
-			PageInfo<BlobInformation> pageInfo = new PageInfo<BlobInformation>(blobList, 5);
+			PageInfo<BlobInformation> pageInfo = new PageInfo<BlobInformation>(blobList);
 			return Result.success().add("blobList", pageInfo);
 		}catch (Exception e) {
 			log.error("获取首页数据失败, 原因为: " + e.getMessage());
@@ -277,6 +275,7 @@ public class BlobHandler {
 		try {
 			log.info("开始获取博客页面信息");
 			WebInformation web = webInformationService.selectById(id);
+			web.setSubTime(SimpleUtils.getSimpleDateDifferenceFormat(web.getSubTime()));
 			Integer uid = web.getUid();
 			web.setWebDataString(new String(web.getWebData(),"utf-8"));
 			web.setWebData(null);
@@ -317,6 +316,7 @@ public class BlobHandler {
 			}
 			for(WebComment webComment : commentList) {
 				WebComment webc = webComment;
+				webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
 				for(UserInformation us : userList) {
 					if(webc.getUid().equals(us.getUid())) {
 						webc.setUsername(us.getUsername());
@@ -327,6 +327,7 @@ public class BlobHandler {
 			}
 			for(WebCommentReply reply : commentReplyList) {
 				WebCommentReply webc = reply;
+				webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
 				for(UserInformation us : userList) {
 					if(webc.getUid().equals(us.getUid())) {
 						webc.setUsername(us.getUsername());
@@ -367,7 +368,7 @@ public class BlobHandler {
 	}
 	
 	/**
-	 * 处理收藏请求, 作者的学号和网页id由前端获取, 收藏人学号从session里获取
+	 * 处理收藏请求
 	 * 
 	 * @param uid  作者的学号
 	 * @param webid 网页id
@@ -404,7 +405,7 @@ public class BlobHandler {
 	}
 
 	/**
-	 * 取消收藏请求, 作者学号后端session获取, 网页编号前端传入
+	 * 取消收藏请求
 	 * @param webid  网页ID
 	 * @return
 	 */
@@ -748,7 +749,7 @@ public class BlobHandler {
 			author.setDownloads(downloads);
 			log.info("获取作者信息成功");
 			Result result = Result.success().add("author", author).add("webList", webs);
-			if(!StringUtils.isEmpty(WebUtils.toHttp(request).getHeader(AUTHORIZATION))) {
+			if(!StringUtils.isEmpty(WebUtils.toHttp(request).getHeader(WebSessionManager.AUTHORIZATION))) {
 				boolean b = true;
 				if(!ShiroUtils.getUserInformation().getUid().equals(uid)) {
 					b = myLikeService.countByUidAndLikeId(ShiroUtils.getUserInformation().getUid(), uid);
