@@ -315,12 +315,18 @@ public class UserInformationServiceImpl implements UserInformationService {
 	@Override
 	public List<UserInformation> selectUsersByUids(List<Integer> uids) {
 		List<Integer> f = new ArrayList<Integer>();
+		if(uids == null) {
+			return new ArrayList<>();
+		}
 		for(Integer uid : uids) {
 			if(countByUid(uid) == 0) {
 				f.add(uid);
 			}
 		}
 		uids.removeAll(f);
+		if(uids.size() == 0) {
+			return new ArrayList<>();
+		}
 		return userInformationMapper.selectUsersByUids(uids);
 	}
 	

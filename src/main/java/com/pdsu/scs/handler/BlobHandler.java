@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.pdsu.scs.bean.*;
+import com.pdsu.scs.service.*;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,38 +29,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.pdsu.scs.bean.Author;
-import com.pdsu.scs.bean.BlobInformation;
-import com.pdsu.scs.bean.Contype;
-import com.pdsu.scs.bean.MyCollection;
-import com.pdsu.scs.bean.MyImage;
-import com.pdsu.scs.bean.Result;
-import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.VisitInformation;
-import com.pdsu.scs.bean.WebComment;
-import com.pdsu.scs.bean.WebCommentReply;
-import com.pdsu.scs.bean.WebInformation;
-import com.pdsu.scs.bean.WebLabel;
-import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
-import com.pdsu.scs.service.ContypeService;
-import com.pdsu.scs.service.FileDownloadService;
-import com.pdsu.scs.service.MyCollectionService;
-import com.pdsu.scs.service.MyImageService;
-import com.pdsu.scs.service.MyLikeService;
-import com.pdsu.scs.service.UserInformationService;
-import com.pdsu.scs.service.VisitInformationService;
-import com.pdsu.scs.service.WebCommentReplyService;
-import com.pdsu.scs.service.WebCommentService;
-import com.pdsu.scs.service.WebFileService;
-import com.pdsu.scs.service.WebInformationService;
-import com.pdsu.scs.service.WebLabelControlService;
-import com.pdsu.scs.service.WebLabelService;
-import com.pdsu.scs.service.WebThumbsService;
 import com.pdsu.scs.shiro.WebSessionManager;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.RandomUtils;
@@ -153,6 +128,9 @@ public class BlobHandler {
 	 */
 	@Autowired
 	private FileDownloadService fileDownloadService;
+
+	@Autowired
+	private UserBrowsingRecordService userBrowsingRecordService;
 	
 	/**
 	 * 文章类型
@@ -285,6 +263,11 @@ public class BlobHandler {
 			}
 			log.info("添加访问信息");
 			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
+			log.info("添加用户浏览记录");
+			if(user.getUsername() != null) {
+				userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), 1
+					, SimpleUtils.getSimpleDateSecond()));
+			}
 			log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
 			log.info("获取网页访问量");
 			Integer visits = visitInformationService.selectvisitByWebId(web.getId());
@@ -370,7 +353,7 @@ public class BlobHandler {
 	/**
 	 * 处理收藏请求
 	 * 
-	 * @param uid  作者的学号
+	 * @param bid  作者的学号
 	 * @param webid 网页id
 	 * @return
 	 */
@@ -468,7 +451,7 @@ public class BlobHandler {
 	
 	/**
 	 * 处理投稿请求
-	 * @param user
+	 * @param web, labelList
 	 * @return
 	 */
 	@RequestMapping(value = "/contribution", method = RequestMethod.POST)

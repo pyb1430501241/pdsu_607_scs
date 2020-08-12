@@ -50,5 +50,11 @@ public interface WebFileService {
 	 * @return
 	 */
 	public List<WebFile> selectFilesOrderByTime();
-	
+
+	/**
+	 * 根据fileid获取文件呢信息
+	 * @param fileids
+	 * @return
+	 */
+    public List<WebFile> selectFilesByFileIds(List<Integer> fileids);
 }

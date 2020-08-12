@@ -50,19 +50,6 @@ public class LoggingAspect {
 	
 	@AfterReturning(value = "execution(* com.pdsu.scs..service..*(..))", returning = "result")
 	public void afterReturn(JoinPoint joinPoint, Object result) {
-//		if(result instanceof ArrayList) {
-//			ArrayList<?> list = (ArrayList<?>) result;
-//			if(list.size() == 0) {
-//			}else if(list.get(0) instanceof WebInformation) {
-//				@SuppressWarnings("unchecked")
-//				ArrayList<WebInformation> webs = (ArrayList<WebInformation>) result;
-//				for(WebInformation w : webs) {
-//					WebInformation s = w;
-//					s.setWebData(null);
-//					s.setWebDataString(null);
-//				}
-//			}
-//		}
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
 		log.info("执行方法 " + str + " 成功");
@@ -72,6 +59,6 @@ public class LoggingAspect {
 	public void afterThrowing(JoinPoint joinPoint, Exception ex) {
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
-		log.error("执行方法 " + str + " 失败, 异常信息为: " + ex.getMessage());
+		log.error("执行方法 " + str + " 失败, 异常信息为: " + ex);
 	}
 }

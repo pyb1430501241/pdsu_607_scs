@@ -1,5 +1,7 @@
 package com.pdsu.scs.service.impl;
 
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.elasticsearch.action.index.IndexRequest;
@@ -95,6 +97,17 @@ public class WebFileServiceImpl implements WebFileService{
 	public List<WebFile> selectFilesOrderByTime() {
 		WebFileExample example = new WebFileExample();
 		example.setOrderByClause("creattime DESC");
+		return webFileMapper.selectByExample(example);
+	}
+
+	@Override
+	public List<WebFile> selectFilesByFileIds(List<Integer> fileids) {
+		if(fileids == null || fileids.size() == 0) {
+			return new ArrayList<>();
+		}
+		WebFileExample example = new WebFileExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andIdIn(fileids);
 		return webFileMapper.selectByExample(example);
 	}
 
