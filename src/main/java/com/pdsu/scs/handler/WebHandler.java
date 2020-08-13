@@ -1188,6 +1188,7 @@ public class WebHandler {
             for(WebInformation web : webs) {
                 uids.add(web.getUid());
             }
+
             log.info("获取作者信息");
             List<UserInformation> users = userInformationService.selectUsersByUids(uids);
             log.info("获取文件信息");
