@@ -792,7 +792,7 @@
 	19) 获取自己的浏览记录api
 		请求路径: 域名(ip)/项目名称/user/getoneselfbrowsingrecord
 		 请求方式：GET
-		 请求头: Authorization(可不加)
+		 请求头: Authorization
 		 	请求参数：
 				p : 分页（1默认从1开始）
 				如: http://121.199.27.93/user/getoneselfbrowsingrecord?p=1
@@ -803,6 +803,22 @@
 					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
 				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	20) 获取自己的通知api
+		请求路径: 域名(ip)/项目名称/user/getnotification
+		 请求方式：GET
+		 请求头: Authorization
+		 	请求参数：
+				p : 分页（默认从1开始）
+				如: http://121.199.27.93/user/getnotification?p=1
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "notificationList" : "通知信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
+				 		
 				 		
 				 	
 
@@ -850,8 +866,9 @@
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 					
 	
-		
+	
 4.SearchHandler API相关
+
 	1)搜索相关api
 		请求路径：域名(ip)/项目名称/search
 		请求方式：GET
@@ -864,6 +881,22 @@
 					 , "fileList" : "文件信息"}
 					 失败：
 					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
+5.AdminHandler API相关
+
+	1)获取所有用户信息api
+		请求路径：域名(ip)/项目名称/admin/getuserinformationlist
+		请求方式：GET
+		请求头: Authorization
+			请求参数：
+				p : 分页（默认第一页）
+				如：http://121.199.27.93/admin/getuserinformationlist?p=1
+				返回值：
+					 成功：json{"code" : "200" , "msg" : "success" , "userList" : "用户信息"}
+					 失败：
+					 	json{"code" : "404/403" , "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
 				 		
