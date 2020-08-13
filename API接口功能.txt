@@ -76,8 +76,8 @@
 		请求方式：POST
 		请求头: Authorization
 			请求参数: 
-			 bid ： 博客号
-			 webid ：网页号
+			 bid ：作者的学号
+			 webid ：网页id
 			  如:http://121.199.27.93/blob/collection?bid=2&webid=3
 				返回值: 
 					成功：
@@ -788,6 +788,21 @@
 					 	json{"code" : "404", "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
 				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	19) 获取自己的浏览记录api
+		请求路径: 域名(ip)/项目名称/user/getoneselfbrowsingrecord
+		 请求方式：GET
+		 请求头: Authorization(可不加)
+		 	请求参数：
+				p : 分页（1默认从1开始）
+				如: http://121.199.27.93/user/getoneselfbrowsingrecord?p=1
+				返回值: 
+					 成功：
+					 	json{"code" : "200" , "msg" : "success" , "brows" : "浏览记录信息"}
+					 失败：
+					 	json{"code" : "404" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
 				 		
 				 		
 
