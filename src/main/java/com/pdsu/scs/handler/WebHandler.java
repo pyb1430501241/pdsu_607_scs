@@ -94,11 +94,29 @@ public class WebHandler {
 	@Autowired
 	private VisitInformationService visitInformationService;
 
+	/**
+	 * 浏览记录
+	 */
 	@Autowired
 	private UserBrowsingRecordService userBrowsingRecordService;
 
+	/**
+	 * 文件
+	 */
 	@Autowired
 	private WebFileService webFileService;
+
+	/**
+	 * 通知
+	 */
+	@Autowired
+	private SystemNotificationService systemNotificationService;
+
+	/**
+	 * 管理
+	 */
+	@Autowired
+	private UserRoleService userRoleService;
 	
 	private static final String FILEPATH = "/pdsu/web/img/";
 	
@@ -113,6 +131,7 @@ public class WebHandler {
 	@Autowired
 	private CacheManager cacheManager; 
 	
+	/**
 	/**
 	 * 缓存区
 	 */
@@ -133,6 +152,7 @@ public class WebHandler {
 			if(user == null) {
 				return Result.fail().add(EX, "未登录");
 			}
+			user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
 			return Result.success().add("user", user);
 		} catch (Exception e) {
 			log.error("原因: " + e.getMessage());
@@ -187,6 +207,7 @@ public class WebHandler {
 				uu.setPassword(null);
 				log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
 				uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
+				uu.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(uu.getUid()));
 				uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
 				return Result.success()
 						.add("user", uu)
@@ -326,6 +347,7 @@ public class WebHandler {
 			if(flag) {
 				myImageService.insert(new MyImage(user.getUid(), "422696839bb3222a73a48d7c97b1bba4.jpg"));
 				myEmailService.insert(new MyEmail(null, user.getUid(), email));
+				userRoleService.insert(new UserRole(user.getUid(), 1));
 				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 				return Result.success();
 			}else {
@@ -1216,4 +1238,57 @@ public class WebHandler {
             return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
+
+	/**
+	 * 获取自己的通知
+	 * @param p
+	 * @return
+	 */
+	@GetMapping("/getnotification")
+	@ResponseBody
+	@CrossOrigin
+	public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p) {
+		UserInformation user  = null;
+		try {
+			user = ShiroUtils.getUserInformation();
+			log.info("用户: " + user.getUid() + " 获取通知开始");
+			log.info("获取通知");
+			PageHelper.startPage(p, 10);
+			List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid());
+			List<Integer> uids = new ArrayList<>();
+			log.info("获取通知人信息");
+			System.out.println(systemNotifications);
+			for (SystemNotification s : systemNotifications) {
+				uids.add(s.getSid());
+			}
+			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+			log.info("拼装信息");
+			List<SystemNotificationInformation> list = new ArrayList<>();
+			for (SystemNotification s : systemNotifications) {
+				SystemNotificationInformation information = new SystemNotificationInformation();
+				information.setSystemNotification(s);
+				for (UserInformation u : users) {
+					if (s.getSid().equals(u.getUid())) {
+						information.setUsername(u.getUsername());
+						information.setIdentity("管理员");
+					}
+				}
+				list.add(information);
+			}
+			boolean b = systemNotificationService.updateSystemNotificationsByUid(user.getUid());
+			if (b) {
+				user.setSystemNotifications(0);
+			}
+			PageInfo<SystemNotificationInformation> pageInfo = new PageInfo<>(list);
+			return Result.success().add("notificationList", pageInfo);
+		} catch (Exception e) {
+			if (user == null) {
+				log.info("用户获取通知失败, 原因: 用户未登录");
+				return Result.fail().add(EX, "未登录");
+			}
+			log.error("用户获取通知失败, 原因: " + e.getMessage());
+			return Result.fail().add(EX, "未定义类型错误");
+		}
+	}
+
 }

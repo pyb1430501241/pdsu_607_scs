@@ -60,7 +60,7 @@
 	<!-- ================================================================================== -->
 	<!-- 配置 cacheManager -->
 	<bean id = "ehcacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
-		<property name="cacheManagerConfigFile" value="classpath:shiro/ehcache.xml"></property>
+		<property name="cacheManager" ref="cacheManagerFactory"></property>
 	</bean>	
 	<!-- 配置认证器 -->
 	<bean id = "authenticator" class = "org.apache.shiro.authc.pam.ModularRealmAuthenticator">
@@ -111,6 +111,10 @@
 		<property name="filterChainDefinitions">
 			<value>
 				/user/logout = logout
+				/user/* = anon
+				/file/* = anon
+				/blob/* = anon
+				/admin/* = authc [teacher]
 				/** = anon
 			</value>
 		</property>

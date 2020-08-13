@@ -32,9 +32,49 @@ public class UserInformation implements Serializable {
     private String imgpath;
     
     private String email;
-    
-    public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
-			String time, Integer accountStatus, String imgpath, String email) {
+
+    private Integer systemNotifications;
+
+	@Override
+	public String toString() {
+		return "UserInformation{" +
+				"id=" + id +
+				", uid=" + uid +
+				", password='" + password + '\'' +
+				", username='" + username + '\'' +
+				", college='" + college + '\'' +
+				", clazz='" + clazz + '\'' +
+				", time='" + time + '\'' +
+				", accountStatus=" + accountStatus +
+				", imgpath='" + imgpath + '\'' +
+				", email='" + email + '\'' +
+				", systemNotifications=" + systemNotifications +
+				'}';
+	}
+
+	public UserInformation(Integer uid, String password, String username, String college, String clazz, String time, Integer accountStatus, String imgpath, String email, Integer systemNotifications) {
+		this.uid = uid;
+		this.password = password;
+		this.username = username;
+		this.college = college;
+		this.clazz = clazz;
+		this.time = time;
+		this.accountStatus = accountStatus;
+		this.imgpath = imgpath;
+		this.email = email;
+		this.systemNotifications = systemNotifications;
+	}
+
+	public void setSystemNotifications(Integer systemNotifications) {
+		this.systemNotifications = systemNotifications;
+	}
+
+	public Integer getSystemNotifications() {
+		return systemNotifications;
+	}
+
+	public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
+						   String time, Integer accountStatus, String imgpath, String email) {
 		super();
 		this.id = id;
 		this.uid = uid;
@@ -141,13 +181,6 @@ public class UserInformation implements Serializable {
     public void setAccountStatus(Integer accountStatus) {
         this.accountStatus = accountStatus;
     }
-
-	@Override
-	public String toString() {
-		return "UserInformation [id=" + id + ", uid=" + uid + ", password=" + password + ", username=" + username
-				+ ", college=" + college + ", clazz=" + clazz + ", time=" + time + ", accountStatus=" + accountStatus
-				+ ", imgpath=" + imgpath + ", email=" + email + "]";
-	}
 
 	public UserInformation(Integer id, Integer uid, String password, String username, String college, String clazz,
 			String time, Integer accountStatus) {

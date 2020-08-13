@@ -387,4 +387,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 		}
 		return b;
 	}
+
+	@Override
+	public List<UserInformation> selectUserInformations() {
+		return userInformationMapper.selectByExample(new UserInformationExample());
+	}
 }

@@ -65,6 +65,13 @@ public class Result{
 		result.add("msg", "accepted");
 		return result;
 	}
+
+	public static Result permission() {
+		Result result = new Result();
+		result.add("code", 403);
+		result.add("msg", "Insufficient permissions");
+		return result;
+	}
 	
 	public Result add(String key, Object value) {
 		this.json.put(key, value);
