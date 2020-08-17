@@ -2,26 +2,35 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
 	xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:elasticsearch="http://www.springframework.org/schema/data/elasticsearch"
-	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
-		http://www.springframework.org/schema/data/elasticsearch http://www.springframework.org/schema/data/elasticsearch/spring-elasticsearch-4.0.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
 	<context:component-scan base-package="com.pdsu.scs">
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
 	</context:component-scan>
 	<context:property-placeholder location="classpath:properties/db.properties"/>
-	<!-- 配置dataSource -->
-	<bean id = "dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		<property name="user" value="${db.user}"></property>
+	<!-- 配置 druid 的 dataSource -->
+	<bean id = "dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+		<property name="username" value="${db.user}"></property>
 		<property name="password" value="${db.password}"></property>
-		<property name="jdbcUrl" value="${db.url}"></property>
-		<property name="driverClass" value="${db.driver}"></property>
+		<property name="url" value="${db.url}"></property>
+		<property name="driverClassName" value="${db.driver}"></property>
+		<property name="initialSize" value="${db.initialSize}"></property>
+		<property name="minIdle" value="${db.minIdle}"></property>
+		<property name="maxActive" value="${db.maxActive}"></property>
+		<property name="maxWait" value="${db.maxWait}"></property>
+		<property name="timeBetweenEvictionRunsMillis" value="${db.timeBetweenEvictionRunsMillis}"></property>
+		<property name="minEvictableIdleTimeMillis" value="${db.minEvictableIdleTimeMillis}"></property>
+		<property name="filters" value="stat"></property>
+	</bean>
+<!--	配置 druid 监控-->
+	<bean id = "druidStatInterceptor" class="com.alibaba.druid.support.spring.stat.DruidStatInterceptor"></bean>
+	<bean id = "druidStatPointcut" class="org.springframework.aop.support.JdkRegexpMethodPointcut"
+		  scope="prototype">
+		<property name="pattern" value="com.pdsu.scs.service.*"></property>
 	</bean>
 	<!-- MyBatis 和 Spring 整合 -->
 	<bean id = "sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -36,7 +45,7 @@
 		<!-- 扫描 Dao 接口, 把所有接口添加进 IOC 容器 -->
 		<property name="basePackage" value="com.pdsu.scs.dao"></property>
 	</bean>
-	
+
 	<!-- 配置 Spring 配置式事务 -->
 	<bean id = "transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource"></property>
@@ -55,7 +64,7 @@
 		<aop:pointcut expression="execution(* com.pdsu.scs.service..*(..))" id="txPointcut"/>
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
 	</aop:config>
-	
+
 	<!-- 配置 shiro  -->
 	<!-- ================================================================================== -->
 	<!-- 配置 cacheManager -->
@@ -65,7 +74,7 @@
 	</bean>
 	<bean id = "ehcacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
 		<property name="cacheManager" ref="shiroCacheManagerFactory"></property>
-	</bean>	
+	</bean>
 	<!-- 配置认证器 -->
 	<bean id = "authenticator" class = "org.apache.shiro.authc.pam.ModularRealmAuthenticator">
 		<property name="authenticationStrategy">
@@ -81,7 +90,7 @@
 			</bean>
 		</property>
 	</bean>
-	
+
 	<!-- 配置 securityManager -->
 	<bean id = "securityManager" class = "org.apache.shiro.web.mgt.DefaultWebSecurityManager">
 		<property name="sessionManager">
@@ -90,7 +99,7 @@
 		<property name="cacheManager" ref="ehcacheManager"></property>
 		<property name="realm" ref="loginRealm"></property>
 	</bean>
-	
+
 	<!-- 配置 LifecycleBeanPostProcessor, 可以自动的调用配置在 Spring IOC 容器中的 shiro bean 生命周期方法 -->
 	<bean id = "lifecycleBeanPostProcessor" class = "org.apache.shiro.spring.LifecycleBeanPostProcessor"></bean>
 	<!-- 启用 Spring IOC 容器中的 Shiro 的注解, 但必须在配置了LifecycleBeanPostProcessor 之后才可以使用 -->
@@ -117,7 +126,7 @@
 				/user/* = anon
 				/file/* = anon
 				/blob/* = anon
-				/admin/* = authc [teacher]
+				/admin/* = authc
 				/** = anon
 			</value>
 		</property>

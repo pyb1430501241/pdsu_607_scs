@@ -26,7 +26,7 @@ public class LoggingAspect {
 	/**
 	 * 写入日志
 	 */
-	private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
+	private static final Logger log = LoggerFactory.getLogger("日志监控器");
 	
 	/**
 	 * 如未登录, 则默认执行人为游客,账号为: 0

@@ -5,7 +5,8 @@
 	<settings>
 		<setting name="mapUnderscoreToCamelCase" value="true"/>
 		<setting name = "cacheEnabled" value="true"/>
-		<setting name="defaultExecutorType" value="SIMPLE"/> 
+		<setting name="defaultExecutorType" value="SIMPLE"/>
+		<setting name="logImpl" value="LOG4J2"/>
 	</settings>
 	<typeAliases>
 		<package name="com.pdsu.scs.bean"/>
