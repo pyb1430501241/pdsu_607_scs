@@ -149,4 +149,5 @@
 	<bean id = "restHighLevelClient" factory-bean="restHighLevel"
 		factory-method="getRestHighLevelClient">
 	</bean>
+
 </beans>

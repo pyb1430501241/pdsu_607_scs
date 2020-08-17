@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
@@ -130,7 +131,7 @@ public class HandlerTest {
 			loginlist.remove("json");
 			result = mvc.perform(MockMvcRequestBuilders.post("/blob/contribution")
 					.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
-					.param("title", "你好, 世界")
+					.param("title", "??, ??")
 					.param("contype", "1")
 					.param("webDataString", "System.out.println(\"Hello World\");\nSystem.out.println(\"Hello World\");\nSystem.out.println(\"Hello World\");"
 							+ "\nSystem.out.println(\"Hello World\");")
@@ -141,7 +142,7 @@ public class HandlerTest {
 	}
 	
 	/**
-	 * 别忘了删验证码
+	 * ???????
 	 * @throws Exception
 	 */
 	@Test
@@ -167,9 +168,9 @@ public class HandlerTest {
 		result = mvc.perform(MockMvcRequestBuilders.post("/blob/update")
 				.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
 				.param("id", "38")
-				.param("title", "你好, 世界")
+				.param("title", "??, ??")
 				.param("contype", "1")
-				.param("webDataString", "你好你好你好你好")).andReturn();
+				.param("webDataString", "????????")).andReturn();
 		response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
@@ -229,7 +230,7 @@ public class HandlerTest {
 		result = mvc.perform(MockMvcRequestBuilders.post("/blob/comment")
 				.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
 				.param("webid", "38")
-				.param("content", "你好, 世界")).andReturn();
+				.param("content", "??, ??")).andReturn();
 		response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
@@ -314,7 +315,7 @@ public class HandlerTest {
 	 */
 	@Test
 	public void testPostBlobImg() throws Exception {
-		FileInputStream fis = new FileInputStream("E:/装机/桌面/桌面背景/9.png");
+		FileInputStream fis = new FileInputStream("E:/??/??/????/9.png");
 		MvcResult result = mvc.perform(MockMvcRequestBuilders.multipart("/blob/blobimg")
 				.file(new MockMultipartFile("img", "9.png", "image/png", fis)))
 				.andReturn();
@@ -382,7 +383,7 @@ public class HandlerTest {
 	@Test
 	public void testdataCheck() throws Exception {
 		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/user/datacheck")
-				.param("data", "庞亚彬123zs@qq.com")
+				.param("data", "???123zs@qq.com")
 				.param("type", "ss"))
 				.andReturn();
 		MockHttpServletResponse response = result.getResponse();
@@ -423,7 +424,7 @@ public class HandlerTest {
 		loginlist.remove("json");
 		result = mvc.perform(MockMvcRequestBuilders.post("/user/changeinfor")
 				.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
-				.param("username", "半梦")).andReturn();
+				.param("username", "??")).andReturn();
 		response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
@@ -462,7 +463,7 @@ public class HandlerTest {
 		Instant start = Instant.now();
 		System.out.println(SimpleUtils.getSimpleDateDifferenceFormat("2019-08-12 13:56:28"));
 		Instant end = Instant.now();
-		System.out.println("耗时: " + Duration.between(start, end).toMillis());
+		System.out.println("??: " + Duration.between(start, end).toMillis());
 	}
 
 	/**
@@ -534,7 +535,7 @@ public class HandlerTest {
 		new Thread(() -> {
 			for(Integer i = 0; i < 20; i++) {
 				systemNotificationService.insert(Arrays.asList(
-					new SystemNotification(181360226, "测试测试", 181360241, 1, SimpleUtils.getSimpleDateSecond())
+					new SystemNotification(181360226, "????", 181360241, 1, SimpleUtils.getSimpleDateSecond())
 				));
 				try {
 					Thread.sleep(20000);
