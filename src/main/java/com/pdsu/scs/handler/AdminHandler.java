@@ -59,7 +59,7 @@ public class AdminHandler {
 			PageHelper.startPage(p, 15);
 			PageInfo<UserInformation> userList = new PageInfo<>(
 					userInformationService.selectUserInformations()
-			);
+			, 5);
 			return Result.success().add("userList", userList);
 		} catch (Exception e) {
 			if(user == null) {
@@ -70,5 +70,12 @@ public class AdminHandler {
 			return Result.fail().add(EX, "未定义类型错误");
 		}
 	}
-	
+
+	@ResponseBody
+	@CrossOrigin
+	@PostMapping("/")
+	public Result createClazz(){
+		return Result.fail();
+	}
+
 }

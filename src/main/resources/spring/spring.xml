@@ -59,8 +59,12 @@
 	<!-- 配置 shiro  -->
 	<!-- ================================================================================== -->
 	<!-- 配置 cacheManager -->
+	<bean id="shiroCacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="classpath:shiro/ehcache.xml"></property>
+		<property name="cacheManagerName" value="shiro"></property>
+	</bean>
 	<bean id = "ehcacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
-		<property name="cacheManager" ref="cacheManagerFactory"></property>
+		<property name="cacheManager" ref="shiroCacheManagerFactory"></property>
 	</bean>	
 	<!-- 配置认证器 -->
 	<bean id = "authenticator" class = "org.apache.shiro.authc.pam.ModularRealmAuthenticator">
@@ -95,8 +99,7 @@
 	<bean class = "org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
 		<property name="securityManager" ref="securityManager"></property>
 	</bean>
-	
-	<!-- 
+	<!--
 	 	配置 ShiroFilter
 	 	id 必须和 web.xml 文件中配置的 DelegatingFilterProxy 的 filter-name 一致
 	 -->
