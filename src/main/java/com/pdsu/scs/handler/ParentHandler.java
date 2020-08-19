@@ -19,4 +19,5 @@ public class ParentHandler {
 
     static final String IMG_SUFFIX = ".jpg";
 
+
 }
