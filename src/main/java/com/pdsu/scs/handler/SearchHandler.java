@@ -26,7 +26,7 @@ import com.pdsu.scs.exception.web.es.QueryException;
  *
  */
 @Controller
-public class SearchHandler {
+public class SearchHandler extends ParentHandler{
 	
 	@Resource(name = "esUserService")
 	private EsService<EsUserInformation> esUserService;
@@ -37,8 +37,6 @@ public class SearchHandler {
 	@Resource(name = "esFileService")
 	private EsService<EsFileInformation> esFileService;
 
-	private static final String EX = "exception";
-	
 	private static final Logger log = LoggerFactory.getLogger(SearchHandler.class);
 	
 	/**
@@ -60,10 +58,10 @@ public class SearchHandler {
 					.add("fileList", files);
 		} catch (QueryException e) {
 			log.error(e.getMessage());
-			return Result.fail().add(EX , "网络延迟, 请稍后重试");
+			return Result.fail().add(EXCEPTION, "网络延迟, 请稍后重试");
 		} catch (Exception e) {
 			log.error("查询时发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 

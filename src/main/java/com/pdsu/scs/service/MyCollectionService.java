@@ -17,7 +17,6 @@ public interface MyCollectionService {
 	 * 插入一个收藏记录
 	 * @param con
 	 * @return
-	 * @throws RepetitionCollectionException
 	 */
 	public boolean insert(MyCollection con) throws UidAndWebIdRepetitionException;
 	

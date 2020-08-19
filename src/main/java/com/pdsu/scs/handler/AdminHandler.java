@@ -26,7 +26,7 @@ import com.pdsu.scs.bean.Result;
  */
 @Controller
 @RequestMapping("/admin")
-public class AdminHandler {
+public class AdminHandler extends ParentHandler{
 
 	@Autowired
 	private UserRoleService userRoleService;

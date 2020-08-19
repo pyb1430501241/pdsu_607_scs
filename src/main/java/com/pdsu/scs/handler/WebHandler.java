@@ -54,10 +54,8 @@ import com.pdsu.scs.utils.SimpleUtils;
  */
 @Controller
 @RequestMapping("/user")
-public class WebHandler {
-	
-	private static final String EX = "exception";
-	
+public class WebHandler extends  ParentHandler{
+
 	/**
 	 * 用户信息相关
 	 */
@@ -118,8 +116,6 @@ public class WebHandler {
 	@Autowired
 	private UserRoleService userRoleService;
 	
-	private static final String FILEPATH = "/pdsu/web/img/";
-	
 	/**
 	 * 日志
 	 */
@@ -150,13 +146,13 @@ public class WebHandler {
 		try {
 			UserInformation user = ShiroUtils.getUserInformation();
 			if(user == null) {
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
 			return Result.success().add("user", user);
 		} catch (Exception e) {
 			log.error("原因: " + e.getMessage());
-			return Result.fail().add(EX, "未知错误, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "未知错误, 请稍候重试");
 		}
 	}
 	
@@ -177,14 +173,14 @@ public class WebHandler {
 		log.info("账号: " + uid + "登录开始");
 		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
 		if(cache.get(hit) == null) {
-			return Result.fail().add(EX, "验证码已失效, 请刷新后重试");
+			return Result.fail().add(EXCEPTION, "验证码已失效, 请刷新后重试");
 		}
 		//从缓存中获取验证码
 		String ss = ((String) cache.get(hit).get()).toLowerCase();
 		log.info("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
 		if(!ss.equals(code.toLowerCase())) {
 			log.info("验证码错误");
-			return Result.fail().add(EX, "验证码错误");
+			return Result.fail().add(EXCEPTION, "验证码错误");
 		}
 		
 		Subject subject = SecurityUtils.getSubject();
@@ -214,21 +210,21 @@ public class WebHandler {
 						.add("AccessToken", subject.getSession().getId());
 			}catch (IncorrectCredentialsException e) {
 				log.info("账号: " + uid + "账号或密码错误");
-				return Result.fail().add(EX, "账号或密码错误");
+				return Result.fail().add(EXCEPTION, "账号或密码错误");
 			}catch (UnknownAccountException e) {
 				log.info("账号: " + uid + "不存在");
-				return Result.fail().add(EX, "账号不存在");
+				return Result.fail().add(EXCEPTION, "账号不存在");
 			} catch (AuthenticationException e) {
 				log.info("登录失败, 原因: " + e.getMessage());
-				return Result.fail().add(EX, e.getMessage());
+				return Result.fail().add(EXCEPTION, "未定义类型错误");
 			} catch (Exception e) {
 				subject.logout();
 				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
-				return Result.fail().add(EX, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, "未定义类型错误");
 			}
 		}
 		log.info("账号: " + uid + "已登录");
-		return Result.fail().add(EX, "你已登录");
+		return Result.fail().add(EXCEPTION, "你已登录");
 	}
 	
 	/**
@@ -264,7 +260,7 @@ public class WebHandler {
 			}else {
 				log.info("获取验证码失败, 原因: " + e.getMessage());
 			}
-			return Result.fail().add(EX, "获取验证码失败, 未知原因");
+			return Result.fail().add(EXCEPTION, "获取验证码失败, 未知原因");
 		}
 	}
 	
@@ -281,13 +277,13 @@ public class WebHandler {
 		try {
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(email == null) {
-				return Result.fail().add(EX, "邮箱不可为空");
+				return Result.fail().add(EXCEPTION, "邮箱不可为空");
 			}
 			if(name == null) {
-				return Result.fail().add(EX, "用户名不可为空");
+				return Result.fail().add(EXCEPTION, "用户名不可为空");
 			}
 			if(myEmailService.countByEmail(email)) {
-				return Result.fail().add(EX, "此邮箱已被绑定");
+				return Result.fail().add(EXCEPTION, "此邮箱已被绑定");
 			}
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForApply(email, name);
@@ -301,7 +297,7 @@ public class WebHandler {
 			return Result.success().add("token", token);
 		}catch (Exception e) {
 			log.error("邮箱: " + email + " 不存在, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "邮箱地址不正确");
+			return Result.fail().add(EXCEPTION, "邮箱地址不正确");
 		}
 	}
 	
@@ -321,21 +317,21 @@ public class WebHandler {
 			log.info("申请账号: " + user.getUid() + "开始");
 			//验证验证码
 			if(cache.get(token) == null) {
-				return Result.fail().add(EX, "验证码已过期, 请重新获取");
+				return Result.fail().add(EXCEPTION, "验证码已过期, 请重新获取");
 			}
 			String ss = (String) cache.get(token).get();
 			if(!ss.equals(code)) {
-				return Result.fail().add(EX, "验证码错误");
+				return Result.fail().add(EXCEPTION, "验证码错误");
 			}
 			//查询账号是否已存在
 			if(userInformationService.countByUid(user.getUid()) != 0) {
-				return Result.fail().add(EX, "该账号已存在,是否忘记密码?");
+				return Result.fail().add(EXCEPTION, "该账号已存在,是否忘记密码?");
 			}
 			if(myEmailService.countByEmail(email)) {
-				return Result.fail().add(EX, "此邮箱已被绑定, 忘记密码?");
+				return Result.fail().add(EXCEPTION, "此邮箱已被绑定, 忘记密码?");
 			}
 			if(userInformationService.countByUserName(user.getUsername()) != 0) {
-				return Result.fail().add(EX, "用户名已存在");
+				return Result.fail().add(EXCEPTION, "用户名已存在");
 			}
 			//默认账号为正常状态
 			user.setAccountStatus(1);
@@ -352,14 +348,14 @@ public class WebHandler {
 				return Result.success();
 			}else {
 				log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
-				return Result.fail().add(EX, "申请失败");
+				return Result.fail().add(EXCEPTION, "申请失败");
 			}
 		} catch (UidRepetitionException e) {
 			log.info("该用户已存在, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("申请账号失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "连接服务器失败, 请稍候重试");
 		}
 	}
 	
@@ -394,11 +390,11 @@ public class WebHandler {
 						.add("token", token);
 			}else {
 				log.info("账号: " + uid + "不存在");
-				return Result.fail().add(EX, "账号不存在, 是否申请?");
+				return Result.fail().add(EXCEPTION, "账号不存在, 是否申请?");
 			}
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回密码时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -414,7 +410,7 @@ public class WebHandler {
 		String email = null;
 		try {
 			if(cache.get(token) == null) {
-				return Result.fail().add(EX, "验证信息已失效, 请重新验证");
+				return Result.fail().add(EXCEPTION, "验证信息已失效, 请重新验证");
 			}
 			email = (String) cache.get(token).get();
 			log.info("邮箱: " + email + " 开始发送找回密码的验证码");
@@ -430,7 +426,7 @@ public class WebHandler {
 			return Result.success().add("token", uuid);
 		}catch (Exception e) {
 			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -448,21 +444,21 @@ public class WebHandler {
 		try {
 			log.info("账号: " + uid + "开始找回密码");
 			if(cache.get(token) == null) {
-				return Result.fail().add(EX, "验证码已过期");
+				return Result.fail().add(EXCEPTION, "验证码已过期");
 			}
 			String ss = (String) cache.get(token).get();
 			if(!ss.equals(code)) {
-				return Result.fail().add(EX, "验证码错误"); 
+				return Result.fail().add(EXCEPTION, "验证码错误");
 			}
 			boolean b = userInformationService.modifyThePassword(uid, password);
 			if(!b) {
-				return Result.fail().add(EX, "密码找回失败, 请稍后重试");
+				return Result.fail().add(EXCEPTION, "密码找回失败, 请稍后重试");
 			}
 			log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
-			return Result.success().add(EX, "找回成功");
+			return Result.success().add(EXCEPTION, "找回成功");
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回失败, 失败原因: " + e.getMessage());
-			return Result.fail().add(EX, "未知错误");
+			return Result.fail().add(EXCEPTION, "未知错误");
 		}
 	}
 	
@@ -520,7 +516,7 @@ public class WebHandler {
 			return Result.success().add("token", token);
 		}catch (Exception e) {
 			log.info("邮箱: " + email + "发送修改密码的验证码失败, 错误信息为: " + e.getMessage());
-			return Result.fail().add(EX, "未知错误");
+			return Result.fail().add(EXCEPTION, "未知错误");
 		}
 	}
 	
@@ -538,17 +534,17 @@ public class WebHandler {
 			log.info("开始验证验证码是否正确");
 			if(cache.get(token) == null) {
 				log.info("验证码已过期, key 为: " + token);
-				return Result.fail().add(EX, "验证码已过期");
+				return Result.fail().add(EXCEPTION, "验证码已过期");
 			}
 			if(!cache.get(token).get().equals(code)) {
 				log.info("验证码错误, 服务器端验证码为: " + cache.get(token).get() + ", 用户输入为: " + code);
-				return Result.fail().add(EX, "验证码错误");
+				return Result.fail().add(EXCEPTION, "验证码错误");
 			}
 			log.info("验证码: " + code + "正确");
 			return Result.success();
 		}catch (Exception e) {
 			log.error("验证验证码时发生未知错误");
-			return Result.fail().add(EX, "未知错误");
+			return Result.fail().add(EXCEPTION, "未知错误");
 		}
 	}
 	
@@ -569,17 +565,17 @@ public class WebHandler {
 					ShiroUtils.getUserInformation().getUid(), password);
 			if(!flag) {
 				log.info("账号: " + uid + " 修改密码失败");
-				return Result.fail().add(EX, "修改失败");
+				return Result.fail().add(EXCEPTION, "修改失败");
 			}
 			log.info("账号: " + uid + "修改密码成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
 			return Result.success();
 		}catch (Exception e) {
 			if(uid == null) {
 				log.info("修改密码失败, 用户未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
 			log.error("账号: " + uid + "修改密码时发生错误");
-			return Result.fail().add(EX, "未知错误");
+			return Result.fail().add(EXCEPTION, "未知错误");
 		}
 	}
 	
@@ -609,17 +605,17 @@ public class WebHandler {
 				return Result.success();
 			}
 			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: 数据库连接失败");
-			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
 		} catch (UidAndLikeIdRepetitionException e) {
 			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			if(likeId == null) {
 				log.info("关注失败, 用户未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
 			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -642,16 +638,16 @@ public class WebHandler {
 				return Result.success();
 			}
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: 数据库连接失败");
-			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
 		} catch (NotFoundUidAndLikeIdException e) {
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
 			if(likeId == null) {
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -673,10 +669,10 @@ public class WebHandler {
 		} catch (Exception e) {
 			if(likeId == null) {
 				log.info("判断用户是否关注发生错误, 原因: 未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("判断用户是否关注发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -686,7 +682,7 @@ public class WebHandler {
 	 * 如未创建, 则创建
 	 */
 	static {
-		File file = new File(FILEPATH);
+		File file = new File(USER_IMG_FILEPATH);
 		if(file.exists()) {
 			file.mkdirs();
 		}
@@ -709,17 +705,17 @@ public class WebHandler {
 			new Thread(()->{
 				byte [] by = null;
 				try {
-					by = FileUtils.readFileToByteArray(new File(FILEPATH + name));
+					by = FileUtils.readFileToByteArray(new File(USER_IMG_FILEPATH + name));
 				} catch (IOException e1) {
 					log.info("原头像为默认头像");
 				}
 				try {
 					log.info("写入新头像");
-					FileUtils.writeByteArrayToFile(new File(FILEPATH + name), img.getBytes(), false);
+					FileUtils.writeByteArrayToFile(new File(USER_IMG_FILEPATH + name), img.getBytes(), false);
 				} catch (IOException e) {
 					try {
 						log.info("写入新头像失败, 还原为原头像");
-						FileUtils.writeByteArrayToFile(new File(FILEPATH + name), by, false);
+						FileUtils.writeByteArrayToFile(new File(USER_IMG_FILEPATH + name), by, false);
 					} catch (IOException e1) {
 						log.error("写入头像失败, 原因: " + e1.getMessage());
 					}
@@ -733,15 +729,15 @@ public class WebHandler {
 				return Result.success().add("imgpath", name);
 			} else {
 				log.warn("写入数据库失败!");
-				return Result.fail().add(EX, "网络异常, 请稍后重试");
+				return Result.fail().add(EXCEPTION, "网络异常, 请稍后重试");
 			}
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户更换头像失败, 原因: 未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
 			log.error("用户更换头像失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误"); 
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}		
 	}
 	
@@ -774,17 +770,17 @@ public class WebHandler {
 				return Result.success().add("user", userinfor);
 			}
 			log.warn("用户: " + userinfor.getUid() + "修改信息失败, 原因: 连接数据库失败");
-			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络链接失败, 请稍候重试");
 		} catch (NotFoundUidException e) {
 			log.info("用户: " + userinfor.getUid() + "修改信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			if(userinfor == null) {
 				log.info("用户修改信息失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("用户修改信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -818,14 +814,14 @@ public class WebHandler {
 			return Result.success().add("blobList", blobs);
 		} catch (NotFoundUidException e) {
 			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("获取文章失败, 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -872,14 +868,14 @@ public class WebHandler {
 			return Result.success().add("fansList", userList);
 		} catch (NotFoundUidException e) {
 			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户获取粉丝信息失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -922,14 +918,14 @@ public class WebHandler {
 			return Result.success().add("userList", userList);
 		} catch (NotFoundUidException e) {
 			log.info("获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户获取关注人信息失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -967,10 +963,10 @@ public class WebHandler {
 			return Result.success().add("blobList", blobs);
 		} catch (NotFoundUidException e) {
 			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -1015,10 +1011,10 @@ public class WebHandler {
 			return Result.success().add("fansList", userList);
 		} catch (NotFoundUidException e) {
 			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -1059,10 +1055,10 @@ public class WebHandler {
 			return Result.success().add("userList", userList);
 		} catch (NotFoundUidException e) {
 			log.info("获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -1081,17 +1077,17 @@ public class WebHandler {
 			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
 			if(myEmail == null) {
 				log.info("获取失败, 该用户未绑定邮箱");
-				return Result.fail().add(EX, "该用户未绑定邮箱");
+				return Result.fail().add(EXCEPTION, "该用户未绑定邮箱");
 			}
 			String email = SimpleUtils.getAsteriskForString(myEmail.getEmail());
 			return Result.success().add("email", email);
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("获取邮箱失败, 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("获取邮箱失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -1119,9 +1115,9 @@ public class WebHandler {
 					if(countByUid == 0) {
 						return Result.success();
 					}
-					return Result.fail().add(EX, "该学号已被使用");
+					return Result.fail().add(EXCEPTION, "该学号已被使用");
 				}
-				return Result.fail().add(EX, "学号或工号应为纯数字");
+				return Result.fail().add(EXCEPTION, "学号或工号应为纯数字");
 			case "username":
 				 b = data.matches("[\\u4e00-\\u9fa5_a-zA-Z0-9]{2,16}");
 				 if(b) {
@@ -1129,19 +1125,19 @@ public class WebHandler {
 					 if(countByUserName == 0) {
 						 return Result.success();
 					 }
-					 return Result.fail().add(EX, "用户名已存在");
+					 return Result.fail().add(EXCEPTION, "用户名已存在");
 				 }
-				 return Result.fail().add(EX, "用户名为4~16英文字符, 数字, 或2~8个汉字");
+				 return Result.fail().add(EXCEPTION, "用户名为4~16英文字符, 数字, 或2~8个汉字");
 			case "password":
 				b = data.matches("([0-9A-Za-z\\[\\](){}!@#$%^&*,./;':\"<>\\?|`~+-_=]){6,20}");
 				if(b) {
 					b = data.matches("^\\d+$");
 					if(b) {
-						return Result.fail().add(EX, "密码不可为纯数字");
+						return Result.fail().add(EXCEPTION, "密码不可为纯数字");
 					}
 					return Result.success();
 				}
-				return Result.fail().add(EX, "密码必须为6~20位字母, 数字, 字符的组合");
+				return Result.fail().add(EXCEPTION, "密码必须为6~20位字母, 数字, 字符的组合");
 			case "email":
 				b = data.matches("^[A-Za-z0-9\\u4e00-\\u9fa5]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$");
 				if(b) {
@@ -1149,11 +1145,11 @@ public class WebHandler {
 					if(!c) {
 						return Result.success();
 					}
-					return Result.fail().add(EX, "邮箱已被使用");
+					return Result.fail().add(EXCEPTION, "邮箱已被使用");
 				}
-				return Result.fail().add(EX, "邮箱不正确");
+				return Result.fail().add(EXCEPTION, "邮箱不正确");
 			default:
-				return Result.fail().add(EX, "数据类型不正确");
+				return Result.fail().add(EXCEPTION, "数据类型不正确");
 		}
 	}
 	
@@ -1233,10 +1229,10 @@ public class WebHandler {
         } catch (Exception e) {
             if( user == null) {
                 log.info("获取浏览历史信息失败, 原因: 用户未登录");
-                return Result.fail().add(EX, "未登录");
+                return Result.fail().add(EXCEPTION, "未登录");
             }
             log.error("获取浏览信息失败, 原因: " + e.getMessage());
-            return Result.fail().add(EX, "未定义类型错误");
+            return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 
@@ -1285,10 +1281,10 @@ public class WebHandler {
 		} catch (Exception e) {
 			if (user == null) {
 				log.info("用户获取通知失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("用户获取通知失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 

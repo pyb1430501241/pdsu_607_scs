@@ -49,14 +49,14 @@ import net.coobird.thumbnailator.Thumbnails;
  */
 @Controller
 @RequestMapping("/blob")
-public class BlobHandler {
+public class BlobHandler extends ParentHandler{
 
 	/**
 	 * 博客相关逻辑处理
 	 */
 	@Autowired
 	private WebInformationService webInformationService;
-	
+
 	/**
 	 * 用户相关逻辑处理
 	 */
@@ -129,6 +129,9 @@ public class BlobHandler {
 	@Autowired
 	private FileDownloadService fileDownloadService;
 
+	/**
+	 * 浏览记录
+	 */
 	@Autowired
 	private UserBrowsingRecordService userBrowsingRecordService;
 	
@@ -138,15 +141,6 @@ public class BlobHandler {
 	@Autowired
 	private ContypeService contypeService;
 	
-	private static final String EX = "exception";
-	
-	private static final String FILEPATH = "/pdsu/web/blob/img/";
-	
-	private static final String SUFFIX = ".jpg";
-	
-	/**
-	 * 日志
-	 */
 	private static final Logger log = LoggerFactory.getLogger(BlobHandler.class);
 	
 	/**
@@ -178,7 +172,7 @@ public class BlobHandler {
 					break;
 				default:
 					log.warn("无此类标签");
-					return Result.fail().add(EX, "无此类标签数据");
+					return Result.fail().add(EXCEPTION, "无此类标签数据");
 			}
 			if(webList == null || webList.size() == 0) {
 				log.info("首页没有数据");
@@ -237,7 +231,7 @@ public class BlobHandler {
 			return Result.success().add("blobList", pageInfo);
 		}catch (Exception e) {
 			log.error("获取首页数据失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -340,13 +334,13 @@ public class BlobHandler {
 				   .add("labels", webLabels);
 		} catch (UnsupportedEncodingException e) {
 			log.error("文章: " + id + "编码转换失败!!!");
-			return Result.fail().add(EX, "获取文章信息失败");
+			return Result.fail().add(EXCEPTION, "获取文章信息失败");
 		} catch (NotFoundBlobIdException e) {
 			log.info("文章: " + id + e.getMessage());
-			return Result.fail().add(EX, "文章不见了");
+			return Result.fail().add(EXCEPTION, "文章不见了");
 		} catch (Exception e) {
 			log.warn("发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -373,16 +367,16 @@ public class BlobHandler {
 				return Result.success();
 			}
 			log.warn("收藏失败, 连接数据库失败");
-			return Result.fail().add(EX, "网络延迟, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络延迟, 请稍候重试");
 		}catch (UidAndWebIdRepetitionException e) {
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			if(uid == null) {
 				log.info("用户收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}else {
 				log.error("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
-				return Result.fail().add(EX, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, "未定义类型错误");
 			}
 		}
 	}
@@ -407,18 +401,18 @@ public class BlobHandler {
 				return Result.success();
 			}else {
 				log.warn("取消收藏失败, 原因: 连接服务器失败");
-				return Result.fail().add(EX, "连接服务器失败, 请稍候重试");
+				return Result.fail().add(EXCEPTION, "连接服务器失败, 请稍候重试");
 			}
 		}catch (UidAndWebIdRepetitionException e) {
 			log.info("用户: " + user.getUid() + ", 取消收藏失败");
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			} else {
 				log.error("用户: " + user.getUid() + "取消收藏博客失败, 原因: " + e.getMessage());
-				return Result.fail().add(EX, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, "未定义类型错误");
 			}
 		}
 	}
@@ -442,10 +436,10 @@ public class BlobHandler {
 		} catch (Exception e) {
 			if(uid == null) {
 				log.info("查询用户是否收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("查询用户是否收藏文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -462,7 +456,7 @@ public class BlobHandler {
 		if(labelList != null) {
 			if(labelList.size() > 3) {
 				log.info("发布文章失败, 文章只可添加至多三个标签");
-				return Result.fail().add(EX, "文章最多添加三个标签");
+				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
 			}
 		}
 		Integer uid = null;
@@ -471,7 +465,7 @@ public class BlobHandler {
 			log.info("用户: " + uid + "发布文章开始");
 			if(web.getTitle().length() >= 30) {
 				log.info("发布失败, 原因: 标题过长");
-				return Result.fail().add(EX, "文章标题应为30字以内");
+				return Result.fail().add(EXCEPTION, "文章标题应为30字以内");
 			}
 			//设置作者UID
 			web.setUid(uid);
@@ -492,17 +486,17 @@ public class BlobHandler {
 				return Result.success().add("webid", web.getId());
 			}
 			log.info("用户: " + uid + "发布文章失败");
-			return Result.fail().add(EX, "发布失败");
+			return Result.fail().add(EXCEPTION, "发布失败");
 		} catch (UnsupportedEncodingException e) {
 			log.warn("文章: " + web.getUid() + " 转码失败!!!");
-			return Result.fail().add(EX, "添加文章信息失败");
+			return Result.fail().add(EXCEPTION, "添加文章信息失败");
 		}catch (Exception e) {
 			if(uid == null) {
 				log.info("用户发布文章失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			} else {
 				log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
-				return Result.fail().add(EX, "发布失败, 未知原因");
+				return Result.fail().add(EXCEPTION, "发布失败, 未知原因");
 			}
 		}
 	}
@@ -525,7 +519,7 @@ public class BlobHandler {
 			WebInformation webInformation = webInformationService.selectById(webid);
 			if(!user.getUid().equals(webInformation.getUid())) {
 				log.info("用户: " + user.getUid() + " 无权删除文章: " + webid);
-				return Result.fail().add(EX, "你无权删除这篇文章");
+				return Result.fail().add(EXCEPTION, "你无权删除这篇文章");
 			}
 			boolean b = webInformationService.deleteById(webid);
 			if(b) {
@@ -533,18 +527,18 @@ public class BlobHandler {
 				return Result.success();
 			}else {
 				log.warn("删除文章失败, 数据库异常");
-				return Result.fail().add(EX, "网络异常, 请稍候重试");
+				return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
 			}
 		} catch (NotFoundBlobIdException e) {
 			log.info("删除文章失败, 文章不存在");
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户删除文章失败, 原因: 未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}
 			log.error("删除文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -562,7 +556,7 @@ public class BlobHandler {
 		if(labelList != null) {
 			if(labelList.size() > 3) {
 				log.info("发布文章失败, 文章只可添加至多三个标签");
-				return Result.fail().add(EX, "文章最多添加三个标签");
+				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
 			}
 		}
 		try {
@@ -579,15 +573,15 @@ public class BlobHandler {
 				return Result.success();
 			}else {
 				log.info("更新文章失败");
-				return Result.fail().add(EX, "网络异常, 请稍候重试");
+				return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
 			}
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户更新文章失败, 原因: 用户未登录");
-				return Result.fail().add(EX, "未登录");
+				return Result.fail().add(EXCEPTION, "未登录");
 			}else {
 				log.error("更新文章失败, 原因: " + e.getMessage());
-				return Result.fail().add(EX, "未知原因");
+				return Result.fail().add(EXCEPTION, "未知原因");
 			}
 		}
 	}
@@ -615,18 +609,18 @@ public class BlobHandler {
 						.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 			}
 			log.warn("用户发布评论失败, 原因: 插入数据库失败");
-			return Result.fail().add(EX, "网络链接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络链接失败, 请稍候重试");
 		} catch (NotFoundBlobIdException e) {
 			log.info("用户发布评论失败, 原因: 该博客已被删除");
-			return Result.fail().add(EX, "该博客不存在");
+			return Result.fail().add(EXCEPTION, "该博客不存在");
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户发布评论失败, 原因: 未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}else {
 				log.error("用户: " + user.getUid() + "在博客: " + webid + "发布评论失败, 内容为: " + content
 						+ "错误原因为: " + e.getMessage());
-				return Result.fail().add(EX, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, "未定义类型错误");
 			}
 		}
 	}
@@ -655,20 +649,20 @@ public class BlobHandler {
 						.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 			}
 			log.warn("用户回复评论失败, 原因: 连接数据库失败");
-			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
 		} catch (NotFoundBlobIdException e) {
 			log.info("用户回复评论失败, 原因: 该博客已被删除");
-			return Result.fail().add(EX, "该博客不存在");
+			return Result.fail().add(EXCEPTION, "该博客不存在");
 		} catch (NotFoundCommentIdException e) {
 			log.info("用户回复评论失败, 原因: 该评论已被删除");
-			return Result.fail().add(EX, "该评论不存在");
+			return Result.fail().add(EXCEPTION, "该评论不存在");
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户回复评论失败, 原因: 未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
 			log.info("用户: " + user.getUid() + " 回复评论: " + cid + " 失败, 被回复人: " + bid + ", 内容为:" + content);
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -742,10 +736,10 @@ public class BlobHandler {
 			return result;
 		} catch (NotFoundUidException e) {
 			log.info("获取作者信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("获取作者信息发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -798,7 +792,7 @@ public class BlobHandler {
 			return Result.success().add("blobList", bloList);
 		} catch (Exception e) {
 			log.info("获取失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -819,20 +813,20 @@ public class BlobHandler {
 				return Result.success();
 			}
 			log.warn("用户点赞文章失败, 连接数据库失败");
-			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
 		} catch (NotFoundBlobIdException e) {
 			log.info("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (RepetitionThumbsException e) {
 			log.info("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户点赞文章失败, 原因: 未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
 			log.error("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -853,17 +847,17 @@ public class BlobHandler {
 				return Result.success();
 			}
 			log.warn("用户取消点赞文章失败, 连接数据库失败");
-			return Result.fail().add(EX, "网络连接失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
 		} catch (RepetitionThumbsException e) {
 			log.info("用户取消点赞失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, e.getMessage());
+			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户取消点赞文章失败, 原因: 未登录");
-				return Result.fail().add(EX, "用户未登录");
+				return Result.fail().add(EXCEPTION, "用户未登录");
 			}
 			log.error("用户取消点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -889,11 +883,11 @@ public class BlobHandler {
 		} catch (Exception e) {
 			log.error("查询用户是否点赞文章失败, 原因: " + e.getMessage());
 		}
-		return Result.fail().add(EX, "未点赞");
+		return Result.fail().add(EXCEPTION, "未点赞");
 	}
 	
 	static {
-		File file = new File(FILEPATH);
+		File file = new File(BLOB_IMG_FILEAPTH);
 		if(file.exists()) {
 			file.mkdirs();
 		}
@@ -909,22 +903,22 @@ public class BlobHandler {
 	@CrossOrigin
 	public Result postBlobImg(MultipartFile img) {
 		try {
-			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SUFFIX;
+			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + IMG_SUFFIX;
 			log.info("用户博客页面上传图片, 图片名为: " + name);
 			InputStream input = img.getInputStream();
 			Thumbnails.of(input)
 			.scale(1f)
 			.outputQuality(0.8f)
 			.outputFormat("jpg")
-			.toFile(FILEPATH + name);
+			.toFile(BLOB_IMG_FILEAPTH + name);
 			log.info("上传并压缩成功");
 			return Result.success().add("img", name);
 		} catch (IOException e) {
 			log.info("用户博客页面上传图片失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "上传图片失败");
+			return Result.fail().add(EXCEPTION, "上传图片失败");
 		} catch (Exception e) {
 			log.error("用户博客页面上传图片失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -943,7 +937,7 @@ public class BlobHandler {
 			return Result.success().add("labelList", label);
 		} catch (Exception e) {
 			log.error("获取标签失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -962,7 +956,7 @@ public class BlobHandler {
 			return Result.success().add("contypeList", contypes);
 		} catch (Exception e) {
 			log.error("获取文章类型列表失败, 原因: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 }

@@ -46,17 +46,13 @@ import com.pdsu.scs.utils.SimpleUtils;
  */
 @Controller
 @RequestMapping("/file")
-public class FileHandler {
+public class FileHandler extends ParentHandler{
 	
 	/**
 	 * 文件上传地址
 	 */
-	private static final String FILEPATH = "/pdsu/web/file/";
-	
-	private static final String EX = "exception";
-	
 	static {
-		File file = new File(FILEPATH);
+		File file = new File(FILE_FILEPATH);
 		if(file.exists()) {
 			file.mkdirs();
 		}
@@ -79,11 +75,6 @@ public class FileHandler {
 	 */
 	private static final Logger log = LoggerFactory.getLogger(FileHandler.class);
 	
-	@RequestMapping("/index")
-	public String index() {
-		return "file/index";
-	}
-	
 	/**
 	 * 
 	 * @param file  上传的文件
@@ -101,7 +92,7 @@ public class FileHandler {
 			byte [] s = file.getBytes();
 			String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
 			log.info("文件名为: " + name);
-			FileUtils.writeByteArrayToFile(new File(FILEPATH + name), s);
+			FileUtils.writeByteArrayToFile(new File(FILE_FILEPATH + name), s);
 			log.info("文件写入成功, 开始在服务器保存地址");
 			boolean b = webFileService.insert(new WebFile(uid, title, description, name, SimpleUtils.getSimpleDateSecond()));
 			if(b) {
@@ -109,17 +100,17 @@ public class FileHandler {
 				return Result.success();
 			} else {
 				log.error("上传失败");
-				return Result.fail().add(EX, "网络异常, 请稍候重试");
+				return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
 			}
 		} catch (UidAndTItleRepetitionException e) {
 			log.info("用户: " + uid + ", 上传资源: " + title + " 失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "无法上传同名文件, 请修改名称");
+			return Result.fail().add(EXCEPTION, "无法上传同名文件, 请修改名称");
 		} catch (InsertException e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "网络异常, 请稍候重试");
+			return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
 		}catch (Exception e) {
 			log.error("上传失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 	
@@ -140,7 +131,7 @@ public class FileHandler {
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String name = webfile.getFilePath();
-			String url = FILEPATH + name;
+			String url = FILE_FILEPATH + name;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
 			String filename = title + SimpleUtils.getSuffixName(name);
@@ -210,7 +201,7 @@ public class FileHandler {
 			PageInfo<FileInformation> fileList = new PageInfo<FileInformation>(files);
 			return Result.success().add("fileList", fileList);
 		} catch (Exception e) {
-			return Result.fail().add(EX, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, "未定义类型错误");
 		}
 	}
 }
