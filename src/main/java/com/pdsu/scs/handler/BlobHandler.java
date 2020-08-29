@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -229,9 +230,9 @@ public class BlobHandler extends ParentHandler{
 			});
 			PageInfo<BlobInformation> pageInfo = new PageInfo<BlobInformation>(blobList);
 			return Result.success().add("blobList", pageInfo);
-		}catch (Exception e) {
+		} catch (Exception e) {
 			log.error("获取首页数据失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -340,7 +341,7 @@ public class BlobHandler extends ParentHandler{
 			return Result.fail().add(EXCEPTION, "文章不见了");
 		} catch (Exception e) {
 			log.warn("发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -373,10 +374,10 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(uid == null) {
 				log.info("用户收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}else {
 				log.error("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			}
 		}
 	}
@@ -409,10 +410,10 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			} else {
 				log.error("用户: " + user.getUid() + "取消收藏博客失败, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			}
 		}
 	}
@@ -436,10 +437,10 @@ public class BlobHandler extends ParentHandler{
 		} catch (Exception e) {
 			if(uid == null) {
 				log.info("查询用户是否收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("查询用户是否收藏文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -493,11 +494,10 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(uid == null) {
 				log.info("用户发布文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
-			} else {
-				log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "发布失败, 未知原因");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
+			log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -535,10 +535,10 @@ public class BlobHandler extends ParentHandler{
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户删除文章失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("删除文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -578,10 +578,10 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户更新文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}else {
 				log.error("更新文章失败, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "未知原因");
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			}
 		}
 	}
@@ -616,11 +616,11 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户发布评论失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}else {
 				log.error("用户: " + user.getUid() + "在博客: " + webid + "发布评论失败, 内容为: " + content
 						+ "错误原因为: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			}
 		}
 	}
@@ -659,10 +659,10 @@ public class BlobHandler extends ParentHandler{
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户回复评论失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.info("用户: " + user.getUid() + " 回复评论: " + cid + " 失败, 被回复人: " + bid + ", 内容为:" + content);
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -739,7 +739,7 @@ public class BlobHandler extends ParentHandler{
 			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("获取作者信息发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -792,7 +792,7 @@ public class BlobHandler extends ParentHandler{
 			return Result.success().add("blobList", bloList);
 		} catch (Exception e) {
 			log.info("获取失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -823,10 +823,10 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户点赞文章失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -854,10 +854,10 @@ public class BlobHandler extends ParentHandler{
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("用户取消点赞文章失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户取消点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -886,13 +886,6 @@ public class BlobHandler extends ParentHandler{
 		return Result.fail().add(EXCEPTION, "未点赞");
 	}
 	
-	static {
-		File file = new File(BLOB_IMG_FILEAPTH);
-		if(file.exists()) {
-			file.mkdirs();
-		}
-	}
-
 	/**
 	 * 处理博客页面图片
 	 * @param img
@@ -903,22 +896,22 @@ public class BlobHandler extends ParentHandler{
 	@CrossOrigin
 	public Result postBlobImg(MultipartFile img) {
 		try {
-			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + IMG_SUFFIX;
+			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + Img_Suffix;
 			log.info("用户博客页面上传图片, 图片名为: " + name);
 			InputStream input = img.getInputStream();
 			Thumbnails.of(input)
 			.scale(1f)
 			.outputQuality(0.8f)
-			.outputFormat("jpg")
-			.toFile(BLOB_IMG_FILEAPTH + name);
+			.outputFormat(Img_Suffix_Except_Point)
+			.toFile(Blob_Img_FilePath + name);
 			log.info("上传并压缩成功");
 			return Result.success().add("img", name);
 		} catch (IOException e) {
 			log.info("用户博客页面上传图片失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "上传图片失败");
+			return Result.fail().add(EXCEPTION, "上传图片失败, " + e.getMessage());
 		} catch (Exception e) {
 			log.error("用户博客页面上传图片失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -937,7 +930,7 @@ public class BlobHandler extends ParentHandler{
 			return Result.success().add("labelList", label);
 		} catch (Exception e) {
 			log.error("获取标签失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -956,7 +949,7 @@ public class BlobHandler extends ParentHandler{
 			return Result.success().add("contypeList", contypes);
 		} catch (Exception e) {
 			log.error("获取文章类型列表失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 }

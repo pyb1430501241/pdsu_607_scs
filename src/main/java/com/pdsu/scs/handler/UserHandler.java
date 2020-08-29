@@ -10,10 +10,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.pdsu.scs.bean.*;
+import com.pdsu.scs.exception.web.user.*;
 import com.pdsu.scs.service.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,10 +36,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
-import com.pdsu.scs.exception.web.user.NotFoundUidException;
-import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
-import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.utils.CodeUtils;
 import com.pdsu.scs.utils.EmailUtils;
 import com.pdsu.scs.utils.HashUtils;
@@ -54,7 +51,7 @@ import com.pdsu.scs.utils.SimpleUtils;
  */
 @Controller
 @RequestMapping("/user")
-public class WebHandler extends  ParentHandler{
+public class UserHandler extends ParentHandler{
 
 	/**
 	 * 用户信息相关
@@ -119,7 +116,7 @@ public class WebHandler extends  ParentHandler{
 	/**
 	 * 日志
 	 */
-	private static final Logger log = LoggerFactory.getLogger(WebHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(UserHandler.class);
 	
 	/**
 	 * 缓存管理器
@@ -146,7 +143,7 @@ public class WebHandler extends  ParentHandler{
 		try {
 			UserInformation user = ShiroUtils.getUserInformation();
 			if(user == null) {
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
 			return Result.success().add("user", user);
@@ -208,19 +205,22 @@ public class WebHandler extends  ParentHandler{
 				return Result.success()
 						.add("user", uu)
 						.add("AccessToken", subject.getSession().getId());
-			}catch (IncorrectCredentialsException e) {
+			} catch (IncorrectCredentialsException e) {
 				log.info("账号: " + uid + "账号或密码错误");
 				return Result.fail().add(EXCEPTION, "账号或密码错误");
-			}catch (UnknownAccountException e) {
+			} catch (UnknownAccountException e) {
 				log.info("账号: " + uid + "不存在");
 				return Result.fail().add(EXCEPTION, "账号不存在");
-			} catch (AuthenticationException e) {
-				log.info("登录失败, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "未定义类型错误");
+			} catch (UserAbnormalException e) {
+				log.info("账号: " + uid + "登录失败, 原因: " + e.getMessage());
+				if(e instanceof UserAbnormalException) {
+					return Result.fail().add(EXCEPTION, e.getMessage());
+				}
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			} catch (Exception e) {
 				subject.logout();
 				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, "未定义类型错误");
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			}
 		}
 		log.info("账号: " + uid + "已登录");
@@ -253,14 +253,14 @@ public class WebHandler extends  ParentHandler{
 			return Result.success()
 					.add("token", token)
 					.add("img", src)
-                    .add("vicode", verifyCode);
+					.add("vicode", verifyCode);
 		} catch (Exception e) {
 			if(e instanceof InvocationTargetException) {
 				log.error(((InvocationTargetException)e).getTargetException().getMessage());
 			}else {
-				log.info("获取验证码失败, 原因: " + e.getMessage());
+				log.error("获取验证码失败, 原因: " + e.getMessage());
 			}
-			return Result.fail().add(EXCEPTION, "获取验证码失败, 未知原因");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -276,10 +276,10 @@ public class WebHandler extends  ParentHandler{
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) {
 		try {
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
-			if(email == null) {
+			if(StringUtils.isEmpty(email)) {
 				return Result.fail().add(EXCEPTION, "邮箱不可为空");
 			}
-			if(name == null) {
+			if(StringUtils.isEmpty(name)) {
 				return Result.fail().add(EXCEPTION, "用户名不可为空");
 			}
 			if(myEmailService.countByEmail(email)) {
@@ -333,12 +333,9 @@ public class WebHandler extends  ParentHandler{
 			if(userInformationService.countByUserName(user.getUsername()) != 0) {
 				return Result.fail().add(EXCEPTION, "用户名已存在");
 			}
-			//默认账号为正常状态
 			user.setAccountStatus(1);
-			//设置申请时间
 			user.setTime(SimpleUtils.getSimpleDate());
-			//设置默认头像
-			user.setImgpath("01.png");
+			user.setImgpath("422696839bb3222a73a48d7c97b1bba4.jpg");
 			boolean flag = userInformationService.inset(user);
 			if(flag) {
 				myImageService.insert(new MyImage(user.getUid(), "422696839bb3222a73a48d7c97b1bba4.jpg"));
@@ -355,7 +352,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("申请账号失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "连接服务器失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -394,7 +391,7 @@ public class WebHandler extends  ParentHandler{
 			}
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回密码时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -426,7 +423,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.success().add("token", uuid);
 		}catch (Exception e) {
 			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -458,7 +455,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.success().add(EXCEPTION, "找回成功");
 		}catch (Exception e) {
 			log.error("账号: " + uid + "找回失败, 失败原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未知错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -466,8 +463,7 @@ public class WebHandler extends  ParentHandler{
 	 * 找回密码 api 结束
 	 * ===============================================================================================
 	 */
-	
-	
+
 	
 	/**
 	 * 修改密码 API 集
@@ -489,7 +485,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.success().add("myEmail", myEmail);
 		}catch (Exception e) {
 			log.info("修改密码失败, 原因: " + e.getMessage());
-			return Result.fail();
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -516,7 +512,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.success().add("token", token);
 		}catch (Exception e) {
 			log.info("邮箱: " + email + "发送修改密码的验证码失败, 错误信息为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未知错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -543,8 +539,8 @@ public class WebHandler extends  ParentHandler{
 			log.info("验证码: " + code + "正确");
 			return Result.success();
 		}catch (Exception e) {
-			log.error("验证验证码时发生未知错误");
-			return Result.fail().add(EXCEPTION, "未知错误");
+			log.error("验证验证码时发生未知错误, 原因: " + e.getMessage());
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -572,10 +568,10 @@ public class WebHandler extends  ParentHandler{
 		}catch (Exception e) {
 			if(uid == null) {
 				log.info("修改密码失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("账号: " + uid + "修改密码时发生错误");
-			return Result.fail().add(EXCEPTION, "未知错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -612,10 +608,10 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if(likeId == null) {
 				log.info("关注失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -645,9 +641,9 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
 			if(likeId == null) {
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -669,25 +665,14 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if(likeId == null) {
 				log.info("判断用户是否关注发生错误, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("判断用户是否关注发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
-	/**
-	 * 静态代码块
-	 * 检测储存头像的文件夹是否建立
-	 * 如未创建, 则创建
-	 */
-	static {
-		File file = new File(USER_IMG_FILEPATH);
-		if(file.exists()) {
-			file.mkdirs();
-		}
-	}
-	
+
 	/**
 	 * 更换头像
 	 * @param img  上传头像文件
@@ -701,43 +686,38 @@ public class WebHandler extends  ParentHandler{
 		try{
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + " 更换头像开始");
-			String name = HashUtils.getFileNameForHash(user.getUid()+"") + SimpleUtils.getSuffixName(img.getOriginalFilename());
-			new Thread(()->{
-				byte [] by = null;
-				try {
-					by = FileUtils.readFileToByteArray(new File(USER_IMG_FILEPATH + name));
-				} catch (IOException e1) {
-					log.info("原头像为默认头像");
-				}
-				try {
-					log.info("写入新头像");
-					FileUtils.writeByteArrayToFile(new File(USER_IMG_FILEPATH + name), img.getBytes(), false);
-				} catch (IOException e) {
-					try {
-						log.info("写入新头像失败, 还原为原头像");
-						FileUtils.writeByteArrayToFile(new File(USER_IMG_FILEPATH + name), by, false);
-					} catch (IOException e1) {
-						log.error("写入头像失败, 原因: " + e1.getMessage());
-					}
-				}
-			}).start();
+			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SimpleUtils.getSuffixName(img.getOriginalFilename());
+			File file;
+			log.info("判断用户头像是否为初始头像");
+			if (user.getImgpath() != null && !user.getImgpath().equals("422696839bb3222a73a48d7c97b1bba4.jpg")) {
+				log.info("用户头像为非初始头像, 删除该头像");
+				file = new File(User_Img_FilePath + user.getImgpath());
+				file.delete();
+			} else {
+				log.info("用户头像为初始头像");
+			}
+			file = new File(User_Img_FilePath + name);
+			log.info("写入新头像, 头像名为: " + name);
+			FileUtils.writeByteArrayToFile(file, img.getBytes());
 			log.info("用户: " + user.getUid() + " 写入新头像成功, 开始写入数据库地址");
 			boolean b = myImageService.update(new MyImage(user.getUid(), name));
 			if(b) {
 				log.info("用户: " + user.getUid() + " 更换头像成功");
 				ShiroUtils.getUserInformation().setImgpath(name);
 				return Result.success().add("imgpath", name);
-			} else {
-				log.warn("写入数据库失败!");
-				return Result.fail().add(EXCEPTION, "网络异常, 请稍后重试");
 			}
-		}catch (Exception e) {
+			log.warn("写入数据库失败!");
+			return Result.fail().add(EXCEPTION, "网络异常, 请稍后重试");
+		} catch (IOException e) {
+			log.info("用户: " + user.getUid() + " 更换头像失败, 原因: " + e.getMessage());
+			return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
+		} catch(Exception e) {
 			if(user == null) {
 				log.info("用户更换头像失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, "用户未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户更换头像失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}		
 	}
 	
@@ -757,13 +737,13 @@ public class WebHandler extends  ParentHandler{
 			log.info("原信息为: " + userinfor);
 			boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
 			if(b) {
-				if(user.getUsername() != null && user.getUsername().trim().length() > 0) {
+				if(!StringUtils.isEmpty(user.getUsername())) {
 					userinfor.setUsername(user.getUsername());
 				}
-				if(user.getClazz() != null && user.getClazz().trim().length() > 0) {
+				if(!StringUtils.isEmpty(user.getClazz())) {
 					userinfor.setClazz(user.getClazz());
 				}
-				if(user.getCollege() != null && user.getCollege().trim().length() > 0) {
+				if(!StringUtils.isEmpty(user.getCollege())) {
 					userinfor.setCollege(user.getCollege());
 				}
 				log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);
@@ -777,10 +757,10 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if(userinfor == null) {
 				log.info("用户修改信息失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户修改信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -804,13 +784,13 @@ public class WebHandler extends  ParentHandler{
 				webids.add(web.getId());
 			}
 			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+			List<BlobInformation> blobList = new ArrayList<>();
 			for(int i = 0; i < weblist.size(); i++) {
 				blobList.add(new BlobInformation(
 						user, weblist.get(i), visitList.get(i), null, null
 				));
 			}
-			PageInfo<BlobInformation> blobs = new PageInfo<BlobInformation>(blobList);
+			PageInfo<BlobInformation> blobs = new PageInfo<>(blobList);
 			return Result.success().add("blobList", blobs);
 		} catch (NotFoundUidException e) {
 			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
@@ -818,10 +798,10 @@ public class WebHandler extends  ParentHandler{
 		}catch (Exception e) {
 			if(user == null) {
 				log.info("获取文章失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -872,10 +852,10 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户获取粉丝信息失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -922,10 +902,10 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("用户获取关注人信息失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -966,7 +946,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.fail().add(EXCEPTION, e.getMessage());
 		}catch (Exception e) {
 			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -1014,7 +994,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -1058,7 +1038,7 @@ public class WebHandler extends  ParentHandler{
 			return Result.fail().add(EXCEPTION, e.getMessage());
 		} catch (Exception e) {
 			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -1084,10 +1064,10 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if(user == null) {
 				log.info("获取邮箱失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("获取邮箱失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 	
@@ -1229,10 +1209,10 @@ public class WebHandler extends  ParentHandler{
         } catch (Exception e) {
             if( user == null) {
                 log.info("获取浏览历史信息失败, 原因: 用户未登录");
-                return Result.fail().add(EXCEPTION, "未登录");
+                return Result.fail().add(EXCEPTION, NOT_LOGIN);
             }
             log.error("获取浏览信息失败, 原因: " + e.getMessage());
-            return Result.fail().add(EXCEPTION, "未定义类型错误");
+            return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 
@@ -1254,7 +1234,6 @@ public class WebHandler extends  ParentHandler{
 			List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid());
 			List<Integer> uids = new ArrayList<>();
 			log.info("获取通知人信息");
-			System.out.println(systemNotifications);
 			for (SystemNotification s : systemNotifications) {
 				uids.add(s.getSid());
 			}
@@ -1281,10 +1260,10 @@ public class WebHandler extends  ParentHandler{
 		} catch (Exception e) {
 			if (user == null) {
 				log.info("用户获取通知失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, "未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
 			}
 			log.error("用户获取通知失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 

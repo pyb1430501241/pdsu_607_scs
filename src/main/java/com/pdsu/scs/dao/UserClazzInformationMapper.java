@@ -27,4 +27,6 @@ public interface UserClazzInformationMapper {
     int updateByPrimaryKeySelective(UserClazzInformation record);
 
     int updateByPrimaryKey(UserClazzInformation record);
+
+    int insertByList(@Param("uids") List<Integer> uids, @Param("clazzId") Integer clazzId);
 }

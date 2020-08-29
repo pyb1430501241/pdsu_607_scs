@@ -67,7 +67,7 @@ public class SimpleUtils {
 	 * @return
 	 */
 	public static String toString(Object... args) {
-		List<Object> list =Arrays.asList(args);
+		List<Object> list = Arrays.asList(args);
 		return list.toString();
 	}
 	
@@ -79,7 +79,15 @@ public class SimpleUtils {
 	public static String getSuffixName(String name) {
 		return name.substring(name.lastIndexOf("."), name.length());
 	}
-	
+
+	/**
+	 * 获取文件后缀名, 除去点
+	 * @param name
+	 * @return
+	 */
+	public static String getSuffixNameExceptPoint(String name) {
+		return name.substring(name.lastIndexOf(".") + 1, name.length());
+	}
 	
 	private static final String USERINFORMATION = "EsUserInformation";
 	
@@ -257,7 +265,7 @@ public class SimpleUtils {
 	 * 	当时间差值大于一月时返回: startDate, 
 	 *  当时间差值位于两者之间时返回: xxx前.
 	 */
-	public static String getSimpleDateDifferenceFormat(String startDate) {
+	public static String getSimpleDateDifferenceFormat(final String startDate) {
 		long t = getSimpleDateDifference(startDate, getSimpleDateSecond());
 		StringBuilder builder = new StringBuilder();
 		if (t < CSC_MINUTE) {

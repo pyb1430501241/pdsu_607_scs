@@ -97,11 +97,13 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.ClazzInformation">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.ClazzInformation"
+          useGeneratedKeys="true" keyProperty="id">
     insert into db_clazz (id, clazzname)
     values (#{id,jdbcType=INTEGER}, #{clazzname,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.ClazzInformation">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.ClazzInformation"
+          useGeneratedKeys="true" keyProperty="id">
     insert into db_clazz
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

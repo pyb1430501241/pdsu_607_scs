@@ -28,11 +28,10 @@ public class WebStartInterceptor implements ServletContextListener{
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-
 		log.info("Web应用: CodeSharingCommunity 关闭, " + "当前时间: " + SimpleUtils.getSimpleDateSecond());
 		log.info("启动总时间为: " + SimpleUtils.getSimpleDateDifference(date,
 				SimpleUtils.getSimpleDateSecond()) + " S");
-
 	}
-	
+
+
 }

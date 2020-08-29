@@ -1,5 +1,6 @@
 package com.pdsu.scs.shiro;
 
+import com.pdsu.scs.exception.web.user.UserAbnormalException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -39,13 +40,13 @@ public class LoginRealm extends AuthorizingRealm{
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
 		if(user.getAccountStatus() == 2) {
-			throw new AuthenticationException("账号被冻结");
+			throw new UserAbnormalException("账号被冻结");
 		}
 		if(user.getAccountStatus() == 3) {
-			throw new AuthenticationException("账号被封禁");
+			throw new UserAbnormalException("账号被封禁");
 		}
 		if(user.getAccountStatus() == 4) {
-			throw new AuthenticationException("账号已注销");
+			throw new UserAbnormalException("账号已注销");
 		}
 		Object credentials = user.getPassword();
 		String realmName = getName();

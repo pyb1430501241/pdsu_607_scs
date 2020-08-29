@@ -98,11 +98,13 @@
       <include refid="Example_Where_Clause" />
     </if>
   </delete>
-  <insert id="insert" parameterType="com.pdsu.scs.bean.UserClazzInformation">
+  <insert id="insert" parameterType="com.pdsu.scs.bean.UserClazzInformation"
+          useGeneratedKeys="true" keyProperty="id">
     insert into db_user_clazz (id, uid, cid)
     values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{cid,jdbcType=INTEGER})
   </insert>
-  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.UserClazzInformation">
+  <insert id="insertSelective" parameterType="com.pdsu.scs.bean.UserClazzInformation"
+          useGeneratedKeys="true" keyProperty="id">
     insert into db_user_clazz
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -177,4 +179,14 @@
       cid = #{cid,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+  <insert id="insertByList" parameterType="com.pdsu.scs.bean.UserClazzInformation"
+          useGeneratedKeys="true" keyProperty="id">
+        insert into
+            db_user_clazz(uid, cid) value
+                <foreach collection="uids" item="uid" separator=",">
+                  (#{uid}, #{clazzId})
+                </foreach>
+  </insert>
+
 </mapper>

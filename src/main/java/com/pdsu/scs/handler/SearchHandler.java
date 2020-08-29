@@ -61,7 +61,7 @@ public class SearchHandler extends ParentHandler{
 			return Result.fail().add(EXCEPTION, "网络延迟, 请稍后重试");
 		} catch (Exception e) {
 			log.error("查询时发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未定义类型错误");
+			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
 

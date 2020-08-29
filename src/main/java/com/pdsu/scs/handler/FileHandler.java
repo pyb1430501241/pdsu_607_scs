@@ -49,16 +49,6 @@ import com.pdsu.scs.utils.SimpleUtils;
 public class FileHandler extends ParentHandler{
 	
 	/**
-	 * 文件上传地址
-	 */
-	static {
-		File file = new File(FILE_FILEPATH);
-		if(file.exists()) {
-			file.mkdirs();
-		}
-	}
-	
-	/**
 	 * 文件操作相关
 	 */
 	@Autowired
@@ -92,7 +82,7 @@ public class FileHandler extends ParentHandler{
 			byte [] s = file.getBytes();
 			String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
 			log.info("文件名为: " + name);
-			FileUtils.writeByteArrayToFile(new File(FILE_FILEPATH + name), s);
+			FileUtils.writeByteArrayToFile(new File(File_FilePath + name), s);
 			log.info("文件写入成功, 开始在服务器保存地址");
 			boolean b = webFileService.insert(new WebFile(uid, title, description, name, SimpleUtils.getSimpleDateSecond()));
 			if(b) {
@@ -131,7 +121,7 @@ public class FileHandler extends ParentHandler{
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String name = webfile.getFilePath();
-			String url = FILE_FILEPATH + name;
+			String url = File_FilePath + name;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
 			String filename = title + SimpleUtils.getSuffixName(name);
