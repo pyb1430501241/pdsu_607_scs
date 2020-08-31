@@ -5,6 +5,7 @@ import com.pdsu.scs.bean.UserBrowsingRecordExample;
 import com.pdsu.scs.dao.UserBrowsingRecordMapper;
 import com.pdsu.scs.service.UserBrowsingRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,12 +21,12 @@ public class UserBrowsingRecordServiceImpl implements UserBrowsingRecordService 
    private UserBrowsingRecordMapper userBrowsingRecordMapper;
 
     @Override
-    public boolean insert(UserBrowsingRecord userBrowsingRecord) {
+    public boolean insert(@NonNull UserBrowsingRecord userBrowsingRecord) {
         return userBrowsingRecordMapper.insertSelective(userBrowsingRecord) == 0;
     }
 
     @Override
-    public List<UserBrowsingRecord> selectBrowsingRecordByUid(Integer uid) {
+    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid) {
         UserBrowsingRecordExample example = new UserBrowsingRecordExample();
         UserBrowsingRecordExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
@@ -34,7 +35,7 @@ public class UserBrowsingRecordServiceImpl implements UserBrowsingRecordService 
     }
 
     @Override
-    public boolean deleteBrowsingRecordByUid(Integer uid) {
+    public boolean deleteBrowsingRecordByUid(@NonNull Integer uid) {
         UserBrowsingRecordExample example = new UserBrowsingRecordExample();
         UserBrowsingRecordExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);

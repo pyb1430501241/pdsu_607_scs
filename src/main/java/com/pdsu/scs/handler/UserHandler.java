@@ -1,17 +1,11 @@
 package com.pdsu.scs.handler;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
 import com.pdsu.scs.exception.web.user.*;
 import com.pdsu.scs.service.*;
+import com.pdsu.scs.utils.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -26,22 +20,14 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.pdsu.scs.utils.CodeUtils;
-import com.pdsu.scs.utils.EmailUtils;
-import com.pdsu.scs.utils.HashUtils;
-import com.pdsu.scs.utils.RandomUtils;
-import com.pdsu.scs.utils.ShiroUtils;
-import com.pdsu.scs.utils.SimpleUtils;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -165,8 +151,8 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@CrossOrigin
-	public Result login(String uid, String password, String hit, String code, 
-			@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
+	public Result login(String uid, String password, String hit, String code,
+						@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
 		log.info("账号: " + uid + "登录开始");
 		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
 		if(cache.get(hit) == null) {
@@ -211,20 +197,18 @@ public class UserHandler extends ParentHandler{
 			} catch (UnknownAccountException e) {
 				log.info("账号: " + uid + "不存在");
 				return Result.fail().add(EXCEPTION, "账号不存在");
-			} catch (UserAbnormalException e) {
+			} catch (Exception e) {
 				log.info("账号: " + uid + "登录失败, 原因: " + e.getMessage());
 				if(e instanceof UserAbnormalException) {
 					return Result.fail().add(EXCEPTION, e.getMessage());
 				}
-				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-			} catch (Exception e) {
 				subject.logout();
 				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
 				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 			}
 		}
 		log.info("账号: " + uid + "已登录");
-		return Result.fail().add(EXCEPTION, "你已登录");
+		return Result.fail().add(EXCEPTION, ALREADY_LOGIN);
 	}
 	
 	/**
@@ -235,7 +219,7 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/getcodeforlogin", method = RequestMethod.GET)
 	@CrossOrigin
-	public Result getCode(HttpServletRequest request){
+	public Result getCode(){
 		try {
 			log.info("获取验证码开始");
 			if(cache == null) {
@@ -255,11 +239,7 @@ public class UserHandler extends ParentHandler{
 					.add("img", src)
 					.add("vicode", verifyCode);
 		} catch (Exception e) {
-			if(e instanceof InvocationTargetException) {
-				log.error(((InvocationTargetException)e).getTargetException().getMessage());
-			}else {
-				log.error("获取验证码失败, 原因: " + e.getMessage());
-			}
+			log.error("获取验证码失败, 原因: " + e.getMessage());
 			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
@@ -316,14 +296,14 @@ public class UserHandler extends ParentHandler{
 		try {
 			log.info("申请账号: " + user.getUid() + "开始");
 			//验证验证码
-			if(cache.get(token) == null) {
-				return Result.fail().add(EXCEPTION, "验证码已过期, 请重新获取");
+			Cache.ValueWrapper valueWrapper = cache.get(token);
+			if(valueWrapper == null) {
+				return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 			}
-			String ss = (String) cache.get(token).get();
+			String ss = (String) valueWrapper.get();
 			if(!ss.equals(code)) {
-				return Result.fail().add(EXCEPTION, "验证码错误");
+				return Result.fail().add(EXCEPTION, CODE_ERROR);
 			}
-			//查询账号是否已存在
 			if(userInformationService.countByUid(user.getUid()) != 0) {
 				return Result.fail().add(EXCEPTION, "该账号已存在,是否忘记密码?");
 			}
@@ -406,10 +386,11 @@ public class UserHandler extends ParentHandler{
 	public Result sendEmailForRetrieve(String token) {
 		String email = null;
 		try {
-			if(cache.get(token) == null) {
+			Cache.ValueWrapper valueWrapper = cache.get(token);
+			if(valueWrapper == null) {
 				return Result.fail().add(EXCEPTION, "验证信息已失效, 请重新验证");
 			}
-			email = (String) cache.get(token).get();
+			email = (String) valueWrapper.get();
 			log.info("邮箱: " + email + " 开始发送找回密码的验证码");
 			EmailUtils utils = new EmailUtils();
 			//发送邮件
@@ -440,12 +421,13 @@ public class UserHandler extends ParentHandler{
 	public Result retrieveThePassword(Integer uid, String password,String token, String code) {
 		try {
 			log.info("账号: " + uid + "开始找回密码");
-			if(cache.get(token) == null) {
-				return Result.fail().add(EXCEPTION, "验证码已过期");
+			Cache.ValueWrapper valueWrapper = cache.get(token);
+			if(valueWrapper == null) {
+				return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 			}
-			String ss = (String) cache.get(token).get();
+			String ss = (String) valueWrapper.get();
 			if(!ss.equals(code)) {
-				return Result.fail().add(EXCEPTION, "验证码错误");
+				return Result.fail().add(EXCEPTION, CODE_ERROR);
 			}
 			boolean b = userInformationService.modifyThePassword(uid, password);
 			if(!b) {
@@ -477,14 +459,19 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@CrossOrigin
 	public Result getModify() {
+		UserInformation user = null;
 		try {
 			log.info("修改密码开始, 用户信息从 session 获取");
-			UserInformation user = ShiroUtils.getUserInformation();
+			user = ShiroUtils.getUserInformation();
 			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
 			log.info("信息获取成功");
 			return Result.success().add("myEmail", myEmail);
 		}catch (Exception e) {
-			log.info("修改密码失败, 原因: " + e.getMessage());
+			if(user == null) {
+				log.info("修改密码失败, 原因: 未登录");
+				return Result.fail().add(EXCEPTION, NOT_LOGIN);
+			}
+			log.error("修改密码失败, 原因: " + e.getMessage());
 			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
 	}
@@ -528,12 +515,13 @@ public class UserHandler extends ParentHandler{
 	public Result modifyBefore(String token, String code) {
 		try {
 			log.info("开始验证验证码是否正确");
-			if(cache.get(token) == null) {
+			Cache.ValueWrapper valueWrapper = cache.get(token);
+			if(valueWrapper == null) {
 				log.info("验证码已过期, key 为: " + token);
 				return Result.fail().add(EXCEPTION, "验证码已过期");
 			}
-			if(!cache.get(token).get().equals(code)) {
-				log.info("验证码错误, 服务器端验证码为: " + cache.get(token).get() + ", 用户输入为: " + code);
+			if(!valueWrapper.get().equals(code)) {
+				log.info("验证码错误, 服务器端验证码为: " + valueWrapper.get() + ", 用户输入为: " + code);
 				return Result.fail().add(EXCEPTION, "验证码错误");
 			}
 			log.info("验证码: " + code + "正确");

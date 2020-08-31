@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.MyCollection;
@@ -31,7 +32,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	private WebInformationMapper webInformationMapper;
 
 	@Override
-	public boolean insert(MyCollection con) throws UidAndWebIdRepetitionException {
+	public boolean insert(@NonNull MyCollection con) throws UidAndWebIdRepetitionException {
 		if(countByUidAndWebId(con.getUid(), con.getWid())) {
 			throw new UidAndWebIdRepetitionException("不可重复收藏同一篇博客");
 		}
@@ -42,7 +43,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	}
 
 	@Override
-	public Integer selectCollectionsByWebId(Integer webid) throws NotFoundBlobIdException {
+	public Integer selectCollectionsByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
 		if(!countByWebId(webid)) {
 			throw new NotFoundBlobIdException("该文章不存在");
 		}
@@ -53,7 +54,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	}
 
 	@Override
-	public List<Integer> selectCollectionssByWebIds(List<Integer> webids){
+	public List<Integer> selectCollectionssByWebIds(@NonNull List<Integer> webids){
 		List<Integer> collectionss = new ArrayList<Integer>();
 		for(Integer webid : webids) {
 			try {
@@ -65,7 +66,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	}
 
 	@Override
-	public boolean delete(Integer uid, Integer webid) throws UidAndWebIdRepetitionException {
+	public boolean delete(@NonNull Integer uid, @NonNull Integer webid) throws UidAndWebIdRepetitionException {
 		if(!countByUidAndWebId(uid, webid)) {
 			throw new UidAndWebIdRepetitionException("你并没有收藏该文章");
 		}
@@ -80,7 +81,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	}
 
 	@Override
-	public boolean countByUidAndWebId(Integer uid, Integer webid) {
+	public boolean countByUidAndWebId(@NonNull Integer uid, @NonNull Integer webid) {
 		MyCollectionExample example = new MyCollectionExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
@@ -93,7 +94,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	 * 查询博客是否存在
 	 */
 	@Override
-	public boolean countByWebId(Integer webid) {
+	public boolean countByWebId(@NonNull Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
@@ -102,7 +103,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	}
 
 	@Override
-	public Integer countCollectionByUid(Integer uid) {
+	public Integer countCollectionByUid(@NonNull Integer uid) {
 		MyCollectionExample example = new MyCollectionExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andBidEqualTo(uid);
@@ -110,7 +111,7 @@ public class MyCollectionServiceImpl implements MyCollectionService{
 	}
 
 	@Override
-	public List<MyCollection> selectWebIdsByUid(Integer uid) {
+	public List<MyCollection> selectWebIdsByUid(@NonNull Integer uid) {
 		MyCollectionExample example = new MyCollectionExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);

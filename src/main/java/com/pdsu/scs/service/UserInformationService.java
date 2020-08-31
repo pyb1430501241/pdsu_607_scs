@@ -7,6 +7,7 @@ import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
+import org.springframework.lang.NonNull;
 
 /**
  * 与用户信息相关的方法
@@ -22,7 +23,7 @@ public interface UserInformationService {
 	 * @throws UidRepetitionException
 	 * @throws InsertException
 	 */
-	public boolean inset(UserInformation information) throws UidRepetitionException, InsertException;
+	public boolean inset(@NonNull UserInformation information) throws UidRepetitionException, InsertException;
 
 	/**
 	 * 根据学号删除用户
@@ -31,7 +32,7 @@ public interface UserInformationService {
 	 * @throws NotFoundUidException
 	 * @throws DeleteInforException
 	 */
-	public boolean deleteByUid(Integer uid) throws NotFoundUidException, DeleteInforException;
+	public boolean deleteByUid(@NonNull Integer uid) throws NotFoundUidException, DeleteInforException;
 
 	/**
 	 *
@@ -39,7 +40,7 @@ public interface UserInformationService {
 	 * @param uid
 	 * @return
 	 */
-	public UserInformation selectByUid(Integer uid);
+	public UserInformation selectByUid(@NonNull Integer uid);
 
 	/**
 	 * 根据学号查询其关注人的信息
@@ -47,7 +48,7 @@ public interface UserInformationService {
 	 * @return
 	 * @throws NotFoundUidException
 	 */
-	public List<UserInformation> selectUsersByUid(Integer uid) throws NotFoundUidException;
+	public List<UserInformation> selectUsersByUid(@NonNull Integer uid) throws NotFoundUidException;
 
 	/**
 	 * 根据学号查询其粉丝信息
@@ -55,36 +56,36 @@ public interface UserInformationService {
 	 * @return
 	 * @throws NotFoundUidException
 	 */
-	public List<UserInformation> selectUsersByLikeId(Integer likeId) throws NotFoundUidException;
+	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId) throws NotFoundUidException;
 
 	/**
 	 * 根据一组学号获取一组学生信息
 	 * @param uids
 	 * @return
 	 */
-	public List<UserInformation> selectUsersByUids(List<Integer> uids);
+	public List<UserInformation> selectUsersByUids(@NonNull List<Integer> uids);
 
 	/**
 	 * 查询是否有此账号
 	 * @param uid
 	 * @return
 	 */
-	public int countByUid(Integer uid);
+	public int countByUid(@NonNull Integer uid);
 
 	/**
 	 * 修改密码
 	 */
-	public boolean modifyThePassword(Integer uid, String password);
+	public boolean modifyThePassword(@NonNull Integer uid, @NonNull String password);
 
 	/**
 	 * 查询用户名是否存在
 	 */
-	public int countByUserName(String username);
+	public int countByUserName(@NonNull String username);
 
 	/**
 	 * 更换用户名
 	 */
-	public boolean updateUserInformation(Integer uid, UserInformation user) throws NotFoundUidException;
+	public boolean updateUserInformation(@NonNull Integer uid, @NonNull UserInformation user) throws NotFoundUidException;
 
 	/**
 	 * 获取所有用户

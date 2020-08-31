@@ -7,6 +7,7 @@ import java.util.List;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.EsFileInformation;
@@ -37,7 +38,7 @@ public class WebFileServiceImpl implements WebFileService{
 	 * @throws InsertException 
 	 */
 	@Override
-	public boolean insert(WebFile webFile) throws UidAndTItleRepetitionException, InsertException {
+	public boolean insert(@NonNull WebFile webFile) throws UidAndTItleRepetitionException, InsertException {
 		if(countByUidAndTitle(webFile.getUid(), webFile.getTitle())) {
 			throw new UidAndTItleRepetitionException("用户无法重复上传同名文件");
 		}
@@ -58,7 +59,7 @@ public class WebFileServiceImpl implements WebFileService{
 	 * @throws FileException
 	 */
 	@Override
-	public WebFile selectFileByUidAndTitle(Integer uid, String title) {
+	public WebFile selectFileByUidAndTitle(@NonNull Integer uid, @NonNull String title) {
 		WebFileExample example = new WebFileExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -77,7 +78,7 @@ public class WebFileServiceImpl implements WebFileService{
 	 * @return
 	 */
 	@Override
-	public boolean countByUidAndTitle(Integer uid, String title) {
+	public boolean countByUidAndTitle(@NonNull Integer uid, @NonNull String title) {
 		WebFileExample example = new WebFileExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -86,7 +87,7 @@ public class WebFileServiceImpl implements WebFileService{
 	}
 
 	@Override
-	public Integer countByUid(Integer uid) {
+	public Integer countByUid(@NonNull Integer uid) {
 		WebFileExample example = new WebFileExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -101,7 +102,7 @@ public class WebFileServiceImpl implements WebFileService{
 	}
 
 	@Override
-	public List<WebFile> selectFilesByFileIds(List<Integer> fileids) {
+	public List<WebFile> selectFilesByFileIds(@NonNull List<Integer> fileids) {
 		if(fileids == null || fileids.size() == 0) {
 			return new ArrayList<>();
 		}

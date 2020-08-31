@@ -5,6 +5,7 @@ import com.pdsu.scs.bean.UserRoleExample;
 import com.pdsu.scs.dao.UserRoleMapper;
 import com.pdsu.scs.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,7 +19,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     private UserRoleMapper userRoleMapper;
 
     @Override
-    public boolean isAdmin(Integer uid) {
+    public boolean isAdmin(@NonNull Integer uid) {
         UserRoleExample example = new UserRoleExample();
         UserRoleExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
@@ -27,7 +28,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     }
 
     @Override
-    public boolean isTeacher(Integer uid) {
+    public boolean isTeacher(@NonNull Integer uid) {
         UserRoleExample example = new UserRoleExample();
         UserRoleExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
@@ -36,7 +37,7 @@ public class UserRoleServiceImpl implements UserRoleService {
     }
 
     @Override
-    public boolean insert(UserRole userRole) {
+    public boolean insert(@NonNull UserRole userRole) {
         return userRoleMapper.insertSelective(userRole) != 0;
     }
 }

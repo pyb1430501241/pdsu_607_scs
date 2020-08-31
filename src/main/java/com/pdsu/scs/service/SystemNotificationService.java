@@ -1,6 +1,7 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.SystemNotification;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -15,33 +16,33 @@ public interface SystemNotificationService {
      * @param list
      * @return
      */
-    public boolean insert(List<SystemNotification> list);
+    public boolean insert(@NonNull List<SystemNotification> list);
 
     /**
      * 获取用户通知
      * @param uid
      * @return
      */
-    public List<SystemNotification> selectSystemNotificationsByUid(Integer uid);
+    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid);
 
     /**
      * 删除用户通知
      * @param uid
      * @return
      */
-    public boolean deleteSystemNotificationsByUid(Integer uid);
+    public boolean deleteSystemNotificationsByUid(@NonNull Integer uid);
 
     /**
      * 更新通知
      * @param uid
      * @return
      */
-    public boolean updateSystemNotificationsByUid(Integer uid);
+    public boolean updateSystemNotificationsByUid(@NonNull Integer uid);
 
     /**
      * 获取未读信息数量
      * @param uid
      * @return
      */
-    public Integer countSystemNotificationByUidAndUnRead(Integer uid);
+    public Integer countSystemNotificationByUidAndUnRead(@NonNull Integer uid);
 }

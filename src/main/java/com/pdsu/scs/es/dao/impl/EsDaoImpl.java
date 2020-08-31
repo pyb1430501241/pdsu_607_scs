@@ -1,8 +1,12 @@
 package com.pdsu.scs.es.dao.impl;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.pdsu.scs.bean.EsBlobInformation;
+import com.pdsu.scs.bean.EsFileInformation;
+import com.pdsu.scs.bean.EsUserInformation;
+import com.pdsu.scs.es.dao.EsDao;
+import com.pdsu.scs.exception.web.es.InsertException;
+import com.pdsu.scs.exception.web.es.QueryException;
+import com.pdsu.scs.exception.web.es.UpdateException;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -20,13 +24,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.pdsu.scs.bean.EsBlobInformation;
-import com.pdsu.scs.bean.EsFileInformation;
-import com.pdsu.scs.bean.EsUserInformation;
-import com.pdsu.scs.es.dao.EsDao;
-import com.pdsu.scs.exception.web.es.InsertException;
-import com.pdsu.scs.exception.web.es.QueryException;
-import com.pdsu.scs.exception.web.es.UpdateException;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * es 的 dao

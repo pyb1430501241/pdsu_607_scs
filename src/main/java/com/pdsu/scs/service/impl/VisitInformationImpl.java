@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.UserInformationExample;
@@ -42,7 +43,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	 * 如果文章不存在, 则剔除集合
 	 */
 	@Override
-	public List<Integer> selectVisitsByWebIds(List<Integer> webids) {
+	public List<Integer> selectVisitsByWebIds(@NonNull List<Integer> webids) {
 		List<Integer> visits = new ArrayList<Integer>();
 		for(Integer id : webids) {
 			try {
@@ -57,7 +58,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	 * 获取一个人的总访问量
 	 * @throws NotFoundUidException 
 	 */
-	public Integer selectVisitsByVid(Integer id) throws NotFoundUidException {
+	public Integer selectVisitsByVid(@NonNull Integer id) throws NotFoundUidException {
 		if(!countByUid(id)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
@@ -73,7 +74,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	 * @throws UpdateException 
 	 */
 	@Override
-	public boolean insert(VisitInformation visit) {
+	public boolean insert(@NonNull VisitInformation visit) {
 		if(visitInformationMapper.insert(visit) > 0) {
 			return true;
 		}
@@ -85,7 +86,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	 * @throws NotFoundBlobIdException 
 	 */
 	@Override
-	public Integer selectvisitByWebId(Integer webid) throws NotFoundBlobIdException {
+	public Integer selectvisitByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
 		if(!countByWebId(webid)) {
 			throw new NotFoundBlobIdException("该文章不存在");
 		}
@@ -96,7 +97,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	}
 
 	@Override
-	public boolean countByWebId(Integer webid) {
+	public boolean countByWebId(@NonNull Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
@@ -104,7 +105,7 @@ public class VisitInformationImpl implements VisitInformationService {
 	}
 
 	@Override
-	public boolean countByUid(Integer uid) {
+	public boolean countByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.scs.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);

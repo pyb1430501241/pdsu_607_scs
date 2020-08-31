@@ -1,5 +1,7 @@
 package com.pdsu.scs.service;
 
+import org.springframework.lang.NonNull;
+
 import java.util.List;
 
 /**
@@ -13,6 +15,6 @@ public interface UserClazzInformationService {
      * @param uids
      * @return
      */
-    public boolean insertByList (List<Integer> uids, Integer clazzId);
+    public boolean insertByList (@NonNull List<Integer> uids, @NonNull Integer clazzId);
 
 }

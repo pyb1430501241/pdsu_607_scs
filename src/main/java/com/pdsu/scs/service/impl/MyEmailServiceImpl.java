@@ -3,6 +3,7 @@ package com.pdsu.scs.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.MyEmail;
@@ -31,7 +32,7 @@ public class MyEmailServiceImpl implements MyEmailService{
 	private UserInformationMapper userInformationMapper;
 	
 	@Override
-	public boolean countByEmail(String email) {
+	public boolean countByEmail(@NonNull String email) {
 		MyEmailExample example = new MyEmailExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andEmailEqualTo(email);
@@ -39,7 +40,7 @@ public class MyEmailServiceImpl implements MyEmailService{
 	}
 
 	@Override
-	public MyEmail selectMyEmailByEmail(String email) throws NotFoundEmailException {
+	public MyEmail selectMyEmailByEmail(@NonNull String email) throws NotFoundEmailException {
 		if(!countByEmail(email)) {
 			throw new NotFoundEmailException("邮箱不存在");
 		}
@@ -50,7 +51,7 @@ public class MyEmailServiceImpl implements MyEmailService{
 	}
 
 	@Override
-	public MyEmail selectMyEmailByUid(Integer uid) {
+	public MyEmail selectMyEmailByUid(@NonNull Integer uid) {
 		MyEmailExample example = new MyEmailExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -59,21 +60,21 @@ public class MyEmailServiceImpl implements MyEmailService{
 	}
 
 	@Override
-	public boolean insert(MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException  {
+	public boolean insert(@NonNull MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException  {
 		if(!countByUid(myEmail.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		if(countByEmail(myEmail.getEmail())) {
 			throw new EmailRepetitionException("该邮箱已被绑定");
 		}
-		return myEmailMapper.insertSelective(myEmail) == 0 ? false : true;
+		return myEmailMapper.insertSelective(myEmail) != 0;
 	}
 
 	@Override
-	public boolean countByUid(Integer uid) {
+	public boolean countByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.scs.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return userInformationMapper.countByExample(example) == 0 ? false : true;
+		return userInformationMapper.countByExample(example) != 0;
 	}
 }

@@ -6,6 +6,7 @@ import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.FileException;
 import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
+import org.springframework.lang.NonNull;
 
 /**
  * 
@@ -19,7 +20,7 @@ public interface WebFileService {
 	 * @param webFile
 	 * @return  true false
 	 */
-	public boolean insert(WebFile webFile) throws UidAndTItleRepetitionException, InsertException;
+	public boolean insert(@NonNull WebFile webFile) throws UidAndTItleRepetitionException, InsertException;
 
 	/**
 	 * 查询所有文件
@@ -28,7 +29,7 @@ public interface WebFileService {
 	 * @return
 	 * @throws FileException
 	 */
-	public WebFile selectFileByUidAndTitle(Integer uid, String title);
+	public WebFile selectFileByUidAndTitle(@NonNull Integer uid, @NonNull String title);
 	
 	/**
 	 * 查询符合条件的文件是否存在
@@ -36,14 +37,14 @@ public interface WebFileService {
 	 * @param title
 	 * @return
 	 */
-	public boolean countByUidAndTitle(Integer uid, String title);
+	public boolean countByUidAndTitle(@NonNull Integer uid, @NonNull String title);
 
 	/**
 	 * 获取用户上传文件总量
 	 * @param uid
 	 * @return
 	 */
-	public Integer countByUid(Integer uid);
+	public Integer countByUid(@NonNull Integer uid);
 
 	/**
 	 * 获取文件首页数据
@@ -56,5 +57,5 @@ public interface WebFileService {
 	 * @param fileids
 	 * @return
 	 */
-    public List<WebFile> selectFilesByFileIds(List<Integer> fileids);
+    public List<WebFile> selectFilesByFileIds(@NonNull List<Integer> fileids);
 }

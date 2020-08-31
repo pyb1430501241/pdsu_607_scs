@@ -13,13 +13,9 @@ public class Result{
 	 * 
 	 */
 	private Map<String, Object> json = new HashMap<String, Object>();
-	
+
 	public Map<String, Object> getJson() {
 		return json;
-	}
-
-	public void setJson(Map<String, Object> json) {
-		this.json = json;
 	}
 
 	public static Result success() {

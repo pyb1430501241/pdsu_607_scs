@@ -1,6 +1,7 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.UserBrowsingRecord;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -15,19 +16,20 @@ public interface UserBrowsingRecordService {
      * @param userBrowsingRecord
      * @return
      */
-    public boolean insert(UserBrowsingRecord userBrowsingRecord);
+    public boolean insert(@NonNull UserBrowsingRecord userBrowsingRecord);
 
     /**
      * 获取用户浏览记录
      * @param uid
      * @return
      */
-    public List<UserBrowsingRecord> selectBrowsingRecordByUid(Integer uid);
+    @NonNull
+    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid);
 
     /**
      * 清空用户记录
      * @param uid
      * @return
      */
-    public boolean deleteBrowsingRecordByUid(Integer uid);
+    public boolean deleteBrowsingRecordByUid(@NonNull Integer uid);
 }

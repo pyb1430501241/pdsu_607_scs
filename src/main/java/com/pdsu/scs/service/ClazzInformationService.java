@@ -1,7 +1,7 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.ClazzInformation;
-import com.pdsu.scs.exception.web.admin.ClazzRepetitionException;
+import org.springframework.lang.NonNull;
 
 /**
  * @author 半梦
@@ -14,6 +14,6 @@ public interface ClazzInformationService {
      * @param clazzInformation
      * @return
      */
-    public boolean insert(ClazzInformation clazzInformation);
+    public boolean insert(@NonNull ClazzInformation clazzInformation);
 
 }

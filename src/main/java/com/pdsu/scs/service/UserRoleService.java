@@ -1,6 +1,7 @@
 package com.pdsu.scs.service;
 
 import com.pdsu.scs.bean.UserRole;
+import org.springframework.lang.NonNull;
 
 /**
  * @author 半梦
@@ -13,19 +14,19 @@ public interface UserRoleService {
      * @param uid
      * @return
      */
-    public boolean isAdmin(Integer uid);
+    public boolean isAdmin(@NonNull Integer uid);
 
     /**
      * 判断用户是否为老师
      * @param uid
      * @return
      */
-    public boolean isTeacher(Integer uid);
+    public boolean isTeacher(@NonNull Integer uid);
 
     /**
      * 权限分配
      * @param userRole
      * @return
      */
-    public boolean insert(UserRole userRole);
+    public boolean insert(@NonNull UserRole userRole);
 }

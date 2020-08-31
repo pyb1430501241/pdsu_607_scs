@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.WebLabel;
@@ -27,7 +28,7 @@ public class WebLabelServiceImpl implements WebLabelService {
 	}
 
 	@Override
-	public List<WebLabel> selectByLabelIds(List<Integer> labelids) {
+	public List<WebLabel> selectByLabelIds(@NonNull List<Integer> labelids) {
 		if(labelids == null || labelids.size() == 0) {
 			return new ArrayList<WebLabel>();
 		}

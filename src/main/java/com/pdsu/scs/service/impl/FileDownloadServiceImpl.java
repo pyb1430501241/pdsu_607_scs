@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.FileDownload;
@@ -22,12 +23,12 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 	private FileDownloadMapper fileDownloadMapper;
 	
 	@Override
-	public boolean insert(FileDownload fileDownload) {
+	public boolean insert(@NonNull FileDownload fileDownload) {
 		return fileDownloadMapper.insertSelective(fileDownload) > 0 ? true : false;
 	}
 
 	@Override
-	public Integer countByBid(Integer uid) {
+	public Integer countByBid(@NonNull Integer uid) {
 		FileDownloadExample example = new FileDownloadExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andBidEqualTo(uid);
@@ -35,7 +36,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 	}
 
 	@Override
-	public List<Integer> selectDownloadsByFileIds(List<Integer> fileids) {
+	public List<Integer> selectDownloadsByFileIds(@NonNull List<Integer> fileids) {
 		if(fileids == null || fileids.size() == 0) {
 			return new ArrayList<Integer>();
 		}

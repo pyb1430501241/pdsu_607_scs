@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.EsUserInformation;
@@ -91,7 +93,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws InsertException 
 	 */
 	@Override
-	public boolean inset(UserInformation information) throws UidRepetitionException, InsertException {
+	public boolean inset(@NonNull UserInformation information) throws UidRepetitionException, InsertException {
 		Integer uid = information.getUid();
 		if(countByUid(uid) != 0) {
 			throw new UidRepetitionException("学号不可重复");
@@ -118,7 +120,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws NotFoundUidException, DeleteInforException
 	 */
 	@Override
-	public boolean deleteByUid(Integer uid) throws NotFoundUidException, DeleteInforException {
+	public boolean deleteByUid(@NonNull Integer uid) throws NotFoundUidException, DeleteInforException {
 		if(countByUid(uid) == 0) {
 			throw new NotFoundUidException("该用户不存在");
 		}
@@ -259,7 +261,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 根据用户的uid查询用户信息
 	 */
 	@Override
-	public UserInformation selectByUid(Integer uid) {
+	public UserInformation selectByUid(@NonNull Integer uid) {
 		if(countByUid(uid) <= 0) {
 			return null;
 		}
@@ -274,7 +276,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public List<UserInformation> selectUsersByUid(Integer uid) throws NotFoundUidException {
+	public List<UserInformation> selectUsersByUid(@NonNull Integer uid) throws NotFoundUidException {
 //		if(countByUid(uid) == 0) {
 //			throw new NotFoundUidException("该用户不存在");
 //		}
@@ -293,7 +295,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public List<UserInformation> selectUsersByLikeId(Integer likeId) throws NotFoundUidException {
+	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId) throws NotFoundUidException {
 //		if(countByUid(likeId) == 0) {
 //			throw new NotFoundUidException("该用户不存在");
 //		}
@@ -313,7 +315,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 如果该用户不存在, 则剔除集合
 	 */
 	@Override
-	public List<UserInformation> selectUsersByUids(List<Integer> uids) {
+	public List<UserInformation> selectUsersByUids(@NonNull List<Integer> uids) {
 		List<Integer> f = new ArrayList<Integer>();
 		if(uids == null) {
 			return new ArrayList<>();
@@ -334,7 +336,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 查询是否有此账号
 	 */
 	@Override
-	public int countByUid(Integer uid) {
+	public int countByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -345,18 +347,18 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 修改密码
 	 */
 	@Override
-	public boolean modifyThePassword(Integer uid, String password) {
+	public boolean modifyThePassword(@NonNull Integer uid, @NonNull String password) {
 		UserInformation user = selectByUid(uid);
 		user.setPassword(HashUtils.getPasswordHash(uid, password));
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		int updateByExample = userInformationMapper.updateByExample(user, example);
-		return updateByExample == 0 ? false : true;
+		return updateByExample != 0;
 	}
 
 	@Override
-	public int countByUserName(String username) {
+	public int countByUserName(@NonNull String username) {
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUsernameEqualTo(username);
@@ -364,14 +366,14 @@ public class UserInformationServiceImpl implements UserInformationService {
 	}
 
 	@Override
-	public boolean updateUserInformation(Integer uid, UserInformation user) throws NotFoundUidException {
+	public boolean updateUserInformation(@NonNull Integer uid, @NonNull UserInformation user) throws NotFoundUidException {
 		if(countByUid(uid) == 0) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		UserInformationExample example = new UserInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		boolean b = userInformationMapper.updateByExampleSelective(user, example) == 0 ? false : true;
+		boolean b = userInformationMapper.updateByExampleSelective(user, example) != 0;
 		if(b) {
 			new Thread(()->{
 				try {

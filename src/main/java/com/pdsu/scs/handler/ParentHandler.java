@@ -1,5 +1,6 @@
 package com.pdsu.scs.handler;
 
+import com.pdsu.scs.bean.HandlerValueEnum;
 import com.pdsu.scs.utils.SimpleUtils;
 
 import java.io.File;
@@ -12,13 +13,19 @@ import java.util.Properties;
  * @author 半梦
  * @create 2020-08-19 19:51
  */
-public abstract class ParentHandler extends  AbstractHandler{
+public abstract class ParentHandler extends AbstractHandler{
 
     protected static final String EXCEPTION = "exception";
 
     protected static final String DEFAULT_ERROR_PROMPT = "未定义类型错误";
 
     protected static final String NOT_LOGIN = "未登录";
+
+    protected static final String ALREADY_LOGIN = "已登录";
+
+    protected static final String CODE_EXPIRED = "验证码已过期, 请重新获取";
+
+    protected static final String CODE_ERROR = "验证码错误";
 
     /**
      * 博客页面图片储存地址
@@ -55,20 +62,20 @@ public abstract class ParentHandler extends  AbstractHandler{
             properties.load(in);
             Enumeration enumeration = properties.propertyNames();
             while (enumeration.hasMoreElements()) {
-                String str = (String) enumeration.nextElement();
-                String value = properties.getProperty(str);
-                switch (str) {
-                    case "imgSuffix" :
+                String key = (String) enumeration.nextElement();
+                String value = properties.getProperty(key);
+                switch (HandlerValueEnum.getByKey(key)) {
+                    case IMG_SUFFIX :
                         Img_Suffix = value;
                         Img_Suffix_Except_Point = SimpleUtils.getSuffixNameExceptPoint(value);
                         break;
-                    case "fileFilePath" :
+                    case FILE_FILEPATH :
                         File_FilePath = value;
                         break;
-                    case "userImgFilePath" :
+                    case USER_IMG_FILEPATH:
                         User_Img_FilePath = value;
                         break;
-                    case "blobImgFilePath" :
+                    case BLOB_IMG_FILEPATH:
                         Blob_Img_FilePath = value;
                         break;
                     default:
@@ -78,20 +85,24 @@ public abstract class ParentHandler extends  AbstractHandler{
         }
     }
 
-    static {
-        initProperties();
+    private static void mkdirs(){
         File file = new File(User_Img_FilePath);
-        if(file.exists()) {
+        if(!file.exists()) {
             file.mkdirs();
         }
         file = new File(Blob_Img_FilePath);
-        if(file.exists()) {
+        if(!file.exists()) {
             file.mkdirs();
         }
         file = new File(File_FilePath);
-        if(file.exists()) {
+        if(!file.exists()) {
             file.mkdirs();
         }
+    }
+
+    static {
+        initProperties();
+        mkdirs();
     }
 
 }

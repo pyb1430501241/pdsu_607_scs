@@ -1,24 +1,18 @@
 package com.pdsu.scs.handler;
 
-import java.util.List;
-
-import javax.annotation.Resource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.pdsu.scs.bean.EsBlobInformation;
 import com.pdsu.scs.bean.EsFileInformation;
 import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.es.service.EsService;
 import com.pdsu.scs.exception.web.es.QueryException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 搜索相关

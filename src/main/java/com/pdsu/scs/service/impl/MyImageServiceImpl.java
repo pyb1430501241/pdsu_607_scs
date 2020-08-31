@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.EsUserInformation;
@@ -38,7 +39,7 @@ public class MyImageServiceImpl implements MyImageService {
 	private EsDao esDao;
 	
 	@Override
-	public List<MyImage> selectImagePathByUids(List<Integer> uids) {
+	public List<MyImage> selectImagePathByUids(@NonNull List<Integer> uids) {
 		List<Integer> ids = new ArrayList<Integer>();
 		for(Integer id : uids) {
 			if(countByUid(id)) {
@@ -56,7 +57,7 @@ public class MyImageServiceImpl implements MyImageService {
 	}
 
 	@Override
-	public MyImage selectImagePathByUid(Integer uid) throws NotFoundUidException {
+	public MyImage selectImagePathByUid(@NonNull Integer uid) throws NotFoundUidException {
 		if(!countByUid(uid)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
@@ -70,7 +71,7 @@ public class MyImageServiceImpl implements MyImageService {
 	 * 查询是否有此账号
 	 */
 	@Override
-	public boolean countByUid(Integer uid) {
+	public boolean countByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.scs.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -78,7 +79,7 @@ public class MyImageServiceImpl implements MyImageService {
 	}
 
 	@Override
-	public boolean insert(MyImage myImage) throws NotFoundUidException {
+	public boolean insert(@NonNull MyImage myImage) throws NotFoundUidException {
 		if(!countByUid(myImage.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}
@@ -86,7 +87,7 @@ public class MyImageServiceImpl implements MyImageService {
 	}
 
 	@Override
-	public boolean update(MyImage myImage) throws NotFoundUidException {
+	public boolean update(@NonNull MyImage myImage) throws NotFoundUidException {
 		if(!countByUid(myImage.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}

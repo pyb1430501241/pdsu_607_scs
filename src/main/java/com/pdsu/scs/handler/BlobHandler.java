@@ -1,47 +1,35 @@
 package com.pdsu.scs.handler;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.sql.Blob;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
+import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
 import com.pdsu.scs.service.*;
+import com.pdsu.scs.shiro.WebSessionManager;
+import com.pdsu.scs.utils.HashUtils;
+import com.pdsu.scs.utils.RandomUtils;
+import com.pdsu.scs.utils.ShiroUtils;
+import com.pdsu.scs.utils.SimpleUtils;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
-import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
-import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
-import com.pdsu.scs.exception.web.user.NotFoundUidException;
-import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
-import com.pdsu.scs.shiro.WebSessionManager;
-import com.pdsu.scs.utils.HashUtils;
-import com.pdsu.scs.utils.RandomUtils;
-import com.pdsu.scs.utils.ShiroUtils;
-import com.pdsu.scs.utils.SimpleUtils;
-
-import net.coobird.thumbnailator.Thumbnails;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -86,7 +74,7 @@ public class BlobHandler extends ParentHandler{
 	 * 收藏相关逻辑处理
 	 */
 	@Autowired
-	private MyCollectionService myConllectionService;
+	private MyCollectionService myCollectionService;
 	
 	/**
 	 * 评论相关
@@ -154,8 +142,7 @@ public class BlobHandler extends ParentHandler{
 	public Result getWebForIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
 			, @RequestParam(defaultValue = "0") Integer lid) {
 		try {
-			//获取按时间排序的投稿
-			List<WebInformation> webList = new ArrayList<WebInformation>();
+			List<WebInformation> webList;
 			switch (lid) {
 				case 0:
 					log.info("获取首页数据");
@@ -203,7 +190,7 @@ public class BlobHandler extends ParentHandler{
 			log.info("获取首页文章访问量");
 			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
 			log.info("获取首页文章收藏量");
-			List<Integer> collectionList = myConllectionService.selectCollectionssByWebIds(webids);
+			List<Integer> collectionList = myCollectionService.selectCollectionssByWebIds(webids);
 			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
 			for (int i = 0; i < webList.size(); i++) {
 				BlobInformation blobInformation = new BlobInformation(
@@ -221,14 +208,15 @@ public class BlobHandler extends ParentHandler{
 			blobList.sort((o1, o2) -> {
 				Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000 
 						- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
-					Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
-					- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
+				Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
+						- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
 					if(hint1 > hint2) {
 						return 1;
-					}
+					} else if(hint1 == hint2)
+						return 0;
 					return -1;
 			});
-			PageInfo<BlobInformation> pageInfo = new PageInfo<BlobInformation>(blobList);
+			PageInfo<BlobInformation> pageInfo = new PageInfo<>(blobList);
 			return Result.success().add("blobList", pageInfo);
 		} catch (Exception e) {
 			log.error("获取首页数据失败, 原因为: " + e.getMessage());
@@ -269,7 +257,7 @@ public class BlobHandler extends ParentHandler{
 			log.info("获取文章点赞数");
 			Integer thubms = webThubmsService.selectThumbsForWebId(web.getId());
 			log.info("获取文章收藏量");
-			Integer collections = myConllectionService.selectCollectionsByWebId(web.getId());
+			Integer collections = myCollectionService.selectCollectionsByWebId(web.getId());
 			log.info("获取文章评论");
 			List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
 			List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebId(id);
@@ -362,7 +350,7 @@ public class BlobHandler extends ParentHandler{
 			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("用户: " + uid + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
 			//添加一条收藏记录
-			boolean flag = myConllectionService.insert(new MyCollection(null, uid, webid, bid));
+			boolean flag = myCollectionService.insert(new MyCollection(null, uid, webid, bid));
 			if(flag) {
 				log.info("用户: " + uid + ", 收藏 " + webid + " 成功");
 				return Result.success();
@@ -397,7 +385,7 @@ public class BlobHandler extends ParentHandler{
 			user = ShiroUtils.getUserInformation();
 			log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
 			//删除一条收藏记录
-			if(myConllectionService.delete(user.getUid(), webid)) {
+			if(myCollectionService.delete(user.getUid(), webid)) {
 				log.info("取消收藏成功");
 				return Result.success();
 			}else {
@@ -431,7 +419,7 @@ public class BlobHandler extends ParentHandler{
 		try {
 			uid = ShiroUtils.getUserInformation().getUid();
 			log.info("查询用户是否已收藏文章");
-			boolean b = myConllectionService.countByUidAndWebId(uid, webid);
+			boolean b = myCollectionService.countByUidAndWebId(uid, webid);
 			log.info("查询成功");
 			return Result.success().add("status", b);
 		} catch (Exception e) {
@@ -710,7 +698,7 @@ public class BlobHandler extends ParentHandler{
 			Integer visits = visitInformationService.selectVisitsByVid(uid);
 			author.setVisits(visits);
 			log.info("获取作者文章总收藏量");
-			Integer collection = myConllectionService.countCollectionByUid(uid);
+			Integer collection = myCollectionService.countCollectionByUid(uid);
 			author.setCollection(collection);
 			log.info("获取作者原创数量");
 			Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
@@ -755,7 +743,7 @@ public class BlobHandler extends ParentHandler{
 		try {
 			log.info("获取用户: " + uid + " 收藏的文章");
 			PageHelper.startPage(p, 10);
-			List<MyCollection> collections = myConllectionService.selectWebIdsByUid(uid);
+			List<MyCollection> collections = myCollectionService.selectWebIdsByUid(uid);
 			List<Integer> webids = new ArrayList<>();
 			List<Integer> uids = new ArrayList<>();
 			for (MyCollection collection : collections) {
@@ -767,7 +755,7 @@ public class BlobHandler extends ParentHandler{
 			log.info("获取文章访问量");
 			List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
 			log.info("获取文章收藏量");
-			List<Integer> collection = myConllectionService.selectCollectionssByWebIds(webids);
+			List<Integer> collection = myCollectionService.selectCollectionssByWebIds(webids);
 			log.info("获取作者信息");
 			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
 			log.info("获取点赞量");

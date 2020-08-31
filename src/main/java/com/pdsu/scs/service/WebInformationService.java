@@ -7,6 +7,10 @@ import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
+import javax.validation.constraints.Null;
 
 /**
  * 与博客网页相关的方法
@@ -20,21 +24,21 @@ public interface WebInformationService {
 	 * @param information
 	 * @return  是否插入成功
 	 */
-	public int insert(WebInformation information) throws InsertException;
+	public int insert(@NonNull WebInformation information) throws InsertException;
 	
 	/**
 	 * 根据网页id删除一个网页
 	 * @param id
 	 * @return
 	 */
-	public boolean deleteById(Integer id) throws NotFoundBlobIdException, DeleteInforException;
+	public boolean deleteById(@NonNull Integer id) throws NotFoundBlobIdException, DeleteInforException;
 	
 	/**
 	 * 根据网页id查询网页信息
 	 * @param id   网页编号
 	 * @return
 	 */
-	public WebInformation selectById(Integer id);
+	public WebInformation selectById(@NonNull Integer id);
 	
 	/**
 	 * 根据时间查询网页集合
@@ -47,28 +51,28 @@ public interface WebInformationService {
 	 * @param uid  学号
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByUid(Integer uid) throws NotFoundUidException;
+	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid) throws NotFoundUidException;
 
 	/**
 	 * 更新文章
 	 * @param web 文章信息
 	 * @return
 	 */
-	public boolean updateByWebId(WebInformation web);
+	public boolean updateByWebId(@NonNull WebInformation web);
 	
 	/**
 	 * 查询文章是否存在
 	 * @param webid
 	 * @return
 	 */
-	public boolean countByWebId(Integer webid);
+	public boolean countByWebId(@NonNull Integer webid);
 	
 	/**
 	 * 查询用户是否存在
 	 * @param uid
 	 * @return
 	 */
-	public int countByUid(Integer uid);
+	public int countByUid(@NonNull Integer uid);
 	
 	/**
 	 * 获取用户原创数量
@@ -76,13 +80,13 @@ public interface WebInformationService {
 	 * @param i
 	 * @return
 	 */
-	public Integer countOriginalByUidAndContype(Integer uid, Integer contype)  throws NotFoundUidException;
+	public Integer countOriginalByUidAndContype(@NonNull Integer uid, @NonNull Integer contype)  throws NotFoundUidException;
 
 	/**
 	 * 根据博客id获取博客
 	 * @param webids
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids, boolean flag);
+	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag);
 	
 }

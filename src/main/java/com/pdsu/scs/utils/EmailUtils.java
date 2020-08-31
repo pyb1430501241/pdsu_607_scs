@@ -21,7 +21,6 @@ public class EmailUtils {
 	/**
 	 * 发送邮件
 	 * @param email
-	 * @param name
 	 * @throws EmailException
 	 */
 	private void sendEmail(String email, String subject, String msg) throws EmailException {

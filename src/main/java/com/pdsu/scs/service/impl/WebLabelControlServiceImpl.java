@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.WebLabelControl;
@@ -22,7 +23,7 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 	private WebLabelControlMapper webLabelControlMapper;
 	
 	@Override
-	public boolean insert(Integer webid, List<Integer> labelList) {
+	public boolean insert(@NonNull Integer webid, @NonNull List<Integer> labelList) {
 		for (Integer labelid : labelList) {
 			webLabelControlMapper.insertSelective(new WebLabelControl(webid, labelid));
 		}
@@ -30,15 +31,15 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 	}
 
 	@Override
-	public boolean deleteByWebId(Integer webid) {
+	public boolean deleteByWebId(@NonNull Integer webid) {
 		WebLabelControlExample example = new WebLabelControlExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
-		return webLabelControlMapper.deleteByExample(example) > 0 ? true : false;
+		return webLabelControlMapper.deleteByExample(example) > 0;
 	}
 
 	@Override
-	public List<Integer> selectLabelIdByWebId(Integer webid) {
+	public List<Integer> selectLabelIdByWebId(@NonNull Integer webid) {
 		WebLabelControlExample example = new WebLabelControlExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
@@ -51,7 +52,7 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 	}
 
 	@Override
-	public List<Integer> selectWebIdsByLid(Integer lid) {
+	public List<Integer> selectWebIdsByLid(@NonNull Integer lid) {
 		WebLabelControlExample example = new WebLabelControlExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andLidEqualTo(lid);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.WebComment;
@@ -37,7 +38,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	private WebCommentMapper webCommentMapper;
 	
 	@Override
-	public boolean insert(WebCommentReply webCommentReply) throws NotFoundBlobIdException, NotFoundCommentIdException {
+	public boolean insert(@NonNull WebCommentReply webCommentReply) throws NotFoundBlobIdException, NotFoundCommentIdException {
 		if(!countByWebid(webCommentReply.getWid())) {
 			throw new NotFoundBlobIdException();
 		}
@@ -48,7 +49,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	}
 
 	@Override
-	public boolean countByWebid(Integer webid) {
+	public boolean countByWebid(@NonNull Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
@@ -56,7 +57,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	}
 
 	@Override
-	public boolean countByCid(Integer cid) {
+	public boolean countByCid(@NonNull Integer cid) {
 		WebCommentExample example = new WebCommentExample();
 		com.pdsu.scs.bean.WebCommentExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(cid);
@@ -64,7 +65,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	}
 
 	@Override
-	public List<WebCommentReply> selectCommentReplysByWebComments(List<WebComment> commentList) {
+	public List<WebCommentReply> selectCommentReplysByWebComments(@NonNull List<WebComment> commentList) {
 		if(commentList.size() == 0) {
 			return new ArrayList<>();
 		}
@@ -79,7 +80,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	}
 	
 	@Override
-	public List<WebCommentReply> selectCommentReplysByWebId(Integer webid) throws NotFoundBlobIdException {
+	public List<WebCommentReply> selectCommentReplysByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
 		if(!countByWebid(webid)) {
 			throw new NotFoundBlobIdException();
 		}
@@ -90,7 +91,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 	}
 
 	@Override
-	public Integer countByWebsAndUid(List<Integer> webs) {
+	public Integer countByWebsAndUid(@NonNull List<Integer> webs) {
 		if(webs == null || webs.size() == 0) {
 			return 0;
 		}

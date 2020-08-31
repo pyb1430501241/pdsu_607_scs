@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.WebComment;
@@ -32,7 +33,7 @@ public class WebCommentServiceImpl implements WebCommentService{
 	private WebInformationMapper webInformationMapper;
 	
 	@Override
-	public boolean insert(WebComment webComment) throws NotFoundBlobIdException {
+	public boolean insert(@NonNull WebComment webComment) throws NotFoundBlobIdException {
 		if(!countByWebid(webComment.getWid())) {
 			throw new NotFoundBlobIdException("该博客不存在");
 		}
@@ -40,7 +41,7 @@ public class WebCommentServiceImpl implements WebCommentService{
 	}
 
 	@Override
-	public boolean countByWebid(Integer webid) {
+	public boolean countByWebid(@NonNull Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
@@ -48,7 +49,7 @@ public class WebCommentServiceImpl implements WebCommentService{
 	}
 
 	@Override
-	public List<WebComment> selectCommentsByWebId(Integer webid) throws NotFoundBlobIdException {
+	public List<WebComment> selectCommentsByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
 		if(!countByWebid(webid)) {
 			throw new NotFoundBlobIdException();
 		}
@@ -59,7 +60,7 @@ public class WebCommentServiceImpl implements WebCommentService{
 	}
 
 	@Override
-	public Integer countByUid(Integer uid) {
+	public Integer countByUid(@NonNull Integer uid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);

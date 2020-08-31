@@ -5,6 +5,7 @@ import com.pdsu.scs.dao.ClazzInformationMapper;
 import com.pdsu.scs.exception.web.admin.ClazzRepetitionException;
 import com.pdsu.scs.service.ClazzInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,7 +19,7 @@ public class ClazzInformationServiceImpl implements ClazzInformationService {
     private ClazzInformationMapper clazzInformationMapper;
 
     @Override
-    public boolean insert(ClazzInformation clazzInformation) {
+    public boolean insert(@NonNull ClazzInformation clazzInformation) {
         int i = clazzInformationMapper.insertSelective(clazzInformation);
         return i > 0;
     }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.WebInformationExample;
@@ -34,7 +35,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	 * 根据网页ID集合获取这些文章的点赞数
 	 */
 	@Override
-	public List<Integer> selectThumbssForWebId(List<Integer> webids) {
+	public List<Integer> selectThumbssForWebId(@NonNull List<Integer> webids) {
 		List<Integer> thumbss = new ArrayList<Integer>();
 		for(Integer webid : webids) {
 			thumbss.add(selectThumbsForWebId(webid));
@@ -46,7 +47,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	 * 根据网页ID获取文章的点赞数
 	 */
 	@Override
-	public Integer selectThumbsForWebId(Integer webid) {
+	public Integer selectThumbsForWebId(@NonNull Integer webid) {
 		WebThumbsExample example = new WebThumbsExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWebidEqualTo(webid);
@@ -58,7 +59,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	 * 根据学号获取一个人的总点赞数
 	 */
 	@Override
-	public Integer countThumbsByUid(Integer uid) {
+	public Integer countThumbsByUid(@NonNull Integer uid) {
 		WebThumbsExample example = new WebThumbsExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andBidEqualTo(uid);
@@ -66,7 +67,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	}
 
 	@Override
-	public boolean insert(WebThumbs webThumbs) throws NotFoundBlobIdException, RepetitionThumbsException {
+	public boolean insert(@NonNull WebThumbs webThumbs) throws NotFoundBlobIdException, RepetitionThumbsException {
 		if(!countByWebId(webThumbs.getWebid())) {
 			throw new NotFoundBlobIdException();
 		}
@@ -77,7 +78,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	}
 
 	@Override
-	public boolean countByWebId(Integer webid) {
+	public boolean countByWebId(@NonNull Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
@@ -85,7 +86,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	}
 
 	@Override
-	public boolean deletebyWebIdAndUid(Integer webid, Integer uid) throws RepetitionThumbsException {
+	public boolean deletebyWebIdAndUid(@NonNull Integer webid, @NonNull Integer uid) throws RepetitionThumbsException {
 		if(!countByWebIdAndUid(webid, uid)) {
 			throw new RepetitionThumbsException("你并未点赞该文章");
 		}
@@ -97,7 +98,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 	}
 	
 	@Override
-	public boolean countByWebIdAndUid(Integer webid, Integer uid) {
+	public boolean countByWebIdAndUid(@NonNull Integer webid, @NonNull Integer uid) {
 		WebThumbsExample example = new WebThumbsExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andWebidEqualTo(webid);

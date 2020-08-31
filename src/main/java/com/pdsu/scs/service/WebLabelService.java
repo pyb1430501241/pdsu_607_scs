@@ -3,6 +3,7 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.WebLabel;
+import org.springframework.lang.NonNull;
 
 /**
  * @author 半梦
@@ -20,6 +21,6 @@ public interface WebLabelService {
 	 * @param labelids
 	 * @return
 	 */
-	public List<WebLabel> selectByLabelIds(List<Integer> labelids);
+	public List<WebLabel> selectByLabelIds(@NonNull List<Integer> labelids);
 	
 }

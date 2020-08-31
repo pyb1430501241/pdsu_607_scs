@@ -1,8 +1,10 @@
 package com.pdsu.scs.es.service.impl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
+import com.pdsu.scs.bean.EsBlobInformation;
+import com.pdsu.scs.es.dao.EsDao;
+import com.pdsu.scs.es.service.EsService;
+import com.pdsu.scs.exception.web.es.QueryException;
+import com.pdsu.scs.utils.SimpleUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -13,11 +15,8 @@ import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.pdsu.scs.bean.EsBlobInformation;
-import com.pdsu.scs.es.dao.EsDao;
-import com.pdsu.scs.es.service.EsService;
-import com.pdsu.scs.exception.web.es.QueryException;
-import com.pdsu.scs.utils.SimpleUtils;
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * es blob相关

@@ -4,6 +4,7 @@ import com.pdsu.scs.bean.MyEmail;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.email.EmailRepetitionException;
 import com.pdsu.scs.exception.web.user.email.NotFoundEmailException;
+import org.springframework.lang.NonNull;
 
 /**
  * 该接口提供和邮箱相关的方法
@@ -18,21 +19,21 @@ public interface MyEmailService {
 	 * @param email
 	 * @return
 	 */
-	public boolean countByEmail(String email);
+	public boolean countByEmail(@NonNull String email);
 
 	/**
 	 * 根据邮箱地址获取一个 MyEamil 的对象
 	 * @param email
 	 * @return
 	 */
-	public MyEmail selectMyEmailByEmail(String email) throws NotFoundEmailException;
+	public MyEmail selectMyEmailByEmail(@NonNull String email) throws NotFoundEmailException;
 
 	/**
 	 * 根据学号来获取一个 MyEmail 的对象
 	 * @param uid
 	 * @return
 	 */
-	public MyEmail selectMyEmailByUid(Integer uid);
+	public MyEmail selectMyEmailByUid(@NonNull Integer uid);
 
 	/**
 	 * 插入
@@ -41,13 +42,13 @@ public interface MyEmailService {
 	 * @throws EmailRepetitionException
 	 * @throws NotFoundUidException
 	 */
-	public boolean insert(MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException;
+	public boolean insert(@NonNull MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException;
 	
 	/**
 	 * 查询用户是否存在
 	 * @param uid
 	 * @return
 	 */
-	public boolean countByUid(Integer uid);
+	public boolean countByUid(@NonNull Integer uid);
 
 }

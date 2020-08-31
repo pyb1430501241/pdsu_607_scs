@@ -3,6 +3,7 @@ package com.pdsu.scs.service;
 import java.util.List;
 
 import com.pdsu.scs.bean.FileDownload;
+import org.springframework.lang.NonNull;
 
 /**
  * @author 半梦
@@ -14,21 +15,21 @@ public interface FileDownloadService {
 	 * @param fileDownload
 	 * @return
 	 */
-	public boolean insert(FileDownload fileDownload);
+	public boolean insert(@NonNull FileDownload fileDownload);
 	
 	/**
 	 * 获取用户文件被下载量
 	 * @param uid
 	 * @return
 	 */
-	public Integer countByBid(Integer uid);
+	public Integer countByBid(@NonNull Integer uid);
 
 	/**
 	 * 获取文件下载量
 	 * @param fileids
 	 * @return
 	 */
-	public List<Integer> selectDownloadsByFileIds(List<Integer> fileids);
+	public List<Integer> selectDownloadsByFileIds(@NonNull List<Integer> fileids);
 	
 }
 	

@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.pdsu.scs.bean.EsBlobInformation;
@@ -86,7 +88,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 插入一个网页信息
 	 */
 	@Override
-	public int insert(WebInformation information) throws InsertException {
+	public int insert(@NonNull WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
 						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
@@ -114,7 +116,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 删除一个网页信息
 	 */
 	@Override
-	public boolean deleteById(Integer id) throws NotFoundBlobIdException, DeleteInforException{
+	public boolean deleteById(@NonNull Integer id) throws NotFoundBlobIdException, DeleteInforException{
 		if(!countByWebId(id)) {
 			throw new NotFoundBlobIdException("该文章不存在");
 		}
@@ -205,7 +207,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 根据网页id查询一个网页的全部信息
 	 */
 	@Override
-	public WebInformation selectById(Integer id) {
+	public WebInformation selectById(@NonNull Integer id) {
 		WebInformation key = webInformationMapper.selectByPrimaryKey(id);
 		return key;
 	}
@@ -218,6 +220,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample example = new WebInformationExample();
 		example.setOrderByClause("sub_time DESC");
 		List<WebInformation> selectByExampleWithBLOBs = webInformationMapper.selectByExampleWithBLOBs(example);
+		if(selectByExampleWithBLOBs == null) {
+			return new ArrayList<>();
+		}
 		for(WebInformation webInformation : selectByExampleWithBLOBs) {
 			WebInformation web = webInformation;
 			byte [] b = webInformation.getWebData();
@@ -234,7 +239,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 根据一个人的学号查询其所有文章, 不包括网页主体内容
 	 */
 	@Override
-	public List<WebInformation> selectWebInformationsByUid(Integer uid) throws NotFoundUidException {
+	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid) throws NotFoundUidException {
 //		if(countByUid(uid) == 0) {
 //			throw new NotFoundUidException("该用户不存在");
 //		}
@@ -250,7 +255,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 *更新文章  
 	 */
 	@Override
-	public boolean updateByWebId(WebInformation web) {
+	public boolean updateByWebId(@NonNull WebInformation web) {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(web.getId());
@@ -275,7 +280,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 查询博客是否存在
 	 */
 	@Override
-	public boolean countByWebId(Integer webid) {
+	public boolean countByWebId(@NonNull Integer webid) {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
@@ -287,7 +292,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 查询是否有此账号
 	 */
 	@Override
-	public int countByUid(Integer uid) {
+	public int countByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.scs.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -295,7 +300,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public Integer countOriginalByUidAndContype(Integer uid, Integer contype) throws NotFoundUidException {
+	public Integer countOriginalByUidAndContype(@NonNull Integer uid, @NonNull Integer contype) throws NotFoundUidException {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andContypeEqualTo(contype);
@@ -304,7 +309,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public List<WebInformation> selectWebInformationsByIds(List<Integer> webids, boolean flag) {
+	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag) {
 		if(webids == null || webids.size() == 0) {
 			return new ArrayList<>();
 		}

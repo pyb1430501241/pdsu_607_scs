@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.elasticsearch.search.SearchHit;
+import org.springframework.lang.Nullable;
+import org.springframework.util.StringUtils;
 
 /**
  * 格式化相关工具类
@@ -76,7 +78,10 @@ public class SimpleUtils {
 	 * @param name
 	 * @return
 	 */
-	public static String getSuffixName(String name) {
+	public static String getSuffixName(@Nullable String name) {
+		if(StringUtils.isEmpty(name)) {
+			return "";
+		}
 		return name.substring(name.lastIndexOf("."), name.length());
 	}
 
@@ -89,12 +94,6 @@ public class SimpleUtils {
 		return name.substring(name.lastIndexOf(".") + 1, name.length());
 	}
 	
-	private static final String USERINFORMATION = "EsUserInformation";
-	
-	private static final String BLOBINFORMATION = "EsBlobInformation";
-	
-	private static final String FILEINFORMATION = "EsFileInformation";
-	
 	/**
 	 * 获取该类的构造器
 	 * @param clazz
@@ -106,13 +105,13 @@ public class SimpleUtils {
 		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "").toString();
 		Constructor<?> constructor = null;
 		switch (name) {
-			case USERINFORMATION:
+			case "EsUserInformation":
 				constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, String.class, Integer.class, String.class);
 				break;
-			case BLOBINFORMATION:
+			case "EsBlobInformation":
 				constructor = clazz.getDeclaredConstructor(Integer.class, String.class, String.class);
 				break;	
-			case FILEINFORMATION:
+			case "EsFileInformation":
 				constructor = clazz.getDeclaredConstructor(String.class, String.class, Integer.class);
 				break;	
 			default:
