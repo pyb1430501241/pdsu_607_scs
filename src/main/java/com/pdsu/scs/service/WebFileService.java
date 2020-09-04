@@ -1,12 +1,12 @@
 package com.pdsu.scs.service;
 
-import java.util.List;
-
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.FileException;
-import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
+import com.pdsu.scs.exception.web.file.UidAndTitleRepetitionException;
 import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 /**
  * 
@@ -20,7 +20,7 @@ public interface WebFileService {
 	 * @param webFile
 	 * @return  true false
 	 */
-	public boolean insert(@NonNull WebFile webFile) throws UidAndTItleRepetitionException, InsertException;
+	public boolean insert(@NonNull WebFile webFile) throws UidAndTitleRepetitionException, InsertException;
 
 	/**
 	 * 查询所有文件

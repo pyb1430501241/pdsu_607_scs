@@ -1,16 +1,13 @@
 package com.pdsu.scs.service;
 
-import java.util.List;
-
 import com.pdsu.scs.bean.WebInformation;
 import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.es.InsertException;
-import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.Null;
+import java.util.List;
 
 /**
  * 与博客网页相关的方法
@@ -38,7 +35,7 @@ public interface WebInformationService {
 	 * @param id   网页编号
 	 * @return
 	 */
-	public WebInformation selectById(@NonNull Integer id);
+	public WebInformation selectById(@NonNull Integer id) throws NotFoundBlobIdException;
 	
 	/**
 	 * 根据时间查询网页集合
@@ -51,7 +48,7 @@ public interface WebInformationService {
 	 * @param uid  学号
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid) throws NotFoundUidException;
+	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid);
 
 	/**
 	 * 更新文章
@@ -77,10 +74,10 @@ public interface WebInformationService {
 	/**
 	 * 获取用户原创数量
 	 * @param uid
-	 * @param i
+	 * @param contype
 	 * @return
 	 */
-	public Integer countOriginalByUidAndContype(@NonNull Integer uid, @NonNull Integer contype)  throws NotFoundUidException;
+	public Integer countOriginalByUidAndContype(@NonNull Integer uid, @NonNull Integer contype);
 
 	/**
 	 * 根据博客id获取博客

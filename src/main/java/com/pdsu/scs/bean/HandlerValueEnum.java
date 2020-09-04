@@ -23,6 +23,10 @@ public enum HandlerValueEnum {
      */
     BLOB_IMG_FILEPATH("blobImgFilePath"),
     /**
+     * 用户默认头像名
+     */
+    USER_IMG_NAME("defaultUserImgName"),
+    /**
      * 未知情况
      */
     OTHER("default");

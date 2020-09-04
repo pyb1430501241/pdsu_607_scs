@@ -1,15 +1,5 @@
 package com.pdsu.scs.service.impl;
 
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
 import com.pdsu.scs.bean.EsFileInformation;
 import com.pdsu.scs.bean.WebFile;
 import com.pdsu.scs.bean.WebFileExample;
@@ -18,8 +8,14 @@ import com.pdsu.scs.dao.WebFileMapper;
 import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.file.FileException;
-import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
+import com.pdsu.scs.exception.web.file.UidAndTitleRepetitionException;
 import com.pdsu.scs.service.WebFileService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service("webFileService")
 public class WebFileServiceImpl implements WebFileService{
@@ -34,13 +30,13 @@ public class WebFileServiceImpl implements WebFileService{
 	 * 插入一个文件记录
 	 * @param webFile
 	 * @return  true false
-	 * @throws UidAndTItleRepetitionException 
+	 * @throws UidAndTitleRepetitionException
 	 * @throws InsertException 
 	 */
 	@Override
-	public boolean insert(@NonNull WebFile webFile) throws UidAndTItleRepetitionException, InsertException {
+	public boolean insert(@NonNull WebFile webFile) throws UidAndTitleRepetitionException, InsertException {
 		if(countByUidAndTitle(webFile.getUid(), webFile.getTitle())) {
-			throw new UidAndTItleRepetitionException("用户无法重复上传同名文件");
+			throw new UidAndTitleRepetitionException("用户无法重复上传同名文件");
 		}
 		int t = webFileMapper.insertSelective(webFile);
 		if(t > 0) {

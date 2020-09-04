@@ -1,20 +1,14 @@
 package com.pdsu.scs.shiro;
 
+import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.exception.web.user.UserAbnormalException;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import com.pdsu.scs.service.UserInformationService;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.pdsu.scs.bean.Result;
-import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.service.UserInformationService;
 
 /**
  * 
@@ -34,9 +28,8 @@ public class LoginRealm extends AuthorizingRealm{
 			AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken uptoken = (UsernamePasswordToken) token;
 		Integer uid = Integer.parseInt(uptoken.getUsername());
-		//查询是否有此账号
 		if(userInformationService.countByUid(uid) == 0) {
-			return null;
+			throw new UnknownAccountException("账号不存在");
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
 		if(user.getAccountStatus() == 2) {

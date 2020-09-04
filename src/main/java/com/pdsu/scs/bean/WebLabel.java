@@ -1,11 +1,13 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 文章标签
  * @author 半梦
  *
  */
-public class WebLabel {
+public class WebLabel implements Serializable {
     private Integer id;
 
     private String label;

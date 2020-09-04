@@ -3,8 +3,6 @@ package com.pdsu.scs.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
-import com.pdsu.scs.exception.web.es.InsertException;
-import com.pdsu.scs.exception.web.file.UidAndTItleRepetitionException;
 import com.pdsu.scs.service.FileDownloadService;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.service.WebFileService;
@@ -23,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *  文件相关API
@@ -60,32 +59,24 @@ public class FileHandler extends ParentHandler{
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result sendcomment(@RequestParam("file")MultipartFile file, String title, String description) {
-		Integer uid = ShiroUtils.getUserInformation().getUid();
+	public Result upload(@RequestParam("file")MultipartFile file, @RequestParam String title,
+						 @RequestParam String description) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		Integer uid = user.getUid();
 		log.info("用户: " + uid + " 上传文件: " + title + " 开始" + ", 描述为:" + description);
-		try {
-			byte [] s = file.getBytes();
-			String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
-			log.info("文件名为: " + name);
-			FileUtils.writeByteArrayToFile(new File(File_FilePath + name), s);
-			log.info("文件写入成功, 开始在服务器保存地址");
-			boolean b = webFileService.insert(new WebFile(uid, title, description, name, SimpleUtils.getSimpleDateSecond()));
-			if(b) {
-				log.info("上传成功");
-				return Result.success();
-			} else {
-				log.error("上传失败");
-				return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
-			}
-		} catch (UidAndTItleRepetitionException e) {
-			log.info("用户: " + uid + ", 上传资源: " + title + " 失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "无法上传同名文件, 请修改名称");
-		} catch (InsertException e) {
-			log.error("上传失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
-		}catch (Exception e) {
-			log.error("上传失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+		byte [] s = file.getBytes();
+		String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
+		log.info("文件名为: " + name);
+		FileUtils.writeByteArrayToFile(new File(File_FilePath + name), s);
+		log.info("文件写入成功, 开始在服务器保存地址");
+		boolean b = webFileService.insert(new WebFile(uid, title, description, name, SimpleUtils.getSimpleDateSecond()));
+		if(b) {
+			log.info("上传成功");
+			return Result.success();
+		} else {
+			log.error("上传失败");
+			return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 		}
 	}
 	
@@ -98,7 +89,7 @@ public class FileHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/download", method = RequestMethod.GET)
 	@CrossOrigin
-	public void getDownload(Integer uid, String title, HttpServletResponse response) {
+	public void download(@RequestParam Integer uid, @RequestParam String title, HttpServletResponse response) throws Exception{
 		OutputStream out = null;
 		InputStream in = null;
 		try {
@@ -116,18 +107,15 @@ public class FileHandler extends ParentHandler{
 			out.flush();
 			fileDownloadService.insert(new FileDownload(webfile.getId(), uid, ShiroUtils.getUserInformation().getUid()));
 			log.info("下载成功");
-		}
-		catch (Exception e) {
-			log.error("下载遇到未知错误: " + e.getMessage());
 		} finally {
-			if(out != null) {
+			if(!Objects.isNull(out)) {
 				try {
 					out.close();
 				} catch (IOException e) {
 					log.warn("输出流关闭失败");
 				}
 			}
-			if(in != null) {
+			if(!Objects.isNull(in)) {
 				try {
 					in.close();
 				} catch (IOException e) {
@@ -145,38 +133,35 @@ public class FileHandler extends ParentHandler{
 	@ResponseBody
 	@GetMapping("/getfileindex")
 	@CrossOrigin
-	public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) {
-		try {
-			log.info("获取首页文件");
-			PageHelper.startPage(p, 15);
-			List<WebFile> list = webFileService.selectFilesOrderByTime();
-			List<Integer> uids = new ArrayList<Integer>();
-			List<Integer> fileids = new ArrayList<Integer>();
-			for(WebFile file : list) {
-				uids.add(file.getUid());
-				fileids.add(file.getId());
-			}
-			log.info("获取作者信息");
-			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-			log.info("获取文件下载量");
-			List<Integer> downloads = fileDownloadService.selectDownloadsByFileIds(fileids);
-			List<FileInformation> files = new ArrayList<FileInformation>();
-			for (int i = 0; i < list.size(); i++) {
-				FileInformation fileInformation = new FileInformation();
-				fileInformation.setWebfile(list.get(i));
-				fileInformation.setDownloads(downloads.get(i));
-				for (UserInformation user : users) {
-					if(user.getUid().equals(list.get(i).getUid())) {
-						fileInformation.setUser(user);
-						break;
-					}
-				}
-				files.add(fileInformation);
-			}
-			PageInfo<FileInformation> fileList = new PageInfo<FileInformation>(files);
-			return Result.success().add("fileList", fileList);
-		} catch (Exception e) {
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) throws Exception{
+		log.info("获取首页文件");
+		PageHelper.startPage(p, 15);
+		List<WebFile> list = webFileService.selectFilesOrderByTime();
+		List<Integer> uids = new ArrayList<Integer>();
+		List<Integer> fileids = new ArrayList<Integer>();
+		for(WebFile file : list) {
+			uids.add(file.getUid());
+			fileids.add(file.getId());
 		}
+		log.info("获取作者信息");
+		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+		log.info("获取文件下载量");
+		List<Integer> downloads = fileDownloadService.selectDownloadsByFileIds(fileids);
+		List<FileInformation> files = new ArrayList<FileInformation>();
+		for (int i = 0; i < list.size(); i++) {
+			FileInformation fileInformation = new FileInformation();
+			fileInformation.setWebfile(list.get(i));
+			fileInformation.setDownloads(downloads.get(i));
+			for (UserInformation user : users) {
+				if(user.getUid().equals(list.get(i).getUid())) {
+					fileInformation.setUser(user);
+					break;
+				}
+			}
+			files.add(fileInformation);
+		}
+		PageInfo<FileInformation> fileList = new PageInfo<FileInformation>(files);
+		return Result.success().add("fileList", fileList);
 	}
+
 }

@@ -1,11 +1,13 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * es 存储的 blob 信息
  * @author 半梦
  *
  */
-public class EsBlobInformation {
+public class EsBlobInformation implements Serializable {
 	
 	private Integer webid;
 	

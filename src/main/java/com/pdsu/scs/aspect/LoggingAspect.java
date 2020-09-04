@@ -59,6 +59,6 @@ public class LoggingAspect {
 	public void afterThrowing(JoinPoint joinPoint, Exception ex) {
 		String str = joinPoint.getTarget().getClass().getName() + "." 
 				+ ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
-		log.error("执行方法 " + str + " 失败, 异常信息为: " + ex);
+		log.error("执行方法 " + str + " 出现异常, 异常信息为: " + ex);
 	}
 }

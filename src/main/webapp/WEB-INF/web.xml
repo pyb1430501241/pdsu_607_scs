@@ -55,6 +55,10 @@
 			<param-name>loginPassword</param-name>
 			<param-value>pdsu_csc_admin</param-value>
 		</init-param>
+		<init-param>
+			<param-name></param-name>
+			<param-value></param-value>
+		</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>druidStatView</servlet-name>

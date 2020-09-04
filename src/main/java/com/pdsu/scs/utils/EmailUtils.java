@@ -2,6 +2,7 @@ package com.pdsu.scs.utils;
 
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.springframework.lang.NonNull;
 
 /**
  * 
@@ -45,7 +46,7 @@ public class EmailUtils {
 	 * @param name
 	 * @throws EmailException 
 	 */
-	public void sendEmailForApply(String email, String name) throws EmailException {
+	public void sendEmailForApply(@NonNull final String email, @NonNull final String name) throws EmailException {
 		text = RandomUtils.getRandom();
 		String subject = "代码分享平台注册验证";
 		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行注册账号的操作,"
@@ -65,7 +66,7 @@ public class EmailUtils {
 	 * @param name  用户名
 	 * @throws EmailException 邮箱不存在
 	 */
-	public void sendEmailForRetrieve(String email, String name) throws EmailException {
+	public void sendEmailForRetrieve(@NonNull final String email, @NonNull final String name) throws EmailException {
 		text = RandomUtils.getRandom();
 		String subject = "代码分享平台找回密码验证";
 		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行找回密码的操作,"
@@ -85,7 +86,7 @@ public class EmailUtils {
 	 * @param name  用户名
 	 * @throws EmailException 邮箱不存在
 	 */
-	public void sendEmailForRetrieveIpone(String email, String name) throws EmailException {
+	public void sendEmailForRetrieveIpone(@NonNull final String email, @NonNull final String name) throws EmailException {
 		text = RandomUtils.getRandom();
 		String subject = "代码分享平台换绑手机号验证";
 		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行换绑手机号的操作,"
@@ -105,7 +106,7 @@ public class EmailUtils {
 	 * @param name  用户名
 	 * @throws EmailException 邮箱不存在
 	 */
-	public void sendEmailForModify(String email, String name) throws EmailException {
+	public void sendEmailForModify(@NonNull final String email, @NonNull final String name) throws EmailException {
 		text = RandomUtils.getRandom();
 		String subject = "代码分享平台修改密码验证";
 		String msg = "尊敬的用户" + name + "您好!\n" + "  您在代码分享平台上进行修改密码的操作,"

@@ -3,11 +3,6 @@ package com.pdsu.scs.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
-import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
-import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
-import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
-import com.pdsu.scs.exception.web.user.NotFoundUidException;
-import com.pdsu.scs.exception.web.user.UidAndWebIdRepetitionException;
 import com.pdsu.scs.service.*;
 import com.pdsu.scs.shiro.WebSessionManager;
 import com.pdsu.scs.utils.HashUtils;
@@ -25,11 +20,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import javax.validation.Valid;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 
@@ -140,88 +135,83 @@ public class BlobHandler extends ParentHandler{
 	@ResponseBody
 	@CrossOrigin
 	public Result getWebForIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
-			, @RequestParam(defaultValue = "0") Integer lid) {
-		try {
-			List<WebInformation> webList;
-			switch (lid) {
-				case 0:
-					log.info("获取首页数据");
-					PageHelper.startPage(p, 10);
-					webList = webInformationService.selectWebInformationOrderByTimetest();
-					break;
-				case 1: case 2: case 3:
-				case 4: case 5: case 6:
-				case 7: case 8: case 9:
-				case 10: case 11:
-					log.info("按标签获取首页数据");
-					List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
-					PageHelper.startPage(p, 10);
-					webList = webInformationService.selectWebInformationsByIds(wids, true);
-					break;
-				default:
-					log.warn("无此类标签");
-					return Result.fail().add(EXCEPTION, "无此类标签数据");
-			}
-			if(webList == null || webList.size() == 0) {
-				log.info("首页没有数据");
-				return Result.accepted();
-			}
-			List<Integer> uids = new ArrayList<Integer>();
-			List<Integer> webids = new ArrayList<Integer>();
-			for(WebInformation w : webList) {
-				uids.add(w.getUid());
-				webids.add(w.getId());
-			}
-			log.info("获取博客作者信息");
-			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
-			log.info("获取博客作者头像");
-			List<MyImage> imgpaths = myImageService.selectImagePathByUids(uids);
-			for(UserInformation user : userList) {
-				UserInformation t  = user;
-				t.setPassword(null);
-				for(MyImage m : imgpaths) {
-					if(user.getUid().equals(m.getUid())) {
-						t.setImgpath(m.getImagePath());
-					}
-				}
-			}
-			log.info("获取首页文章点赞量");
-			List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
-			log.info("获取首页文章访问量");
-			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-			log.info("获取首页文章收藏量");
-			List<Integer> collectionList = myCollectionService.selectCollectionssByWebIds(webids);
-			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
-			for (int i = 0; i < webList.size(); i++) {
-				BlobInformation blobInformation = new BlobInformation(
-						webList.get(i), visitList.get(i),
-						thumbsList.get(i), collectionList.get(i)
-				);
-				for(UserInformation user : userList) {
-					if(webList.get(i).getUid().equals(user.getUid())) {
-						blobInformation.setUser(user);;
-						break;
-					}
-				}
-				blobList.add(blobInformation);
-			}
-			blobList.sort((o1, o2) -> {
-				Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000 
-						- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
-				Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
-						- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
-					if(hint1 > hint2) {
-						return 1;
-					} else if(hint1 == hint2)
-						return 0;
-					return -1;
-			});
-			PageInfo<BlobInformation> pageInfo = new PageInfo<>(blobList);
-			return Result.success().add("blobList", pageInfo);
-		} catch (Exception e) {
-			log.error("获取首页数据失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+			, @RequestParam(defaultValue = "0") Integer lid) throws Exception {
+		List<WebInformation> webList;
+		switch (lid) {
+			case 0:
+				log.info("获取首页数据");
+				PageHelper.startPage(p, 10);
+				webList = webInformationService.selectWebInformationOrderByTimetest();
+				break;
+			case 1: case 2: case 3:
+			case 4: case 5: case 6:
+			case 7: case 8: case 9:
+			case 10: case 11:
+				log.info("按标签获取首页数据");
+				List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
+				PageHelper.startPage(p, 10);
+				webList = webInformationService.selectWebInformationsByIds(wids, true);
+				break;
+			default:
+				log.warn("无此类标签");
+				return Result.fail().add(EXCEPTION, "无此类标签数据");
 		}
+		if(webList == null || webList.size() == 0) {
+			log.info("首页没有数据");
+			return Result.accepted();
+		}
+		List<Integer> uids = new ArrayList<Integer>();
+		List<Integer> webids = new ArrayList<Integer>();
+		for(WebInformation w : webList) {
+			uids.add(w.getUid());
+			webids.add(w.getId());
+		}
+		log.info("获取博客作者信息");
+		List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
+		log.info("获取博客作者头像");
+		List<MyImage> imgpaths = myImageService.selectImagePathByUids(uids);
+		for(UserInformation user : userList) {
+			UserInformation t  = user;
+			t.setPassword(null);
+			for(MyImage m : imgpaths) {
+				if(user.getUid().equals(m.getUid())) {
+					t.setImgpath(m.getImagePath());
+				}
+			}
+		}
+		log.info("获取首页文章点赞量");
+		List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
+		log.info("获取首页文章访问量");
+		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
+		log.info("获取首页文章收藏量");
+		List<Integer> collectionList = myCollectionService.selectCollectionssByWebIds(webids);
+		List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+		for (int i = 0; i < webList.size(); i++) {
+			BlobInformation blobInformation = new BlobInformation(
+					webList.get(i), visitList.get(i),
+					thumbsList.get(i), collectionList.get(i)
+			);
+			for(UserInformation user : userList) {
+				if(webList.get(i).getUid().equals(user.getUid())) {
+					blobInformation.setUser(user);;
+					break;
+				}
+			}
+			blobList.add(blobInformation);
+		}
+		blobList.sort((o1, o2) -> {
+			Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000
+					- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
+			Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
+					- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
+				if(hint1 > hint2) {
+					return 1;
+				} else if(hint1 == hint2)
+					return 0;
+				return -1;
+		});
+		PageInfo<BlobInformation> pageInfo = new PageInfo<>(blobList);
+		return Result.success().add("blobList", pageInfo);
 	}
 	
 	/**
@@ -232,110 +222,99 @@ public class BlobHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/{webid}", method = RequestMethod.GET)
 	@CrossOrigin
-	public Result toBlob(@PathVariable("webid")Integer id) {
-		try {
-			log.info("开始获取博客页面信息");
-			WebInformation web = webInformationService.selectById(id);
-			web.setSubTime(SimpleUtils.getSimpleDateDifferenceFormat(web.getSubTime()));
-			Integer uid = web.getUid();
-			web.setWebDataString(new String(web.getWebData(),"utf-8"));
+	public Result toBlob(@PathVariable("webid")Integer id) throws Exception {
+		log.info("开始获取博客页面信息");
+		WebInformation web = webInformationService.selectById(id);
+		Integer uid = web.getUid();
+		if(!Objects.isNull(web.getWebData())) {
+			web.setWebDataString(new String(web.getWebData(),"UTF-8"));
 			web.setWebData(null);
-			UserInformation user = ShiroUtils.getUserInformation();
-			if(user == null) {
-				user = new UserInformation(181360226);
-			}
-			log.info("添加访问信息");
-			visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
-			log.info("添加用户浏览记录");
-			if(user.getUsername() != null) {
-				userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), 1
-					, SimpleUtils.getSimpleDateSecond()));
-			}
-			log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
-			log.info("获取网页访问量");
-			Integer visits = visitInformationService.selectvisitByWebId(web.getId());
-			log.info("获取文章点赞数");
-			Integer thubms = webThubmsService.selectThumbsForWebId(web.getId());
-			log.info("获取文章收藏量");
-			Integer collections = myCollectionService.selectCollectionsByWebId(web.getId());
-			log.info("获取文章评论");
-			List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
-			List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebId(id);
-			List<Integer> uids = new ArrayList<>();
-			for(WebComment webComment : commentList) {
-				uids.add(webComment.getUid());
-			}
-			for(WebCommentReply reply : commentReplyList) {
-				uids.add(reply.getUid());
-			}
-			log.info("获取评论者信息");
-			List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
-			log.info("获取评论者头像信息");
-			List<MyImage> imageList = myImageService.selectImagePathByUids(uids);
-			for(MyImage img : imageList) {
-				for (UserInformation us : userList) {
-					if(img.getUid().equals(us.getUid())) {
-						us.setImgpath(img.getImagePath());
-						break;
-					}
-				}
-			}
-			for(WebComment webComment : commentList) {
-				WebComment webc = webComment;
-				webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
-				for(UserInformation us : userList) {
-					if(webc.getUid().equals(us.getUid())) {
-						webc.setUsername(us.getUsername());
-						webc.setImgpath(us.getImgpath());
-						break;
-					}
-				}
-			}
-			for(WebCommentReply reply : commentReplyList) {
-				WebCommentReply webc = reply;
-				webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
-				for(UserInformation us : userList) {
-					if(webc.getUid().equals(us.getUid())) {
-						webc.setUsername(us.getUsername());
-						webc.setImgpath(us.getImgpath());
-						break;
-					}
-				}
-			}
-			for(WebComment webcomment : commentList) {
-				WebComment b = webcomment;
-				List<WebCommentReply> webcommentReplyList = new ArrayList<>();
-				for(WebCommentReply reply : commentReplyList) {
-					if(reply.getCid().equals(b.getId())) {
-						webcommentReplyList.add(reply);
-					}
-				}
-				b.setCommentReplyList(webcommentReplyList);
-			}
-			log.info("获取文章标签");
-			List<Integer> labelids = webLabelControlService.selectLabelIdByWebId(id);
-			List<WebLabel> webLabels = webLabelService.selectByLabelIds(labelids);
-			return Result.success().add("web", web)
-				   .add("visit", visits)
-				   .add("thubms", thubms)
-				   .add("collection", collections)
-				   .add("commentList", commentList)
-				   .add("labels", webLabels);
-		} catch (UnsupportedEncodingException e) {
-			log.error("文章: " + id + "编码转换失败!!!");
-			return Result.fail().add(EXCEPTION, "获取文章信息失败");
-		} catch (NotFoundBlobIdException e) {
-			log.info("文章: " + id + e.getMessage());
-			return Result.fail().add(EXCEPTION, "文章不见了");
-		} catch (Exception e) {
-			log.warn("发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
+		UserInformation user = ShiroUtils.getUserInformation();
+		if(Objects.isNull(user)) {
+			user = new UserInformation(181360226);
+		}
+		log.info("添加访问信息");
+		visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
+		log.info("添加用户浏览记录");
+		if(!Objects.isNull(user.getUsername())) {
+			userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), 1
+				, SimpleUtils.getSimpleDateSecond()));
+		}
+		log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
+		log.info("获取网页访问量");
+		Integer visits = visitInformationService.selectvisitByWebId(web.getId());
+		log.info("获取文章点赞数");
+		Integer thubms = webThubmsService.selectThumbsForWebId(web.getId());
+		log.info("获取文章收藏量");
+		Integer collections = myCollectionService.selectCollectionsByWebId(web.getId());
+		log.info("获取文章评论");
+		List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
+		List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebId(id);
+		List<Integer> uids = new ArrayList<>();
+		for(WebComment webComment : commentList) {
+			uids.add(webComment.getUid());
+		}
+		for(WebCommentReply reply : commentReplyList) {
+			uids.add(reply.getUid());
+		}
+		log.info("获取评论者信息");
+		List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
+		log.info("获取评论者头像信息");
+		List<MyImage> imageList = myImageService.selectImagePathByUids(uids);
+		for(MyImage img : imageList) {
+			for (UserInformation us : userList) {
+				if(img.getUid().equals(us.getUid())) {
+					us.setImgpath(img.getImagePath());
+					break;
+				}
+			}
+		}
+		for(WebComment webComment : commentList) {
+			WebComment webc = webComment;
+			webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
+			for(UserInformation us : userList) {
+				if(webc.getUid().equals(us.getUid())) {
+					webc.setUsername(us.getUsername());
+					webc.setImgpath(us.getImgpath());
+					break;
+				}
+			}
+		}
+		for(WebCommentReply reply : commentReplyList) {
+			WebCommentReply webc = reply;
+			webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
+			for(UserInformation us : userList) {
+				if(webc.getUid().equals(us.getUid())) {
+					webc.setUsername(us.getUsername());
+					webc.setImgpath(us.getImgpath());
+					break;
+				}
+			}
+		}
+		for(WebComment webcomment : commentList) {
+			WebComment b = webcomment;
+			List<WebCommentReply> webcommentReplyList = new ArrayList<>();
+			for(WebCommentReply reply : commentReplyList) {
+				if(reply.getCid().equals(b.getId())) {
+					webcommentReplyList.add(reply);
+				}
+			}
+			b.setCommentReplyList(webcommentReplyList);
+		}
+		log.info("获取文章标签");
+		List<Integer> labelids = webLabelControlService.selectLabelIdByWebId(id);
+		List<WebLabel> webLabels = webLabelService.selectByLabelIds(labelids);
+		return Result.success().add("web", web)
+			   .add("visit", visits)
+			   .add("thubms", thubms)
+			   .add("collection", collections)
+			   .add("commentList", commentList)
+			   .add("labels", webLabels);
 	}
 	
 	/**
 	 * 处理收藏请求
-	 * 
 	 * @param bid  作者的学号
 	 * @param webid 网页id
 	 * @return
@@ -343,31 +322,17 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/collection", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result collection(Integer bid, Integer webid) {
-		//获取当前登录用户的UID
-		Integer uid = null;
-		try {
-			uid = ShiroUtils.getUserInformation().getUid();
-			log.info("用户: " + uid + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
-			//添加一条收藏记录
-			boolean flag = myCollectionService.insert(new MyCollection(null, uid, webid, bid));
-			if(flag) {
-				log.info("用户: " + uid + ", 收藏 " + webid + " 成功");
-				return Result.success();
-			}
-			log.warn("收藏失败, 连接数据库失败");
-			return Result.fail().add(EXCEPTION, "网络延迟, 请稍候重试");
-		}catch (UidAndWebIdRepetitionException e) {
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		}catch (Exception e) {
-			if(uid == null) {
-				log.info("用户收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}else {
-				log.error("用户: " + uid + "收藏博客: " + webid + "时失败, 原因为: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-			}
+	public Result collection(@RequestParam Integer bid, @RequestParam Integer webid) throws Exception {
+		UserInformation user =ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
+		boolean flag = myCollectionService.insert(new MyCollection(null, user.getUid(), webid, bid));
+		if(flag) {
+			log.info("用户: " + user.getUid() + ", 收藏 " + webid + " 成功");
+			return Result.success();
 		}
+		log.warn("收藏失败, 连接数据库失败");
+		return Result.fail().add(EXCEPTION, "网络延迟, 请稍候重试");
 	}
 
 	/**
@@ -378,31 +343,16 @@ public class BlobHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/decollection", method = RequestMethod.POST)
 	@CrossOrigin
-	public Result deCollection(Integer webid) {
-		//获取当前登录用户的信息
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
-			//删除一条收藏记录
-			if(myCollectionService.delete(user.getUid(), webid)) {
-				log.info("取消收藏成功");
-				return Result.success();
-			}else {
-				log.warn("取消收藏失败, 原因: 连接服务器失败");
-				return Result.fail().add(EXCEPTION, "连接服务器失败, 请稍候重试");
-			}
-		}catch (UidAndWebIdRepetitionException e) {
-			log.info("用户: " + user.getUid() + ", 取消收藏失败");
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("用户收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			} else {
-				log.error("用户: " + user.getUid() + "取消收藏博客失败, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-			}
+	public Result deCollection(@RequestParam Integer webid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
+		if(myCollectionService.delete(user.getUid(), webid)) {
+			log.info("取消收藏成功");
+			return Result.success();
+		}else {
+			log.warn("取消收藏失败, 原因: 连接服务器失败");
+			return Result.fail().add(EXCEPTION, "连接服务器失败, 请稍候重试");
 		}
 	}
 	
@@ -414,24 +364,16 @@ public class BlobHandler extends ParentHandler{
 	@GetMapping("/collectionstatuts")
 	@CrossOrigin
 	@ResponseBody
-	public Result collectionStatus(Integer webid) {
-		Integer uid = null;
-		try {
-			uid = ShiroUtils.getUserInformation().getUid();
-			log.info("查询用户是否已收藏文章");
-			boolean b = myCollectionService.countByUidAndWebId(uid, webid);
-			log.info("查询成功");
-			return Result.success().add("status", b);
-		} catch (Exception e) {
-			if(uid == null) {
-				log.info("查询用户是否收藏文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("查询用户是否收藏文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+	public Result collectionStatus(@RequestParam Integer webid) throws Exception {
+		System.out.println(webid);
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("查询用户是否已收藏文章");
+		boolean b = myCollectionService.countByUidAndWebId(user.getUid(), webid);
+		log.info("查询成功");
+		return Result.success().add("collectionStatus", b);
 	}
-	
+
 	/**
 	 * 处理投稿请求
 	 * @param web, labelList
@@ -440,53 +382,37 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/contribution", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result insert(WebInformation web, @RequestParam(required = false)List<Integer> labelList) {
-		//获取当前登录用户的UID
-		if(labelList != null) {
+	public Result insert(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList)
+			throws Exception {
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + "发布文章开始");
+		if(!Objects.isNull(labelList)) {
 			if(labelList.size() > 3) {
 				log.info("发布文章失败, 文章只可添加至多三个标签");
 				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
 			}
 		}
-		Integer uid = null;
-		try {
-			uid = ShiroUtils.getUserInformation().getUid();
-			log.info("用户: " + uid + "发布文章开始");
-			if(web.getTitle().length() >= 30) {
-				log.info("发布失败, 原因: 标题过长");
-				return Result.fail().add(EXCEPTION, "文章标题应为30字以内");
-			}
-			//设置作者UID
-			web.setUid(uid);
-			//把网页主体内容转化为byte字节
-			web.setWebData(web.getWebDataString().getBytes("utf-8"));
-			//设置文章投稿时间
-			web.setSubTime(SimpleUtils.getSimpleDateSecond());
-			//发布文章
-			int flag = webInformationService.insert(web);
-			if(flag != -1) {
-				if(labelList != null) {
-					boolean b = webLabelControlService.insert(web.getId(), labelList);
-					if(!b) {
-						log.info("插入文章标签失败");
-					}
+		//设置作者UID
+		web.setUid(user.getUid());
+		//把网页主体内容转化为byte字节
+		web.setWebData(web.getWebDataString().getBytes("UTF-8"));
+		//设置文章投稿时间
+		web.setSubTime(SimpleUtils.getSimpleDateSecond());
+		//发布文章
+		int flag = webInformationService.insert(web);
+		if(flag > 0) {
+			if(!Objects.isNull(labelList)) {
+				boolean b = webLabelControlService.insert(web.getId(), labelList);
+				if(!b) {
+					log.info("插入文章标签失败");
 				}
-				log.info("用户: " + uid + "发布文章成功, 文章标题为: " + web.getTitle());
-				return Result.success().add("webid", web.getId());
 			}
-			log.info("用户: " + uid + "发布文章失败");
-			return Result.fail().add(EXCEPTION, "发布失败");
-		} catch (UnsupportedEncodingException e) {
-			log.warn("文章: " + web.getUid() + " 转码失败!!!");
-			return Result.fail().add(EXCEPTION, "添加文章信息失败");
-		}catch (Exception e) {
-			if(uid == null) {
-				log.info("用户发布文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户: " + uid + ", 发布文章失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+			log.info("用户: " + user.getUid() + "发布文章成功, 文章标题为: " + web.getTitle());
+			return Result.success().add("webid", web.getId());
 		}
+		log.warn("用户: " + user.getUid() + "发布文章失败, 原因: 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	
@@ -499,35 +425,22 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/delete", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result delete(Integer webid) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
-			WebInformation webInformation = webInformationService.selectById(webid);
-			if(!user.getUid().equals(webInformation.getUid())) {
-				log.info("用户: " + user.getUid() + " 无权删除文章: " + webid);
-				return Result.fail().add(EXCEPTION, "你无权删除这篇文章");
-			}
-			boolean b = webInformationService.deleteById(webid);
-			if(b) {
-				log.info("删除文章成功, 文章ID为: " + webid);
-				return Result.success();
-			}else {
-				log.warn("删除文章失败, 数据库异常");
-				return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
-			}
-		} catch (NotFoundBlobIdException e) {
-			log.info("删除文章失败, 文章不存在");
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			if(user == null) {
-				log.info("用户删除文章失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("删除文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result delete(@RequestParam Integer webid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
+		WebInformation webInformation = webInformationService.selectById(webid);
+		if(!user.getUid().equals(webInformation.getUid())) {
+			log.info("用户: " + user.getUid() + " 无权删除文章: " + webid);
+			return Result.fail().add(EXCEPTION, INSUFFICIENT_PERMISSION);
 		}
+		boolean b = webInformationService.deleteById(webid);
+		if(b) {
+			log.info("删除文章成功, 文章ID为: " + webid);
+			return Result.success();
+		}
+		log.warn("删除文章失败, 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -538,40 +451,29 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result update(WebInformation web, @RequestParam(required = false)List<Integer> labelList) {
+	public Result update(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList) throws Exception {
 		//获取当前登录用户的信息
-		UserInformation user = null;
-		if(labelList != null) {
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
+		if(!Objects.isNull(labelList)) {
 			if(labelList.size() > 3) {
 				log.info("发布文章失败, 文章只可添加至多三个标签");
 				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
 			}
 		}
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
-			web.setWebData(web.getWebDataString().getBytes());
-			boolean b = webInformationService.updateByWebId(web);
-			if(b) {
-				log.info("更新文章成功");
-				if(labelList != null) {
-					webLabelControlService.deleteByWebId(web.getId());
-					webLabelControlService.insert(web.getId(), labelList);
-				}
-				return Result.success();
-			}else {
-				log.info("更新文章失败");
-				return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
+		web.setWebData(web.getWebDataString().getBytes());
+		boolean b = webInformationService.updateByWebId(web);
+		if(b) {
+			log.info("更新文章成功");
+			if (!Objects.isNull(labelList)) {
+				webLabelControlService.deleteByWebId(web.getId());
+				webLabelControlService.insert(web.getId(), labelList);
 			}
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("用户更新文章失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}else {
-				log.error("更新文章失败, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-			}
+			return Result.success();
 		}
+		log.info("更新文章失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -583,34 +485,20 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/comment", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result postComment(Integer webid, String content) {
-		UserInformation user = null;
-		try {
-			user =ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
-			boolean b = webCommentService.insert(new WebComment(null, webid, user.getUid(), 
-					content, 0, SimpleUtils.getSimpleDateSecond(), 0));
-			if(b) {
-				log.info("用户发布评论成功");
-				return Result.success().add("username", user.getUsername())
-						.add("createtime", SimpleUtils.getSimpleDateSecond())
-						.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
-			}
-			log.warn("用户发布评论失败, 原因: 插入数据库失败");
-			return Result.fail().add(EXCEPTION, "网络链接失败, 请稍候重试");
-		} catch (NotFoundBlobIdException e) {
-			log.info("用户发布评论失败, 原因: 该博客已被删除");
-			return Result.fail().add(EXCEPTION, "该博客不存在");
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("用户发布评论失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}else {
-				log.error("用户: " + user.getUid() + "在博客: " + webid + "发布评论失败, 内容为: " + content
-						+ "错误原因为: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-			}
+	public Result postComment(@RequestParam Integer webid, @RequestParam String content) throws Exception{
+		UserInformation user =ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
+		boolean b = webCommentService.insert(new WebComment(null, webid, user.getUid(),
+				content, 0, SimpleUtils.getSimpleDateSecond(), 0));
+		if(b) {
+			log.info("用户发布评论成功");
+			return Result.success().add("username", user.getUsername())
+					.add("createtime", SimpleUtils.getSimpleDateSecond())
+					.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 		}
+		log.warn("用户发布评论失败, 原因: 插入数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -623,35 +511,23 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/commentreply", method = RequestMethod.POST)
 	@CrossOrigin
 	@ResponseBody
-	public Result postCommentReply(Integer webid, Integer cid, Integer bid, String content) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
-			boolean b = webCommentReplyService.insert(new WebCommentReply(webid, cid, user.getUid(), bid, content, 
-						0, SimpleUtils.getSimpleDateSecond()));
-			if(b) {
-				log.info("用户回复评论成功");
-				return Result.success().add("username", user.getUsername())
-						.add("createtime", SimpleUtils.getSimpleDateSecond())
-						.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
-			}
-			log.warn("用户回复评论失败, 原因: 连接数据库失败");
-			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
-		} catch (NotFoundBlobIdException e) {
-			log.info("用户回复评论失败, 原因: 该博客已被删除");
-			return Result.fail().add(EXCEPTION, "该博客不存在");
-		} catch (NotFoundCommentIdException e) {
-			log.info("用户回复评论失败, 原因: 该评论已被删除");
-			return Result.fail().add(EXCEPTION, "该评论不存在");
-		} catch (Exception e) {
-			if(user == null) {
-				log.info("用户回复评论失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.info("用户: " + user.getUid() + " 回复评论: " + cid + " 失败, 被回复人: " + bid + ", 内容为:" + content);
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result postCommentReply(@RequestParam Integer webid,
+								   @RequestParam Integer cid,
+								   @RequestParam Integer bid,
+								   @RequestParam String content) throws Exception {
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
+		boolean b = webCommentReplyService.insert(new WebCommentReply(webid, cid, user.getUid(), bid, content,
+					0, SimpleUtils.getSimpleDateSecond()));
+		if(b) {
+			log.info("用户回复评论成功");
+			return Result.success().add("username", user.getUsername())
+					.add("createtime", SimpleUtils.getSimpleDateSecond())
+					.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 		}
+		log.warn("用户回复评论失败, 原因: 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -662,73 +538,65 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/getauthor", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getAuthorByUid(HttpServletRequest request, Integer uid) {
-		try {
-			log.info("获取作者: " + uid + "信息开始");
-			UserInformation user = userInformationService.selectByUid(uid);
-			Author author = new Author();
-			author.setUid(user.getUid());
-			author.setUsername(user.getUsername());
-			log.info("获取作者其余文章");
-			List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
-			List<WebInformation> webs = new ArrayList<WebInformation>();
-			List<Integer> webids = new ArrayList<>();
-			int i = 0;
-			for (WebInformation webInformation : webList) {
-				if(i <= 5) {
-					webs.add(webInformation);
-				}
-				webids.add(webInformation.getId());
-				i++;
+	public Result getAuthorByUid(HttpServletRequest request, @RequestParam Integer uid) throws Exception{
+		log.info("获取作者: " + uid + "信息开始");
+		UserInformation user = userInformationService.selectByUid(uid);
+		Author author = new Author();
+		author.setUid(user.getUid());
+		author.setUsername(user.getUsername());
+		log.info("获取作者其余文章");
+		List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
+		List<WebInformation> webs = new ArrayList<WebInformation>();
+		List<Integer> webids = new ArrayList<>();
+		int i = 0;
+		for (WebInformation webInformation : webList) {
+			if(i <= 5) {
+				webs.add(webInformation);
 			}
-			log.info("获取作者头像信息");
-			String imgpath = myImageService.selectImagePathByUid(uid).getImagePath();
-			author.setImgpath(imgpath);
-			log.info("获取作者粉丝数");
-			Integer fans = (int) myLikeService.countByLikeId(uid);
-			author.setFans(fans);
-			log.info("获取作者文章被点赞数");
-			Integer thumbs = webThubmsService.countThumbsByUid(uid);
-			author.setThumbs(thumbs);
-			log.info("获取作者文章总评论数");
-			Integer comment = webCommentService.countByUid(uid);
-			Integer commentReply = webCommentReplyService.countByWebsAndUid(webids);
-			author.setComment(comment + commentReply);
-			log.info("获取作者文章总访问量");
-			Integer visits = visitInformationService.selectVisitsByVid(uid);
-			author.setVisits(visits);
-			log.info("获取作者文章总收藏量");
-			Integer collection = myCollectionService.countCollectionByUid(uid);
-			author.setCollection(collection);
-			log.info("获取作者原创数量");
-			Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
-			author.setOriginal(original);
-			log.info("获取作者总关注数量");
-			Integer attention = (int) myLikeService.countByUid(uid);
-			author.setAttention(attention);
-			log.info("获取作者文件总数量");
-			Integer files = webFileService.countByUid(uid);
-			author.setFiles(files);
-			log.info("获取作者文件被下载量");
-			Integer downloads = fileDownloadService.countByBid(uid);
-			author.setDownloads(downloads);
-			log.info("获取作者信息成功");
-			Result result = Result.success().add("author", author).add("webList", webs);
-			if(!StringUtils.isEmpty(WebUtils.toHttp(request).getHeader(WebSessionManager.AUTHORIZATION))) {
-				boolean b = true;
-				if(!ShiroUtils.getUserInformation().getUid().equals(uid)) {
-					b = myLikeService.countByUidAndLikeId(ShiroUtils.getUserInformation().getUid(), uid);
-				}
-				result.add("islike", b);
-			}
-			return result;
-		} catch (NotFoundUidException e) {
-			log.info("获取作者信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			log.error("获取作者信息发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+			webids.add(webInformation.getId());
+			i++;
 		}
+		log.info("获取作者头像信息");
+		String imgpath = myImageService.selectImagePathByUid(uid).getImagePath();
+		author.setImgpath(imgpath);
+		log.info("获取作者粉丝数");
+		Integer fans = (int) myLikeService.countByLikeId(uid);
+		author.setFans(fans);
+		log.info("获取作者文章被点赞数");
+		Integer thumbs = webThubmsService.countThumbsByUid(uid);
+		author.setThumbs(thumbs);
+		log.info("获取作者文章总评论数");
+		Integer comment = webCommentService.countByUid(uid);
+		Integer commentReply = webCommentReplyService.countByWebsAndUid(webids);
+		author.setComment(comment + commentReply);
+		log.info("获取作者文章总访问量");
+		Integer visits = visitInformationService.selectVisitsByVid(uid);
+		author.setVisits(visits);
+		log.info("获取作者文章总收藏量");
+		Integer collection = myCollectionService.countCollectionByUid(uid);
+		author.setCollection(collection);
+		log.info("获取作者原创数量");
+		Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
+		author.setOriginal(original);
+		log.info("获取作者总关注数量");
+		Integer attention = (int) myLikeService.countByUid(uid);
+		author.setAttention(attention);
+		log.info("获取作者文件总数量");
+		Integer files = webFileService.countByUid(uid);
+		author.setFiles(files);
+		log.info("获取作者文件被下载量");
+		Integer downloads = fileDownloadService.countByBid(uid);
+		author.setDownloads(downloads);
+		log.info("获取作者信息成功");
+		Result result = Result.success().add("author", author).add("webList", webs);
+		if(!StringUtils.isEmpty(WebUtils.toHttp(request).getHeader(WebSessionManager.AUTHORIZATION))) {
+			boolean b = true;
+			if(!ShiroUtils.getUserInformation().getUid().equals(uid)) {
+				b = myLikeService.countByUidAndLikeId(ShiroUtils.getUserInformation().getUid(), uid);
+			}
+			result.add("islike", b);
+		}
+		return result;
 	}
 	
 	/**
@@ -739,49 +607,45 @@ public class BlobHandler extends ParentHandler{
 	@GetMapping("/getcollection")
 	@ResponseBody
 	@CrossOrigin
-	public Result getCollectionByUid(Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p) {
-		try {
-			log.info("获取用户: " + uid + " 收藏的文章");
-			PageHelper.startPage(p, 10);
-			List<MyCollection> collections = myCollectionService.selectWebIdsByUid(uid);
-			List<Integer> webids = new ArrayList<>();
-			List<Integer> uids = new ArrayList<>();
-			for (MyCollection collection : collections) {
-				webids.add(collection.getWid());
-				uids.add(collection.getBid());
-			}
-			log.info("获取文章信息");
-			List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
-			log.info("获取文章访问量");
-			List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
-			log.info("获取文章收藏量");
-			List<Integer> collection = myCollectionService.selectCollectionssByWebIds(webids);
-			log.info("获取作者信息");
-			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-			log.info("获取点赞量");
-			List<Integer> thumbs = webThubmsService.selectThumbssForWebId(webids);
-			List<BlobInformation> blobInformations = new ArrayList<BlobInformation>();
-			for (Integer i = 0; i < webs.size(); i++) {
-				BlobInformation blob = new BlobInformation();
-				blob.setWeb(webs.get(i));
-				blob.setVisit(visits.get(i));
-				blob.setThumbs(thumbs.get(i));
-				blob.setCollection(collection.get(i));
-				for(UserInformation user : users) {
-					if(webs.get(i).getUid().equals(user.getUid())) {
-						blob.setUser(user);
-						break;
-					}
-				}
-				blobInformations.add(blob);
-			}
-			PageInfo<BlobInformation> bloList = new PageInfo<BlobInformation>(blobInformations);
-			log.info("获取成功");
-			return Result.success().add("blobList", bloList);
-		} catch (Exception e) {
-			log.info("获取失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getCollectionByUid(@RequestParam Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p)
+			throws Exception {
+		log.info("获取用户: " + uid + " 收藏的文章");
+		PageHelper.startPage(p, 10);
+		List<MyCollection> collections = myCollectionService.selectWebIdsByUid(uid);
+		List<Integer> webids = new ArrayList<>();
+		List<Integer> uids = new ArrayList<>();
+		for (MyCollection collection : collections) {
+			webids.add(collection.getWid());
+			uids.add(collection.getBid());
 		}
+		log.info("获取文章信息");
+		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
+		log.info("获取文章访问量");
+		List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
+		log.info("获取文章收藏量");
+		List<Integer> collection = myCollectionService.selectCollectionssByWebIds(webids);
+		log.info("获取作者信息");
+		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+		log.info("获取点赞量");
+		List<Integer> thumbs = webThubmsService.selectThumbssForWebId(webids);
+		List<BlobInformation> blobInformations = new ArrayList<BlobInformation>();
+		for (Integer i = 0; i < webs.size(); i++) {
+			BlobInformation blob = new BlobInformation();
+			blob.setWeb(webs.get(i));
+			blob.setVisit(visits.get(i));
+			blob.setThumbs(thumbs.get(i));
+			blob.setCollection(collection.get(i));
+			for(UserInformation user : users) {
+				if(webs.get(i).getUid().equals(user.getUid())) {
+					blob.setUser(user);
+					break;
+				}
+			}
+			blobInformations.add(blob);
+		}
+		PageInfo<BlobInformation> bloList = new PageInfo<BlobInformation>(blobInformations);
+		log.info("获取成功");
+		return Result.success().add("blobList", bloList);
 	}
 	
 	/**
@@ -790,32 +654,17 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/thumbs", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result thumbs(Integer webid, Integer bid) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
-			boolean b = webThubmsService.insert(new WebThumbs(user.getUid(), bid, webid));
-			if(b) {
-				log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
-				return Result.success();
-			}
-			log.warn("用户点赞文章失败, 连接数据库失败");
-			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
-		} catch (NotFoundBlobIdException e) {
-			log.info("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (RepetitionThumbsException e) {
-			log.info("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("用户点赞文章失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
+		boolean b = webThubmsService.insert(new WebThumbs(user.getUid(), bid, webid));
+		if(b) {
+			log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
+			return Result.success();
 		}
+		log.warn("用户点赞文章失败, 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -824,29 +673,17 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/dethumbs", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result dethumbs(Integer webid) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + "取消点赞文章: " + webid);
-			boolean b = webThubmsService.deletebyWebIdAndUid(webid, user.getUid());
-			if(b) {
-				log.info("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
-				return Result.success();
-			}
-			log.warn("用户取消点赞文章失败, 连接数据库失败");
-			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
-		} catch (RepetitionThumbsException e) {
-			log.info("用户取消点赞失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("用户取消点赞文章失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户取消点赞文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result dethumbs(@RequestParam Integer webid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + "取消点赞文章: " + webid);
+		boolean b = webThubmsService.deletebyWebIdAndUid(webid, user.getUid());
+		if(b) {
+			log.info("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
+			return Result.success();
 		}
+		log.warn("用户取消点赞文章失败, 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -857,21 +694,12 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/thumbsstatus", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result thumbsStatus(Integer webid) {
-		Integer uid = null;
-		try {
-			log.info("获取用户是否点赞此篇文章");
-			uid = ShiroUtils.getUserInformation().getUid();
-			boolean b = webThubmsService.countByWebIdAndUid(webid, uid);
-			if(b) {
-				log.info("用户已点赞该文章");
-				return Result.success();
-			}
-			log.warn("连接数据库失败!");
-		} catch (Exception e) {
-			log.error("查询用户是否点赞文章失败, 原因: " + e.getMessage());
-		}
-		return Result.fail().add(EXCEPTION, "未点赞");
+	public Result thumbsStatus(@RequestParam Integer webid) throws Exception {
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("获取用户是否点赞此篇文章");
+		boolean b = webThubmsService.countByWebIdAndUid(webid, user.getUid());
+		return Result.success().add("thumbsStatus", b);
 	}
 	
 	/**
@@ -882,25 +710,17 @@ public class BlobHandler extends ParentHandler{
 	@PostMapping(value = "/blobimg")
 	@ResponseBody
 	@CrossOrigin
-	public Result postBlobImg(MultipartFile img) {
-		try {
-			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + Img_Suffix;
-			log.info("用户博客页面上传图片, 图片名为: " + name);
-			InputStream input = img.getInputStream();
-			Thumbnails.of(input)
-			.scale(1f)
-			.outputQuality(0.8f)
-			.outputFormat(Img_Suffix_Except_Point)
-			.toFile(Blob_Img_FilePath + name);
-			log.info("上传并压缩成功");
-			return Result.success().add("img", name);
-		} catch (IOException e) {
-			log.info("用户博客页面上传图片失败, 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "上传图片失败, " + e.getMessage());
-		} catch (Exception e) {
-			log.error("用户博客页面上传图片失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+	public Result postBlobImg(@RequestParam MultipartFile img) throws Exception {
+		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + Img_Suffix;
+		log.info("用户博客页面上传图片, 图片名为: " + name);
+		InputStream input = img.getInputStream();
+		Thumbnails.of(input)
+		.scale(1f)
+		.outputQuality(0.8f)
+		.outputFormat(Img_Suffix_Except_Point)
+		.toFile(Blob_Img_FilePath + name);
+		log.info("上传并压缩成功");
+		return Result.success().add("img", name);
 	}
 	
 	/**
@@ -910,16 +730,11 @@ public class BlobHandler extends ParentHandler{
 	@ResponseBody
 	@CrossOrigin
 	@GetMapping("/getlabel")
-	public Result getLabel() {
-		try {
-			log.info("获取所有标签");
-			List<WebLabel> label = webLabelService.selectLabel();
-			log.info("获取标签成功");
-			return Result.success().add("labelList", label);
-		} catch (Exception e) {
-			log.error("获取标签失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+	public Result getLabel() throws Exception{
+		log.info("获取所有标签");
+		List<WebLabel> label = webLabelService.selectLabel();
+		log.info("获取标签成功");
+		return Result.success().add("labelList", label);
 	}
 	
 	/**
@@ -929,15 +744,10 @@ public class BlobHandler extends ParentHandler{
 	@ResponseBody
 	@GetMapping("/getcontype")
 	@CrossOrigin
-	public Result getContype() {
-		try {
-			log.info("获取文章类型列表");
-			List<Contype> contypes = contypeService.selectContypes();
-			log.info("获取文章类型列表成功");
-			return Result.success().add("contypeList", contypes);
-		} catch (Exception e) {
-			log.error("获取文章类型列表失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+	public Result getContype() throws Exception{
+		log.info("获取文章类型列表");
+		List<Contype> contypes = contypeService.selectContypes();
+		log.info("获取文章类型列表成功");
+		return Result.success().add("contypeList", contypes);
 	}
 }

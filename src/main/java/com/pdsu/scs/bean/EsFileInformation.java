@@ -1,11 +1,13 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * es 存储 File 信息
  * @author 半梦
  *
  */
-public class EsFileInformation {
+public class EsFileInformation implements Serializable {
 
 	private Integer fileid;
 	

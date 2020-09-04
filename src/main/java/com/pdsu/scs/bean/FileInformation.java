@@ -1,8 +1,11 @@
 package com.pdsu.scs.bean;
+
+import java.io.Serializable;
+
 /**
  * @author 半梦
  */
-public class FileInformation {
+public class FileInformation implements Serializable {
 
 	private UserInformation user;
 	

@@ -3,13 +3,10 @@ package com.pdsu.scs.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
-import com.pdsu.scs.exception.web.user.*;
 import com.pdsu.scs.service.*;
 import com.pdsu.scs.utils.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
@@ -23,11 +20,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -125,18 +123,11 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getLoginStatus() {
-		try {
-			UserInformation user = ShiroUtils.getUserInformation();
-			if(user == null) {
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
-			return Result.success().add("user", user);
-		} catch (Exception e) {
-			log.error("原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "未知错误, 请稍候重试");
-		}
+	public Result getLoginStatus() throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
+		return Result.success().add("user", user);
 	}
 	
 	/**
@@ -151,26 +142,26 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@CrossOrigin
-	public Result login(String uid, String password, String hit, String code,
-						@RequestParam(value = "flag", defaultValue = "0")Integer flag) {
+	public Result login(@RequestParam String uid, @RequestParam String password,
+						@RequestParam String hit, @RequestParam String code,
+						@RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception{
 		log.info("账号: " + uid + "登录开始");
 		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
-		if(cache.get(hit) == null) {
-			return Result.fail().add(EXCEPTION, "验证码已失效, 请刷新后重试");
+		if(Objects.isNull(cache.get(hit))) {
+			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
 		//从缓存中获取验证码
 		String ss = ((String) cache.get(hit).get()).toLowerCase();
 		log.info("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
 		if(!ss.equals(code.toLowerCase())) {
-			log.info("验证码错误");
-			return Result.fail().add(EXCEPTION, "验证码错误");
+			log.info(CODE_ERROR);
+			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
-		
 		Subject subject = SecurityUtils.getSubject();
 		/**
 		 * 如果未认证
 		 */
-		if(ShiroUtils.getUserInformation() == null) {
+		if(Objects.isNull(ShiroUtils.getUserInformation())) {
 			log.info("账号: " + uid + "开始登录认证");
 			UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
 			//是否记住
@@ -179,33 +170,16 @@ public class UserHandler extends ParentHandler{
 			}else {
 				token.setRememberMe(true);
 			}
-			try{
-				//登录
-				subject.login(token);
-				UserInformation uu = (UserInformation) subject.getPrincipal();
-				uu.setPassword(null);
-				log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
-				uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
-				uu.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(uu.getUid()));
-				uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
-				return Result.success()
-						.add("user", uu)
-						.add("AccessToken", subject.getSession().getId());
-			} catch (IncorrectCredentialsException e) {
-				log.info("账号: " + uid + "账号或密码错误");
-				return Result.fail().add(EXCEPTION, "账号或密码错误");
-			} catch (UnknownAccountException e) {
-				log.info("账号: " + uid + "不存在");
-				return Result.fail().add(EXCEPTION, "账号不存在");
-			} catch (Exception e) {
-				log.info("账号: " + uid + "登录失败, 原因: " + e.getMessage());
-				if(e instanceof UserAbnormalException) {
-					return Result.fail().add(EXCEPTION, e.getMessage());
-				}
-				subject.logout();
-				log.error("账号: " + uid + "登录时发生未知错误, 原因: " + e.getMessage());
-				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-			}
+			subject.login(token);
+			UserInformation uu = (UserInformation) subject.getPrincipal();
+			uu.setPassword(null);
+			log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
+			uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
+			uu.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(uu.getUid()));
+			uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
+			return Result.success()
+					.add("user", uu)
+					.add("AccessToken", subject.getSession().getId());
 		}
 		log.info("账号: " + uid + "已登录");
 		return Result.fail().add(EXCEPTION, ALREADY_LOGIN);
@@ -219,29 +193,24 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@RequestMapping(value = "/getcodeforlogin", method = RequestMethod.GET)
 	@CrossOrigin
-	public Result getCode(){
-		try {
-			log.info("获取验证码开始");
-			if(cache == null) {
-				System.setProperty("java.awt.headless", "true");
-				cache = cacheManager.getCache("code");
-			}
-			String verifyCode = CodeUtils.generateVerifyCode(4);
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			CodeUtils.outputImage(100, 30, out, verifyCode);
-			String base64 = Base64.encodeToString(out.toByteArray());
-			String src = "data:image/png;base64," + base64;
-			String token = RandomUtils.getUUID();
-			cache.put(token, verifyCode);
-			log.info("获取成功, 验证码为: " + verifyCode);
-			return Result.success()
-					.add("token", token)
-					.add("img", src)
-					.add("vicode", verifyCode);
-		} catch (Exception e) {
-			log.error("获取验证码失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getCode() throws Exception {
+		log.info("获取验证码开始");
+		if(Objects.isNull(cache)) {
+			System.setProperty("java.awt.headless", "true");
+			cache = cacheManager.getCache("code");
 		}
+		String verifyCode = CodeUtils.generateVerifyCode(4);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		CodeUtils.outputImage(100, 30, out, verifyCode);
+		String base64 = Base64.encodeToString(out.toByteArray());
+		String src = "data:image/png;base64," + base64;
+		String token = RandomUtils.getUUID();
+		cache.put(token, verifyCode);
+		log.info("获取成功, 验证码为: " + verifyCode);
+		return Result.success()
+				.add("token", token)
+				.add("img", src)
+				.add("vicode", verifyCode);
 	}
 	
 	/**
@@ -253,8 +222,7 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) {
-		try {
+	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(StringUtils.isEmpty(email)) {
 				return Result.fail().add(EXCEPTION, "邮箱不可为空");
@@ -268,17 +236,13 @@ public class UserHandler extends ParentHandler{
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForApply(email, name);
 			String text = utils.getText();
-			if(cache == null) {
+			if(Objects.isNull(cache)) {
 				cache = cacheManager.getCache("code");
 			}
 			String token = RandomUtils.getUUID();
 			cache.put(token, text);
 			log.info("发送成功, 验证码为: " + text);
 			return Result.success().add("token", token);
-		}catch (Exception e) {
-			log.error("邮箱: " + email + " 不存在, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "邮箱地址不正确");
-		}
 	}
 	
 	/**
@@ -292,48 +256,41 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/applynumber", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result applyforAccountNumber(UserInformation user, String email, String token, String code) {
-		try {
-			log.info("申请账号: " + user.getUid() + "开始");
-			//验证验证码
-			Cache.ValueWrapper valueWrapper = cache.get(token);
-			if(valueWrapper == null) {
-				return Result.fail().add(EXCEPTION, CODE_EXPIRED);
-			}
-			String ss = (String) valueWrapper.get();
-			if(!ss.equals(code)) {
-				return Result.fail().add(EXCEPTION, CODE_ERROR);
-			}
-			if(userInformationService.countByUid(user.getUid()) != 0) {
-				return Result.fail().add(EXCEPTION, "该账号已存在,是否忘记密码?");
-			}
-			if(myEmailService.countByEmail(email)) {
-				return Result.fail().add(EXCEPTION, "此邮箱已被绑定, 忘记密码?");
-			}
-			if(userInformationService.countByUserName(user.getUsername()) != 0) {
-				return Result.fail().add(EXCEPTION, "用户名已存在");
-			}
-			user.setAccountStatus(1);
-			user.setTime(SimpleUtils.getSimpleDate());
-			user.setImgpath("422696839bb3222a73a48d7c97b1bba4.jpg");
-			boolean flag = userInformationService.inset(user);
-			if(flag) {
-				myImageService.insert(new MyImage(user.getUid(), "422696839bb3222a73a48d7c97b1bba4.jpg"));
-				myEmailService.insert(new MyEmail(null, user.getUid(), email));
-				userRoleService.insert(new UserRole(user.getUid(), 1));
-				log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
-				return Result.success();
-			}else {
-				log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
-				return Result.fail().add(EXCEPTION, "申请失败");
-			}
-		} catch (UidRepetitionException e) {
-			log.info("该用户已存在, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			log.error("申请账号失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result applyforAccountNumber(@Valid UserInformation user, @RequestParam String email,
+										@RequestParam String token, @RequestParam String code)
+			throws Exception {
+		log.info("申请账号: " + user.getUid() + "开始");
+		//验证验证码
+		Cache.ValueWrapper valueWrapper = cache.get(token);
+		if(Objects.isNull(valueWrapper)) {
+			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
+		String ss = (String) valueWrapper.get();
+		if(!ss.equals(code)) {
+			return Result.fail().add(EXCEPTION, CODE_ERROR);
+		}
+		if(userInformationService.countByUid(user.getUid()) != 0) {
+			return Result.fail().add(EXCEPTION, "该账号已存在,是否忘记密码?");
+		}
+		if(myEmailService.countByEmail(email)) {
+			return Result.fail().add(EXCEPTION, "此邮箱已被绑定, 忘记密码?");
+		}
+		if(userInformationService.countByUserName(user.getUsername()) != 0) {
+			return Result.fail().add(EXCEPTION, "用户名已存在");
+		}
+		user.setAccountStatus(1);
+		user.setTime(SimpleUtils.getSimpleDate());
+		user.setImgpath(Default_User_Img_Name);
+		boolean flag = userInformationService.inset(user);
+		if(flag) {
+			myImageService.insert(new MyImage(user.getUid(), Default_User_Img_Name));
+			myEmailService.insert(new MyEmail(null, user.getUid(), email));
+			userRoleService.insert(new UserRole(user.getUid(), 1));
+			log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
+			return Result.success();
+		}
+		log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
+		return Result.fail().add(EXCEPTION, "申请失败");
 	}
 	
 	/**
@@ -349,29 +306,24 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/isexist", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getEmail(Integer uid) {
-		try {
-			log.info("开始进行找回密码验证账号是否存在");
-			int i = userInformationService.countByUid(uid);
-			if(i != 0) {
-				log.info("账号: " + uid + "存在");
-				MyEmail email = myEmailService.selectMyEmailByUid(uid);
-				if(cache == null) {
-					cache = cacheManager.getCache("code");
-				}
-				String token = RandomUtils.getUUID();
-				cache.put(token, email.getEmail());
-				email.setEmail(SimpleUtils.getAsteriskForString(email.getEmail()));
-				return Result.success().add("email", email)
-						.add("uid", uid)
-						.add("token", token);
-			}else {
-				log.info("账号: " + uid + "不存在");
-				return Result.fail().add(EXCEPTION, "账号不存在, 是否申请?");
+	public Result getEmail(@RequestParam Integer uid) throws Exception{
+		log.info("开始进行找回密码验证账号是否存在");
+		int i = userInformationService.countByUid(uid);
+		if(i != 0) {
+			log.info("账号: " + uid + "存在");
+			MyEmail email = myEmailService.selectMyEmailByUid(uid);
+			if(Objects.isNull(cache)) {
+				cache = cacheManager.getCache("code");
 			}
-		}catch (Exception e) {
-			log.error("账号: " + uid + "找回密码时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+			String token = RandomUtils.getUUID();
+			cache.put(token, email.getEmail());
+			email.setEmail(SimpleUtils.getAsteriskForString(email.getEmail()));
+			return Result.success().add("email", email)
+					.add("uid", uid)
+					.add("token", token);
+		}else {
+			log.info("账号: " + uid + "不存在");
+			return Result.fail().add(EXCEPTION, "账号不存在, 是否申请?");
 		}
 	}
 	
@@ -383,29 +335,24 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result sendEmailForRetrieve(String token) {
+	public Result sendEmailForRetrieve(@RequestParam String token) throws Exception{
 		String email = null;
-		try {
-			Cache.ValueWrapper valueWrapper = cache.get(token);
-			if(valueWrapper == null) {
-				return Result.fail().add(EXCEPTION, "验证信息已失效, 请重新验证");
-			}
-			email = (String) valueWrapper.get();
-			log.info("邮箱: " + email + " 开始发送找回密码的验证码");
-			EmailUtils utils = new EmailUtils();
-			//发送邮件
-			utils.sendEmailForRetrieve(email, 
-					userInformationService.selectByUid(
-							myEmailService.selectMyEmailByEmail(email).getUid()).getUsername());
-			String text = utils.getText();
-			String uuid = RandomUtils.getUUID();
-			cache.put(uuid, text);
-			log.info("发送验证码成功, 验证码为: " + text);
-			return Result.success().add("token", uuid);
-		}catch (Exception e) {
-			log.error("邮箱: " + email + "找回密码时发送邮件时服务器开小差了, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+		Cache.ValueWrapper valueWrapper = cache.get(token);
+		if(Objects.isNull(valueWrapper)) {
+			return Result.fail().add(EXCEPTION, "验证信息已失效, 请重新验证");
 		}
+		email = (String) valueWrapper.get();
+		log.info("邮箱: " + email + " 开始发送找回密码的验证码");
+		EmailUtils utils = new EmailUtils();
+		//发送邮件
+		utils.sendEmailForRetrieve(email,
+				userInformationService.selectByUid(
+						myEmailService.selectMyEmailByEmail(email).getUid()).getUsername());
+		String text = utils.getText();
+		String uuid = RandomUtils.getUUID();
+		cache.put(uuid, text);
+		log.info("发送验证码成功, 验证码为: " + text);
+		return Result.success().add("token", uuid);
 	}
 	
 	/**
@@ -418,27 +365,26 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/retrieve", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result retrieveThePassword(Integer uid, String password,String token, String code) {
-		try {
-			log.info("账号: " + uid + "开始找回密码");
-			Cache.ValueWrapper valueWrapper = cache.get(token);
-			if(valueWrapper == null) {
-				return Result.fail().add(EXCEPTION, CODE_EXPIRED);
-			}
-			String ss = (String) valueWrapper.get();
-			if(!ss.equals(code)) {
-				return Result.fail().add(EXCEPTION, CODE_ERROR);
-			}
-			boolean b = userInformationService.modifyThePassword(uid, password);
-			if(!b) {
-				return Result.fail().add(EXCEPTION, "密码找回失败, 请稍后重试");
-			}
-			log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
-			return Result.success().add(EXCEPTION, "找回成功");
-		}catch (Exception e) {
-			log.error("账号: " + uid + "找回失败, 失败原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result retrieveThePassword(@RequestParam Integer uid,
+									  @RequestParam String password,
+									  @RequestParam String token,
+									  @RequestParam String code)
+			throws Exception {
+		log.info("账号: " + uid + "开始找回密码");
+		Cache.ValueWrapper valueWrapper = cache.get(token);
+		if(Objects.isNull(valueWrapper)) {
+			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
+		String ss = (String) valueWrapper.get();
+		if(!ss.equals(code)) {
+			return Result.fail().add(EXCEPTION, CODE_ERROR);
+		}
+		boolean b = userInformationService.modifyThePassword(uid, password);
+		if(!b) {
+			return Result.fail().add(EXCEPTION, NETWORK_BUSY);
+		}
+		log.info("账号: " + uid + "找回成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
+		return Result.success().add(EXCEPTION, "找回成功");
 	}
 	
 	/**
@@ -458,22 +404,13 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/getmodify", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getModify() {
-		UserInformation user = null;
-		try {
-			log.info("修改密码开始, 用户信息从 session 获取");
-			user = ShiroUtils.getUserInformation();
-			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
-			log.info("信息获取成功");
-			return Result.success().add("myEmail", myEmail);
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("修改密码失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("修改密码失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+	public Result getModify() throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + "修改密码开始");
+		MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
+		log.info("信息获取成功");
+		return Result.success().add("myEmail", myEmail);
 	}
 	
 	/**
@@ -484,23 +421,18 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/getcodeformodify", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result sendEmailForModify(String email) {
-		try {
-			log.info("邮箱: " + email + "开始发送修改密码的验证码");
-			EmailUtils utils = new EmailUtils();
-			utils.sendEmailForModify(email, ShiroUtils.getUserInformation().getUsername());
-			if(cache == null) {
-				cache = cacheManager.getCache("code");
-			}
-			String token = RandomUtils.getUUID();
-			String text = utils.getText();
-			cache.put(token, text);
-			log.info("邮箱: " + email + "发送验证码成功, 验证码为: " + text);
-			return Result.success().add("token", token);
-		}catch (Exception e) {
-			log.info("邮箱: " + email + "发送修改密码的验证码失败, 错误信息为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result sendEmailForModify(@RequestParam String email) throws Exception{
+		log.info("邮箱: " + email + "开始发送修改密码的验证码");
+		EmailUtils utils = new EmailUtils();
+		utils.sendEmailForModify(email, ShiroUtils.getUserInformation().getUsername());
+		if(Objects.isNull(cache)) {
+			cache = cacheManager.getCache("code");
 		}
+		String token = RandomUtils.getUUID();
+		String text = utils.getText();
+		cache.put(token, text);
+		log.info("邮箱: " + email + "发送验证码成功, 验证码为: " + text);
+		return Result.success().add("token", token);
 	}
 	
 	/**
@@ -512,24 +444,19 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/modifybefore", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result modifyBefore(String token, String code) {
-		try {
-			log.info("开始验证验证码是否正确");
-			Cache.ValueWrapper valueWrapper = cache.get(token);
-			if(valueWrapper == null) {
-				log.info("验证码已过期, key 为: " + token);
-				return Result.fail().add(EXCEPTION, "验证码已过期");
-			}
-			if(!valueWrapper.get().equals(code)) {
-				log.info("验证码错误, 服务器端验证码为: " + valueWrapper.get() + ", 用户输入为: " + code);
-				return Result.fail().add(EXCEPTION, "验证码错误");
-			}
-			log.info("验证码: " + code + "正确");
-			return Result.success();
-		}catch (Exception e) {
-			log.error("验证验证码时发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result modifyBefore(@RequestParam String token, @RequestParam String code) throws Exception{
+		log.info("开始验证验证码是否正确");
+		Cache.ValueWrapper valueWrapper = cache.get(token);
+		if(Objects.isNull(valueWrapper)) {
+			log.info("验证码已过期, key 为: " + token);
+			return Result.fail().add(EXCEPTION, "验证码已过期");
 		}
+		if(!valueWrapper.get().equals(code)) {
+			log.info("验证码错误, 服务器端验证码为: " + valueWrapper.get() + ", 用户输入为: " + code);
+			return Result.fail().add(EXCEPTION, "验证码错误");
+		}
+		log.info("验证码: " + code + "正确");
+		return Result.success();
 	}
 	
 	/**
@@ -540,27 +467,19 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/modify", method = RequestMethod.POST)
 	@CrossOrigin
 	@ResponseBody
-	public Result modifyForPassword(String password) {
-		Integer uid = null;
-		try {
-			uid = ShiroUtils.getUserInformation().getUid();
-			log.info("账号: " + uid + "开始修改密码");
-			boolean flag = userInformationService.modifyThePassword(
-					ShiroUtils.getUserInformation().getUid(), password);
-			if(!flag) {
-				log.info("账号: " + uid + " 修改密码失败");
-				return Result.fail().add(EXCEPTION, "修改失败");
-			}
-			log.info("账号: " + uid + "修改密码成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
-			return Result.success();
-		}catch (Exception e) {
-			if(uid == null) {
-				log.info("修改密码失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("账号: " + uid + "修改密码时发生错误");
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result modifyForPassword(@RequestParam String password) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		Integer uid = user.getUid();
+		log.info("账号: " + uid + "开始修改密码");
+		boolean flag = userInformationService.modifyThePassword(
+				ShiroUtils.getUserInformation().getUid(), password);
+		if(!flag) {
+			log.info("账号: " + uid + " 修改密码失败");
+			return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 		}
+		log.info("账号: " + uid + "修改密码成功, 新密码为: " + HashUtils.getPasswordHash(uid, password));
+		return Result.success();
 	}
 	
 	/**
@@ -577,30 +496,19 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result like(Integer uid) {
-		Integer likeId = null;
-		try {
-			likeId = ShiroUtils.getUserInformation().getUid();
-			log.info("用户: " + likeId + ", 关注: " + uid + "开始");
-			log.info("验证用户是否已关注此用户");
-			boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
-			if(flag) {
-				log.info("用户: " + likeId + ", 关注: " + uid + "成功");
-				return Result.success();
-			}
-			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: 数据库连接失败");
-			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
-		} catch (UidAndLikeIdRepetitionException e) {
-			log.info("用户: " + likeId + ", 关注: " + uid + "失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			if(likeId == null) {
-				log.info("关注失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户: " + likeId + ", 关注: " + uid + "失败" + ", 原因为: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result like(@RequestParam Integer uid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		Integer likeId = user.getUid();
+		log.info("用户: " + likeId + ", 关注: " + uid + "开始");
+		log.info("验证用户是否已关注此用户");
+		boolean flag = myLikeService.insert(new MyLike(null, likeId, uid));
+		if(flag) {
+			log.info("用户: " + likeId + ", 关注: " + uid + "成功");
+			return Result.success();
 		}
+		log.warn("用户: " + likeId + ", 关注: " + uid + "失败, 原因: 数据库连接失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -611,28 +519,17 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/delike", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result delike(Integer uid) {
-		Integer likeId = null;
-		try {
-			likeId = ShiroUtils.getUserInformation().getUid();
-			log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
-			boolean b = myLikeService.deleteByLikeIdAndUid(likeId, uid);
-			if(b) {
-				log.info("用户: " + likeId + ", 取消关注: " + uid + "成功");
-				return Result.success();
-			}
-			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: 数据库连接失败");
-			return Result.fail().add(EXCEPTION, "网络连接失败, 请稍候重试");
-		} catch (NotFoundUidAndLikeIdException e) {
-			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: " + e.getMessage());
-			if(likeId == null) {
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result delike(@RequestParam Integer uid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		Integer likeId = user.getUid();
+		log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
+		boolean b = myLikeService.deleteByLikeIdAndUid(likeId, uid);
+		if(b) {
+			log.info("用户: " + likeId + ", 取消关注: " + uid + "成功");
+			return Result.success();
 		}
+		log.info("用户: " + likeId + ", 取消关注: " + uid + "失败, 原因: 数据库连接失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -643,21 +540,13 @@ public class UserHandler extends ParentHandler{
 	@GetMapping("/likestatus")
 	@ResponseBody
 	@CrossOrigin
-	public Result getLikeStatus(Integer uid) {
-		Integer likeId = null;
-		try {
-			log.info("判断用户是否已关注某用户");
-			likeId = ShiroUtils.getUserInformation().getUid();
-			boolean b = myLikeService.countByUidAndLikeId(likeId, uid);
-			return Result.success().add("status", b);
-		} catch (Exception e) {
-			if(likeId == null) {
-				log.info("判断用户是否关注发生错误, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("判断用户是否关注发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+	public Result getLikeStatus(@RequestParam Integer uid) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		Integer likeId = user.getUid();
+		log.info("判断用户是否已关注某用户");
+		boolean b = myLikeService.countByUidAndLikeId(likeId, uid);
+		return Result.success().add("status", b);
 	}
 	
 
@@ -669,44 +558,32 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/changeavatar", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result updateImage(@RequestParam("img")MultipartFile img) {
-		UserInformation user = null;
-		try{
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + " 更换头像开始");
-			String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SimpleUtils.getSuffixName(img.getOriginalFilename());
-			File file;
-			log.info("判断用户头像是否为初始头像");
-			if (user.getImgpath() != null && !user.getImgpath().equals("422696839bb3222a73a48d7c97b1bba4.jpg")) {
-				log.info("用户头像为非初始头像, 删除该头像");
-				file = new File(User_Img_FilePath + user.getImgpath());
-				file.delete();
-			} else {
-				log.info("用户头像为初始头像");
-			}
-			file = new File(User_Img_FilePath + name);
-			log.info("写入新头像, 头像名为: " + name);
-			FileUtils.writeByteArrayToFile(file, img.getBytes());
-			log.info("用户: " + user.getUid() + " 写入新头像成功, 开始写入数据库地址");
-			boolean b = myImageService.update(new MyImage(user.getUid(), name));
-			if(b) {
-				log.info("用户: " + user.getUid() + " 更换头像成功");
-				ShiroUtils.getUserInformation().setImgpath(name);
-				return Result.success().add("imgpath", name);
-			}
-			log.warn("写入数据库失败!");
-			return Result.fail().add(EXCEPTION, "网络异常, 请稍后重试");
-		} catch (IOException e) {
-			log.info("用户: " + user.getUid() + " 更换头像失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, "网络异常, 请稍候重试");
-		} catch(Exception e) {
-			if(user == null) {
-				log.info("用户更换头像失败, 原因: 未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户更换头像失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}		
+	public Result updateImage(@RequestParam("img")MultipartFile img) throws Exception {
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + " 更换头像开始");
+		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SimpleUtils.getSuffixName(img.getOriginalFilename());
+		File file;
+		log.info("判断用户头像是否为初始头像");
+		if (user.getImgpath() != null && !user.getImgpath().equals(Default_User_Img_Name)) {
+			log.info("用户头像为非初始头像, 删除该头像");
+			file = new File(User_Img_FilePath + user.getImgpath());
+			file.delete();
+		} else {
+			log.info("用户头像为初始头像");
+		}
+		file = new File(User_Img_FilePath + name);
+		log.info("写入新头像, 头像名为: " + name);
+		FileUtils.writeByteArrayToFile(file, img.getBytes());
+		log.info("用户: " + user.getUid() + " 写入新头像成功, 开始写入数据库地址");
+		boolean b = myImageService.update(new MyImage(user.getUid(), name));
+		if(b) {
+			log.info("用户: " + user.getUid() + " 更换头像成功");
+			user.setImgpath(name);
+			return Result.success().add("imgpath", name);
+		}
+		log.warn("更换头像时, 写入数据库头像地址失败, 原因: 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
@@ -717,39 +594,27 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result updateUserInformation(UserInformation user) {
-		UserInformation userinfor = null;
-		try {
-			userinfor = ShiroUtils.getUserInformation();
-			log.info("用户: " + userinfor.getUid() + " 修改用户信息");
-			log.info("原信息为: " + userinfor);
-			boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
-			if(b) {
-				if(!StringUtils.isEmpty(user.getUsername())) {
-					userinfor.setUsername(user.getUsername());
-				}
-				if(!StringUtils.isEmpty(user.getClazz())) {
-					userinfor.setClazz(user.getClazz());
-				}
-				if(!StringUtils.isEmpty(user.getCollege())) {
-					userinfor.setCollege(user.getCollege());
-				}
-				log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);
-				return Result.success().add("user", userinfor);
+	public Result updateUserInformation(UserInformation user) throws Exception{
+		UserInformation userinfor = ShiroUtils.getUserInformation();
+		loginOrNotLogin(userinfor);
+		log.info("用户: " + userinfor.getUid() + " 修改用户信息");
+		log.info("原信息为: " + userinfor);
+		boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
+		if(b) {
+			if(!StringUtils.isEmpty(user.getUsername())) {
+				userinfor.setUsername(user.getUsername());
 			}
-			log.warn("用户: " + userinfor.getUid() + "修改信息失败, 原因: 连接数据库失败");
-			return Result.fail().add(EXCEPTION, "网络链接失败, 请稍候重试");
-		} catch (NotFoundUidException e) {
-			log.info("用户: " + userinfor.getUid() + "修改信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			if(userinfor == null) {
-				log.info("用户修改信息失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
+			if(!StringUtils.isEmpty(user.getClazz())) {
+				userinfor.setClazz(user.getClazz());
 			}
-			log.error("用户修改信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+			if(!StringUtils.isEmpty(user.getCollege())) {
+				userinfor.setCollege(user.getCollege());
+			}
+			log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);
+			return Result.success().add("user", userinfor);
 		}
+		log.warn("用户: " + userinfor.getUid() + "修改信息失败, 原因: 连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	
@@ -760,37 +625,25 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/getoneselfblobs", method = RequestMethod.GET)
 	@CrossOrigin
 	@ResponseBody
-	public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + "获取自己的文章开始");
-			PageHelper.startPage(p, 15);
-			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid());
-			List<Integer> webids = new ArrayList<Integer>();
-			for (WebInformation web : weblist) {
-				webids.add(web.getId());
-			}
-			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-			List<BlobInformation> blobList = new ArrayList<>();
-			for(int i = 0; i < weblist.size(); i++) {
-				blobList.add(new BlobInformation(
-						user, weblist.get(i), visitList.get(i), null, null
-				));
-			}
-			PageInfo<BlobInformation> blobs = new PageInfo<>(blobList);
-			return Result.success().add("blobList", blobs);
-		} catch (NotFoundUidException e) {
-			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		}catch (Exception e) {
-			if(user == null) {
-				log.info("获取文章失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + "获取自己的文章开始");
+		PageHelper.startPage(p, 15);
+		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid());
+		List<Integer> webids = new ArrayList<Integer>();
+		for (WebInformation web : weblist) {
+			webids.add(web.getId());
 		}
+		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
+		List<BlobInformation> blobList = new ArrayList<>();
+		for(int i = 0; i < weblist.size(); i++) {
+			blobList.add(new BlobInformation(
+					user, weblist.get(i), visitList.get(i), null, null
+			));
+		}
+		PageInfo<BlobInformation> blobs = new PageInfo<>(blobList);
+		return Result.success().add("blobList", blobs);
 	}
 	
 	/**
@@ -801,50 +654,37 @@ public class UserHandler extends ParentHandler{
 	@CrossOrigin
 	@GetMapping("/getoneselffans")
 	@ResponseBody
-	public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
-			log.info("获取粉丝信息");
-			PageHelper.startPage(p, 30);
-			List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid());
-			log.info("获取粉丝学号");
-			List<Integer> uids = new ArrayList<>();
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
-				u.setPassword(null);
-				uids.add(u.getUid());
-			}
-			log.info("获取是否互关");
-			List<Boolean> islikes = myLikeService.countByUidAndLikeId(user.getUid(), uids);
-			log.info("获取粉丝头像");
-			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
-			List<FansInformation> fans = new ArrayList<>();
-			for(Integer i = 0; i < users.size(); i++) {
-				UserInformation u = users.get(i);
-				for(MyImage img : imgs) {
-					if(img.getUid().equals(u.getUid())) {
-						u.setImgpath(img.getImagePath());
-						break;
-					}
-				}
-				fans.add(new FansInformation(u, islikes.get(i)));
-			}
-			PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
-			log.info("获取粉丝信息成功");
-			return Result.success().add("fansList", userList);
-		} catch (NotFoundUidException e) {
-			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			if(user == null) {
-				log.info("用户获取粉丝信息失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
+		log.info("获取粉丝信息");
+		PageHelper.startPage(p, 30);
+		List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid());
+		List<Integer> uids = new ArrayList<>();
+		for(UserInformation userinfor : users) {
+			UserInformation u = userinfor;
+			u.setPassword(null);
+			uids.add(u.getUid());
 		}
+		log.info("获取是否互关");
+		List<Boolean> islikes = myLikeService.countByUidAndLikeId(user.getUid(), uids);
+		log.info("获取粉丝头像");
+		List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+		List<FansInformation> fans = new ArrayList<>();
+		for(Integer i = 0; i < users.size(); i++) {
+			UserInformation u = users.get(i);
+			for(MyImage img : imgs) {
+				if(img.getUid().equals(u.getUid())) {
+					u.setImgpath(img.getImagePath());
+					break;
+				}
+			}
+			fans.add(new FansInformation(u, islikes.get(i)));
+		}
+		PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
+		log.info("获取粉丝信息成功");
+		return Result.success().add("fansList", userList);
 	}
 	
 	/**
@@ -855,46 +695,34 @@ public class UserHandler extends ParentHandler{
 	@CrossOrigin
 	@GetMapping("/getoneselficons")
 	@ResponseBody
-	public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
-			log.info("获取关注人信息");
-			PageHelper.startPage(p, 30);
-			List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid());
-			log.info("获取关注人学号");
-			List<Integer> uids = new ArrayList<>();
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
-				u.setPassword(null);
-				uids.add(u.getUid());
-			}
-			log.info("获取关注人头像");
-			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
-				for(MyImage img : imgs) {
-					if(img.getUid().equals(u.getUid())) {
-						u.setImgpath(img.getImagePath());
-						break;
-					}
+	public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
+		log.info("获取关注人信息");
+		PageHelper.startPage(p, 30);
+		List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid());
+		log.info("获取关注人学号");
+		List<Integer> uids = new ArrayList<>();
+		for(UserInformation userinfor : users) {
+			UserInformation u = userinfor;
+			u.setPassword(null);
+			uids.add(u.getUid());
+		}
+		log.info("获取关注人头像");
+		List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+		for(UserInformation userinfor : users) {
+			UserInformation u = userinfor;
+			for(MyImage img : imgs) {
+				if(img.getUid().equals(u.getUid())) {
+					u.setImgpath(img.getImagePath());
+					break;
 				}
 			}
-			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
-			log.info("获取关注人信息成功");
-			return Result.success().add("userList", userList);
-		} catch (NotFoundUidException e) {
-			log.info("获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			if(user == null) {
-				log.info("用户获取关注人信息失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
+		PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+		log.info("获取关注人信息成功");
+		return Result.success().add("userList", userList);
 	}
 	
 	/**
@@ -904,38 +732,31 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
 	@CrossOrigin
 	@ResponseBody
-	public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, Integer uid) {
-		try {
-			log.info("获取用户: " + uid + " 的文章开始");
-			PageHelper.startPage(p, 15);
-			List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid);
-			List<Integer> webids = new ArrayList<Integer>();
-			for (WebInformation web : weblist) {
-				webids.add(web.getId());
-			}
-			log.info("获取访问量");
-			List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-			log.info("获取用户信息");
-			UserInformation user = userInformationService.selectByUid(uid);
-			log.info("获取用户头像");
-			MyImage img = myImageService.selectImagePathByUid(uid);
-			user.setPassword(null);
-			user.setImgpath(img.getImagePath());
-			List<BlobInformation> blobList = new ArrayList<BlobInformation>();
-			for(int i = 0; i < weblist.size(); i++) {
-				blobList.add(new BlobInformation(
-						user, weblist.get(i), visitList.get(i), null, null
-						));
-			}
-			PageInfo<BlobInformation> blobs = new PageInfo<BlobInformation>(blobList);
-			return Result.success().add("blobList", blobs);
-		} catch (NotFoundUidException e) {
-			log.info("用户获取自己文章失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		}catch (Exception e) {
-			log.error("用户获取自己文章失败, 原因:  " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, @RequestParam Integer uid)
+			throws Exception{
+		log.info("获取用户: " + uid + " 的文章开始");
+		PageHelper.startPage(p, 15);
+		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid);
+		List<Integer> webids = new ArrayList<Integer>();
+		for (WebInformation web : weblist) {
+			webids.add(web.getId());
 		}
+		log.info("获取访问量");
+		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
+		log.info("获取用户信息");
+		UserInformation user = userInformationService.selectByUid(uid);
+		log.info("获取用户头像");
+		MyImage img = myImageService.selectImagePathByUid(uid);
+		user.setPassword(null);
+		user.setImgpath(img.getImagePath());
+		List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+		for(int i = 0; i < weblist.size(); i++) {
+			blobList.add(new BlobInformation(
+					user, weblist.get(i), visitList.get(i), null, null
+					));
+		}
+		PageInfo<BlobInformation> blobs = new PageInfo<BlobInformation>(blobList);
+		return Result.success().add("blobList", blobs);
 	}
 	
 	/**
@@ -946,44 +767,36 @@ public class UserHandler extends ParentHandler{
 	@CrossOrigin
 	@GetMapping("/getfans")
 	@ResponseBody
-	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, Integer uid) {
-		try {
-			log.info("用户: " + uid + " 获取自己的粉丝信息");
-			log.info("获取粉丝信息");
-			PageHelper.startPage(p, 30);
-			List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
-			log.info("获取粉丝学号");
-			List<Integer> uids = new ArrayList<>();
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
-				u.setPassword(null);
-				uids.add(u.getUid());
-			}
-			log.info("获取是否互关");
-			List<Boolean> islikes = myLikeService.countByUidAndLikeId(uid, uids);
-			log.info("获取粉丝头像");
-			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
-			List<FansInformation> fans = new ArrayList<>();
-			for(Integer i = 0; i < users.size(); i++) {
-				UserInformation u = users.get(i);
-				for(MyImage img : imgs) {
-					if(img.getUid().equals(u.getUid())) {
-						u.setImgpath(img.getImagePath());
-						break;
-					}
-				}
-				fans.add(new FansInformation(u, islikes.get(i)));
-			}
-			PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
-			log.info("获取粉丝信息成功");
-			return Result.success().add("fansList", userList);
-		} catch (NotFoundUidException e) {
-			log.info("获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			log.error("用户获取粉丝信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
+		log.info("用户: " + uid + " 获取自己的粉丝信息");
+		log.info("获取粉丝信息");
+		PageHelper.startPage(p, 30);
+		List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
+		log.info("获取粉丝学号");
+		List<Integer> uids = new ArrayList<>();
+		for(UserInformation userinfor : users) {
+			UserInformation u = userinfor;
+			u.setPassword(null);
+			uids.add(u.getUid());
 		}
+		log.info("获取是否互关");
+		List<Boolean> islikes = myLikeService.countByUidAndLikeId(uid, uids);
+		log.info("获取粉丝头像");
+		List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+		List<FansInformation> fans = new ArrayList<>();
+		for(Integer i = 0; i < users.size(); i++) {
+			UserInformation u = users.get(i);
+			for(MyImage img : imgs) {
+				if(img.getUid().equals(u.getUid())) {
+					u.setImgpath(img.getImagePath());
+					break;
+				}
+			}
+			fans.add(new FansInformation(u, islikes.get(i)));
+		}
+		PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
+		log.info("获取粉丝信息成功");
+		return Result.success().add("fansList", userList);
 	}
 	
 	/**
@@ -994,40 +807,32 @@ public class UserHandler extends ParentHandler{
 	@CrossOrigin
 	@GetMapping("/geticons")
 	@ResponseBody
-	public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, Integer uid) {
-		try {
-			log.info("获取用户: " + uid + " 的关注人信息");
-			log.info("获取关注人信息");
-			PageHelper.startPage(p, 30);
-			List<UserInformation> users = userInformationService.selectUsersByUid(uid);
-			log.info("获取关注人学号");
-			List<Integer> uids = new ArrayList<>();
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
-				u.setPassword(null);
-				uids.add(u.getUid());
-			}
-			log.info("获取关注人头像");
-			List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
-			for(UserInformation userinfor : users) {
-				UserInformation u = userinfor;
-				for(MyImage img : imgs) {
-					if(img.getUid().equals(u.getUid())) {
-						u.setImgpath(img.getImagePath());
-						break;
-					}
+	public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
+		log.info("获取用户: " + uid + " 的关注人信息");
+		log.info("获取关注人信息");
+		PageHelper.startPage(p, 30);
+		List<UserInformation> users = userInformationService.selectUsersByUid(uid);
+		log.info("获取关注人学号");
+		List<Integer> uids = new ArrayList<>();
+		for(UserInformation userinfor : users) {
+			UserInformation u = userinfor;
+			u.setPassword(null);
+			uids.add(u.getUid());
+		}
+		log.info("获取关注人头像");
+		List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
+		for(UserInformation userinfor : users) {
+			UserInformation u = userinfor;
+			for(MyImage img : imgs) {
+				if(img.getUid().equals(u.getUid())) {
+					u.setImgpath(img.getImagePath());
+					break;
 				}
 			}
-			PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
-			log.info("获取关注人信息成功");
-			return Result.success().add("userList", userList);
-		} catch (NotFoundUidException e) {
-			log.info("获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, e.getMessage());
-		} catch (Exception e) {
-			log.error("用户获取关注人信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
 		}
+		PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
+		log.info("获取关注人信息成功");
+		return Result.success().add("userList", userList);
 	}
 	
 	/**
@@ -1037,26 +842,17 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping("/loginemail")
 	@ResponseBody
 	@CrossOrigin
-	public Result getEmailByUid() {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("获取用户: " + user.getUid() + " 邮箱");
-			MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
-			if(myEmail == null) {
-				log.info("获取失败, 该用户未绑定邮箱");
-				return Result.fail().add(EXCEPTION, "该用户未绑定邮箱");
-			}
-			String email = SimpleUtils.getAsteriskForString(myEmail.getEmail());
-			return Result.success().add("email", email);
-		} catch (Exception e) {
-			if(user == null) {
-				log.info("获取邮箱失败, 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("获取邮箱失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getEmailByUid() throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("获取用户: " + user.getUid() + " 邮箱");
+		MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
+		if(myEmail == null) {
+			log.info("获取失败, 该用户未绑定邮箱");
+			return Result.fail().add(EXCEPTION, "该用户未绑定邮箱");
 		}
+		String email = SimpleUtils.getAsteriskForString(myEmail.getEmail());
+		return Result.success().add("email", email);
 	}
 	
 	/**
@@ -1073,7 +869,7 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@GetMapping("/datacheck")
 	@CrossOrigin
-	public Result dataCheck(String data, String type) {
+	public Result dataCheck(@RequestParam String data, @RequestParam String type) {
 		boolean b;
 		switch (type) {
 			case "uid":
@@ -1129,79 +925,70 @@ public class UserHandler extends ParentHandler{
 	@ResponseBody
 	@GetMapping("/getoneselfbrowsingrecord")
 	@CrossOrigin
-	public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-            log.info("获取访问记录信息");
-            PageHelper.startPage(p,15);
-            List<UserBrowsingRecord> userBrowsingRecords = userBrowsingRecordService.selectBrowsingRecordByUid(user.getUid());
-            List<Integer> webids = new ArrayList<>();
-            List<Integer> fileids = new ArrayList<>();
-            log.info("获取访问过的博客或文件ID");
-            for (UserBrowsingRecord brows : userBrowsingRecords) {
-                if(brows.getTpye() == 1) {
-                    webids.add(brows.getWfid());
-                } else {
-                    fileids.add(brows.getWfid());
-                }
-            }
-            log.info("获取博客信息");
-            List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
-            List<Integer> uids = new ArrayList<>();
-            for(WebInformation web : webs) {
-                uids.add(web.getUid());
-            }
-
-            log.info("获取作者信息");
-            List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-            log.info("获取文件信息");
-            List<WebFile> files = webFileService.selectFilesByFileIds(fileids);
-            log.info("拼装访问信息");
-            List<BrowsingRecordInformation> browsingRecordInformations = new ArrayList<>();
-            for (Integer i = 0; i < userBrowsingRecords.size(); i++) {
-                BrowsingRecordInformation browsingRecordInformation = new BrowsingRecordInformation();
-                UserBrowsingRecord record = userBrowsingRecords.get(i);
-                browsingRecordInformation.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(record.getCreatetime()));
-				browsingRecordInformation.setWfid(record.getWfid());
-				if(record.getTpye() == 1) {
-					browsingRecordInformation.setType(1);
-					for(WebInformation webInformation : webs) {
-						if(webInformation.getId().equals(record.getWfid())) {
-							browsingRecordInformation.setTitle(webInformation.getTitle());
-							browsingRecordInformation.setUid(webInformation.getUid());
-                            break;
-                        }
-                    }
-                    for(UserInformation u : users) {
-                        if(u.getUid().equals(browsingRecordInformation.getUid())) {
-                            browsingRecordInformation.setUsername(u.getUsername());
-                            break;
-                        }
-                    }
-                } else {
-                    browsingRecordInformation.setType(2);
-                    for(WebFile file : files) {
-                        if(file.getId().equals(record.getWfid())) {
-                            browsingRecordInformation.setTitle(file.getTitle());
-                            browsingRecordInformation.setUid(file.getUid());
-                            break;
-                        }
-                    }
-                }
-                browsingRecordInformations.add(browsingRecordInformation);
-            }
-            log.info("获取浏览历史信息成功");
-            PageInfo<BrowsingRecordInformation> pageInfo = new PageInfo<>(browsingRecordInformations);
-            return Result.success().add("brows", pageInfo);
-        } catch (Exception e) {
-            if( user == null) {
-                log.info("获取浏览历史信息失败, 原因: 用户未登录");
-                return Result.fail().add(EXCEPTION, NOT_LOGIN);
-            }
-            log.error("获取浏览信息失败, 原因: " + e.getMessage());
-            return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("获取访问记录信息");
+		PageHelper.startPage(p,15);
+		List<UserBrowsingRecord> userBrowsingRecords = userBrowsingRecordService.selectBrowsingRecordByUid(user.getUid());
+		List<Integer> webids = new ArrayList<>();
+		List<Integer> fileids = new ArrayList<>();
+		log.info("获取访问过的博客或文件ID");
+		for (UserBrowsingRecord brows : userBrowsingRecords) {
+			if(brows.getTpye() == 1) {
+				webids.add(brows.getWfid());
+			} else {
+				fileids.add(brows.getWfid());
+			}
 		}
+		log.info("获取博客信息");
+		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
+		List<Integer> uids = new ArrayList<>();
+		for(WebInformation web : webs) {
+			uids.add(web.getUid());
+		}
+
+		log.info("获取作者信息");
+		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+		log.info("获取文件信息");
+		List<WebFile> files = webFileService.selectFilesByFileIds(fileids);
+		log.info("拼装访问信息");
+		List<BrowsingRecordInformation> browsingRecordInformations = new ArrayList<>();
+		for (Integer i = 0; i < userBrowsingRecords.size(); i++) {
+			BrowsingRecordInformation browsingRecordInformation = new BrowsingRecordInformation();
+			UserBrowsingRecord record = userBrowsingRecords.get(i);
+			browsingRecordInformation.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(record.getCreatetime()));
+			browsingRecordInformation.setWfid(record.getWfid());
+			if(record.getTpye() == 1) {
+				browsingRecordInformation.setType(1);
+				for(WebInformation webInformation : webs) {
+					if(webInformation.getId().equals(record.getWfid())) {
+						browsingRecordInformation.setTitle(webInformation.getTitle());
+						browsingRecordInformation.setUid(webInformation.getUid());
+						break;
+					}
+				}
+				for(UserInformation u : users) {
+					if(u.getUid().equals(browsingRecordInformation.getUid())) {
+						browsingRecordInformation.setUsername(u.getUsername());
+						break;
+					}
+				}
+			} else {
+				browsingRecordInformation.setType(2);
+				for(WebFile file : files) {
+					if(file.getId().equals(record.getWfid())) {
+						browsingRecordInformation.setTitle(file.getTitle());
+						browsingRecordInformation.setUid(file.getUid());
+						break;
+					}
+				}
+			}
+			browsingRecordInformations.add(browsingRecordInformation);
+		}
+		log.info("获取浏览历史信息成功");
+		PageInfo<BrowsingRecordInformation> pageInfo = new PageInfo<>(browsingRecordInformations);
+		return Result.success().add("brows", pageInfo);
 	}
 
 	/**
@@ -1212,47 +999,38 @@ public class UserHandler extends ParentHandler{
 	@GetMapping("/getnotification")
 	@ResponseBody
 	@CrossOrigin
-	public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p) {
-		UserInformation user  = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			log.info("用户: " + user.getUid() + " 获取通知开始");
-			log.info("获取通知");
-			PageHelper.startPage(p, 10);
-			List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid());
-			List<Integer> uids = new ArrayList<>();
-			log.info("获取通知人信息");
-			for (SystemNotification s : systemNotifications) {
-				uids.add(s.getSid());
-			}
-			List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-			log.info("拼装信息");
-			List<SystemNotificationInformation> list = new ArrayList<>();
-			for (SystemNotification s : systemNotifications) {
-				SystemNotificationInformation information = new SystemNotificationInformation();
-				information.setSystemNotification(s);
-				for (UserInformation u : users) {
-					if (s.getSid().equals(u.getUid())) {
-						information.setUsername(u.getUsername());
-						information.setIdentity("管理员");
-					}
-				}
-				list.add(information);
-			}
-			boolean b = systemNotificationService.updateSystemNotificationsByUid(user.getUid());
-			if (b) {
-				user.setSystemNotifications(0);
-			}
-			PageInfo<SystemNotificationInformation> pageInfo = new PageInfo<>(list);
-			return Result.success().add("notificationList", pageInfo);
-		} catch (Exception e) {
-			if (user == null) {
-				log.info("用户获取通知失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户获取通知失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p) throws Exception {
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		log.info("用户: " + user.getUid() + " 获取通知开始");
+		log.info("获取通知");
+		PageHelper.startPage(p, 10);
+		List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid());
+		List<Integer> uids = new ArrayList<>();
+		log.info("获取通知人信息");
+		for (SystemNotification s : systemNotifications) {
+			uids.add(s.getSid());
 		}
+		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
+		log.info("拼装信息");
+		List<SystemNotificationInformation> list = new ArrayList<>();
+		for (SystemNotification s : systemNotifications) {
+			SystemNotificationInformation information = new SystemNotificationInformation();
+			information.setSystemNotification(s);
+			for (UserInformation u : users) {
+				if (s.getSid().equals(u.getUid())) {
+					information.setUsername(u.getUsername());
+					information.setIdentity("管理员");
+				}
+			}
+			list.add(information);
+		}
+		boolean b = systemNotificationService.updateSystemNotificationsByUid(user.getUid());
+		if (b) {
+			user.setSystemNotifications(0);
+		}
+		PageInfo<SystemNotificationInformation> pageInfo = new PageInfo<>(list);
+		return Result.success().add("notificationList", pageInfo);
 	}
 
 }

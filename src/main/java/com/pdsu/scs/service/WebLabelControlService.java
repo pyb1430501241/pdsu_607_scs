@@ -1,7 +1,6 @@
 package com.pdsu.scs.service;
 
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ public interface WebLabelControlService {
 
 	/**
 	 * 插入文章和标签的对应
-	 * @param id
+	 * @param webid
 	 * @param labelList
 	 * @return
 	 */
@@ -20,14 +19,14 @@ public interface WebLabelControlService {
 	
 	/**
 	 * 删除文章标签
-	 * @param id
+	 * @param webid
 	 * @return
 	 */
 	public boolean deleteByWebId(@NonNull Integer webid);
 
 	/**
 	 * 获取文章标签ID
-	 * @param id
+	 * @param webid
 	 * @return
 	 */
 	public List<Integer> selectLabelIdByWebId(@NonNull Integer webid);

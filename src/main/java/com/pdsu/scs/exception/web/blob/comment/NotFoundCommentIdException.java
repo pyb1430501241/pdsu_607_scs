@@ -7,12 +7,14 @@ package com.pdsu.scs.exception.web.blob.comment;
  */
 public class NotFoundCommentIdException extends CommentException{
 
+	public static final String NOTFOUND_COMMENT = "该评论不存在";
+
 	public NotFoundCommentIdException(String exception) {
 		super(exception);
 	}
 	
 	public NotFoundCommentIdException() {
-		this("该评论不存在");
+		this(NOTFOUND_COMMENT);
 	}
 
 	/**

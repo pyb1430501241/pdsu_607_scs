@@ -1,9 +1,11 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * @author 半梦
  */
-public class Role {
+public class Role implements Serializable {
     private Integer id;
 
     private String role;

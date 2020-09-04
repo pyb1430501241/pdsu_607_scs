@@ -1,16 +1,14 @@
 package com.pdsu.scs.shiro;
 
-import java.io.Serializable;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
+import com.pdsu.scs.utils.SimpleUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.apache.shiro.web.util.WebUtils;
 
-import com.pdsu.scs.utils.SimpleUtils;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import java.io.Serializable;
 
 /**
  * Session 管理器, 在用户登录后, 从请求头中获取 sessionId, 以确保每次访问的 Session 都是同一Session
@@ -25,7 +23,7 @@ public class WebSessionManager extends DefaultWebSessionManager{
 	
 	
 	public WebSessionManager() {
-		setGlobalSessionTimeout(SimpleUtils.CSC_WEEK);
+		setGlobalSessionTimeout(SimpleUtils.CSC_WEEK * 1000);
 	}
 	
 	@Override

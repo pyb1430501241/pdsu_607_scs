@@ -5,7 +5,6 @@ import com.pdsu.scs.bean.EsFileInformation;
 import com.pdsu.scs.bean.EsUserInformation;
 import com.pdsu.scs.bean.Result;
 import com.pdsu.scs.es.service.EsService;
-import com.pdsu.scs.exception.web.es.QueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -41,22 +40,14 @@ public class SearchHandler extends ParentHandler{
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result searchByText(@RequestParam(value = "p")String text) {
+	public Result searchByText(@RequestParam(value = "p")String text) throws Exception{
 		log.info("用户查询: " + text + " 开始");
-		try {
-			List<EsUserInformation> users = esUserService.queryByText(text);
-			List<EsBlobInformation> blobs = esBlobService.queryByText(text);
-			List<EsFileInformation> files = esFileService.queryByText(text);
-			log.info("查询成功");
-			return Result.success().add("authorList", users).add("blobList", blobs)
-					.add("fileList", files);
-		} catch (QueryException e) {
-			log.error(e.getMessage());
-			return Result.fail().add(EXCEPTION, "网络延迟, 请稍后重试");
-		} catch (Exception e) {
-			log.error("查询时发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
-		}
+		List<EsUserInformation> users = esUserService.queryByText(text);
+		List<EsBlobInformation> blobs = esBlobService.queryByText(text);
+		List<EsFileInformation> files = esFileService.queryByText(text);
+		log.info("查询成功");
+		return Result.success().add("authorList", users).add("blobList", blobs)
+				.add("fileList", files);
 	}
 
 }

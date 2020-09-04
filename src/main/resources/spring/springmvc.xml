@@ -16,6 +16,16 @@
 	    <property name="maxUploadSize" value="#{1024*1024*1024}"/>
 	</bean>
 	
-	<mvc:annotation-driven></mvc:annotation-driven>
+	<mvc:annotation-driven validator="validatorFactoryBean"></mvc:annotation-driven>
 	<mvc:default-servlet-handler/>
+
+	<bean id = "validatorFactoryBean" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+		<property name="validationMessageSource" ref="messageSource"></property>
+	</bean>
+
+	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+		<property name="basenames" value="classpath:properties.message"></property>
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<property name="cacheSeconds" value="60"></property>
+	</bean>
 </beans>

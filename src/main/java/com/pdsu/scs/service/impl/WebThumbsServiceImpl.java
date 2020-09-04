@@ -1,12 +1,5 @@
 package com.pdsu.scs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
 import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.bean.WebThumbs;
 import com.pdsu.scs.bean.WebThumbsExample;
@@ -16,6 +9,12 @@ import com.pdsu.scs.dao.WebThumbsMapper;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.blob.RepetitionThumbsException;
 import com.pdsu.scs.service.WebThumbsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -74,7 +73,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		if(countByWebIdAndUid(webThumbs.getWebid(), webThumbs.getUid())) {
 			throw new RepetitionThumbsException();
 		}
-		return webThumbsMapper.insertSelective(webThumbs) > 0 ? true : false;
+		return webThumbsMapper.insertSelective(webThumbs) > 0;
 	}
 
 	@Override
@@ -82,7 +81,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
-		return webinformationMapper.countByExample(example) == 0 ? false : true;
+		return webinformationMapper.countByExample(example) != 0;
 	}
 
 	@Override
@@ -94,7 +93,7 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		Criteria criteria = example.createCriteria();
 		criteria.andWebidEqualTo(webid);
 		criteria.andUidEqualTo(uid);
-		return webThumbsMapper.deleteByExample(example) > 0 ? true : false;
+		return webThumbsMapper.deleteByExample(example) > 0;
 	}
 	
 	@Override
@@ -103,6 +102,6 @@ public class WebThumbsServiceImpl implements WebThumbsService {
 		Criteria criteria = example.createCriteria();
 		criteria.andWebidEqualTo(webid);
 		criteria.andUidEqualTo(uid);
-		return webThumbsMapper.countByExample(example) == 0 ? false : true;
+		return webThumbsMapper.countByExample(example) != 0;
 	}
 }

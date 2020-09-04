@@ -5,7 +5,7 @@ package com.pdsu.scs.exception.web.file;
  * @author Admin
  *
  */
-public class UidAndTItleRepetitionException extends FileException{
+public class UidAndTitleRepetitionException extends FileException{
 
 	/**
 	 * 
@@ -13,7 +13,7 @@ public class UidAndTItleRepetitionException extends FileException{
 	private static final long serialVersionUID = 1L;
 	
 	
-	public UidAndTItleRepetitionException(String msg) {
+	public UidAndTitleRepetitionException(String msg) {
 		super(msg);
 	}
 	

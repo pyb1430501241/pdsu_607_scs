@@ -1,24 +1,20 @@
 package com.pdsu.scs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
-import com.pdsu.scs.bean.WebComment;
-import com.pdsu.scs.bean.WebCommentExample;
-import com.pdsu.scs.bean.WebCommentReply;
-import com.pdsu.scs.bean.WebCommentReplyExample;
+import com.pdsu.scs.bean.*;
 import com.pdsu.scs.bean.WebCommentReplyExample.Criteria;
-import com.pdsu.scs.bean.WebInformationExample;
 import com.pdsu.scs.dao.WebCommentMapper;
 import com.pdsu.scs.dao.WebCommentReplyMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.exception.web.blob.comment.NotFoundCommentIdException;
 import com.pdsu.scs.service.WebCommentReplyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 
@@ -45,7 +41,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 		if(!countByCid(webCommentReply.getCid())) {
 			throw new NotFoundCommentIdException();
 		}
-		return webCommentReplyMapper.insertSelective(webCommentReply) == 0 ? false : true;
+		return webCommentReplyMapper.insertSelective(webCommentReply) != 0;
 	}
 
 	@Override
@@ -53,7 +49,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
-		return webInformationMapper.countByExample(example) == 0 ? false : true;
+		return webInformationMapper.countByExample(example) != 0;
 	}
 
 	@Override
@@ -61,7 +57,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 		WebCommentExample example = new WebCommentExample();
 		com.pdsu.scs.bean.WebCommentExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(cid);
-		return webCommentMapper.countByExample(example) == 0 ? false : true;
+		return webCommentMapper.countByExample(example) != 0;
 	}
 
 	@Override
@@ -92,7 +88,7 @@ public class WebCommentReplyServiceImpl implements WebCommentReplyService{
 
 	@Override
 	public Integer countByWebsAndUid(@NonNull List<Integer> webs) {
-		if(webs == null || webs.size() == 0) {
+		if(Objects.isNull(webs) || webs.size() == 0) {
 			return 0;
 		}
 		WebCommentReplyExample example = new WebCommentReplyExample();

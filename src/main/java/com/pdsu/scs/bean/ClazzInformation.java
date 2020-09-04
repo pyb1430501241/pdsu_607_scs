@@ -1,9 +1,11 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * @author 半梦
  */
-public class ClazzInformation {
+public class ClazzInformation implements Serializable {
     private Integer id;
 
     private String clazzname;

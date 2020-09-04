@@ -1,45 +1,25 @@
 package com.pdsu.scs.service.impl;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.pdsu.scs.bean.*;
+import com.pdsu.scs.bean.WebInformationExample.Criteria;
+import com.pdsu.scs.dao.*;
+import com.pdsu.scs.es.dao.EsDao;
+import com.pdsu.scs.exception.web.DeleteInforException;
+import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
+import com.pdsu.scs.exception.web.es.InsertException;
+import com.pdsu.scs.service.WebInformationService;
+import com.pdsu.scs.utils.SimpleUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import com.pdsu.scs.bean.EsBlobInformation;
-import com.pdsu.scs.bean.EsUserInformation;
-import com.pdsu.scs.bean.MyCollectionExample;
-import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.UserInformationExample;
-import com.pdsu.scs.bean.VisitInformationExample;
-import com.pdsu.scs.bean.WebCommentExample;
-import com.pdsu.scs.bean.WebCommentReplyExample;
-import com.pdsu.scs.bean.WebInformation;
-import com.pdsu.scs.bean.WebInformationExample;
-import com.pdsu.scs.bean.WebInformationExample.Criteria;
-import com.pdsu.scs.bean.WebLabelControlExample;
-import com.pdsu.scs.bean.WebThumbsExample;
-import com.pdsu.scs.dao.MyCollectionMapper;
-import com.pdsu.scs.dao.UserInformationMapper;
-import com.pdsu.scs.dao.VisitInformationMapper;
-import com.pdsu.scs.dao.WebCommentMapper;
-import com.pdsu.scs.dao.WebCommentReplyMapper;
-import com.pdsu.scs.dao.WebInformationMapper;
-import com.pdsu.scs.dao.WebLabelControlMapper;
-import com.pdsu.scs.dao.WebThumbsMapper;
-import com.pdsu.scs.es.dao.EsDao;
-import com.pdsu.scs.exception.web.DeleteInforException;
-import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
-import com.pdsu.scs.exception.web.es.InsertException;
-import com.pdsu.scs.exception.web.user.NotFoundUidException;
-import com.pdsu.scs.service.WebInformationService;
-import com.pdsu.scs.utils.SimpleUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 处理博客页面
@@ -92,7 +72,6 @@ public class WebInformationServiceImpl implements WebInformationService {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
 						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
-			System.out.println(blob);
 			if(esDao.insert(blob, information.getId())) {
 				new Thread(()->{
 					try {
@@ -118,7 +97,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Override
 	public boolean deleteById(@NonNull Integer id) throws NotFoundBlobIdException, DeleteInforException{
 		if(!countByWebId(id)) {
-			throw new NotFoundBlobIdException("该文章不存在");
+			throw new NotFoundBlobIdException();
 		}
 		
 		/**
@@ -203,46 +182,28 @@ public class WebInformationServiceImpl implements WebInformationService {
 		}
 	}
 
-	/*
-	 * 根据网页id查询一个网页的全部信息
-	 */
 	@Override
-	public WebInformation selectById(@NonNull Integer id) {
+	public WebInformation selectById(@NonNull Integer id) throws NotFoundBlobIdException{
 		WebInformation key = webInformationMapper.selectByPrimaryKey(id);
+		if(key == null) {
+			throw new NotFoundBlobIdException();
+		}
 		return key;
 	}
 
-	/*
-	 * 根据时间排序查询文章
-	 */
 	@Override
 	public List<WebInformation> selectWebInformationOrderByTimetest() {
 		WebInformationExample example = new WebInformationExample();
 		example.setOrderByClause("sub_time DESC");
-		List<WebInformation> selectByExampleWithBLOBs = webInformationMapper.selectByExampleWithBLOBs(example);
-		if(selectByExampleWithBLOBs == null) {
+		List<WebInformation> list = webInformationMapper.selectByExample(example);
+		if(Objects.isNull(list)) {
 			return new ArrayList<>();
 		}
-		for(WebInformation webInformation : selectByExampleWithBLOBs) {
-			WebInformation web = webInformation;
-			byte [] b = webInformation.getWebData();
-			try {
-				web.setWebDataString(new String(b,"utf-8"));
-				web.setWebData(null);
-			} catch (UnsupportedEncodingException e) {
-			}
-		}
-		return selectByExampleWithBLOBs;
+		return list;
 	}
 
-	/*
-	 * 根据一个人的学号查询其所有文章, 不包括网页主体内容
-	 */
 	@Override
-	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid) throws NotFoundUidException {
-//		if(countByUid(uid) == 0) {
-//			throw new NotFoundUidException("该用户不存在");
-//		}
+	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid) {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -300,7 +261,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public Integer countOriginalByUidAndContype(@NonNull Integer uid, @NonNull Integer contype) throws NotFoundUidException {
+	public Integer countOriginalByUidAndContype(@NonNull Integer uid, @NonNull Integer contype) {
 		WebInformationExample example = new WebInformationExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andContypeEqualTo(contype);
@@ -310,7 +271,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 
 	@Override
 	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag) {
-		if(webids == null || webids.size() == 0) {
+		if(Objects.isNull(webids) || webids.size() == 0) {
 			return new ArrayList<>();
 		}
 		WebInformationExample example = new WebInformationExample();

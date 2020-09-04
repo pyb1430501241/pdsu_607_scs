@@ -1,10 +1,12 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * @author 半梦
  * @create 2020-08-13 14:35
  */
-public class SystemNotificationInformation {
+public class SystemNotificationInformation implements Serializable {
 
     private SystemNotification systemNotification;
 

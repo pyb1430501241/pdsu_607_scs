@@ -1,25 +1,15 @@
 package com.pdsu.scs.utils;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
+import org.elasticsearch.search.SearchHit;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.elasticsearch.search.SearchHit;
-import org.springframework.lang.Nullable;
-import org.springframework.util.StringUtils;
+import java.util.*;
 
 /**
  * 格式化相关工具类
@@ -51,7 +41,7 @@ public class SimpleUtils {
 	 * @param endDate   结束的时间
 	 * @return
 	 */
-	public static long getSimpleDateDifference(String startDate, String endDate) {
+	public static long getSimpleDateDifference(@NonNull String startDate, @NonNull String endDate) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		long diff = -1;
 		try {
@@ -68,7 +58,7 @@ public class SimpleUtils {
 	 * @param args
 	 * @return
 	 */
-	public static String toString(Object... args) {
+	public static String toString(@Nullable Object... args) {
 		List<Object> list = Arrays.asList(args);
 		return list.toString();
 	}
@@ -78,10 +68,7 @@ public class SimpleUtils {
 	 * @param name
 	 * @return
 	 */
-	public static String getSuffixName(@Nullable String name) {
-		if(StringUtils.isEmpty(name)) {
-			return "";
-		}
+	public static String getSuffixName(@NonNull String name) {
 		return name.substring(name.lastIndexOf("."), name.length());
 	}
 
@@ -90,7 +77,7 @@ public class SimpleUtils {
 	 * @param name
 	 * @return
 	 */
-	public static String getSuffixNameExceptPoint(String name) {
+	public static String getSuffixNameExceptPoint(@NonNull String name) {
 		return name.substring(name.lastIndexOf(".") + 1, name.length());
 	}
 	
@@ -102,7 +89,7 @@ public class SimpleUtils {
 	 * @throws SecurityException
 	 */
 	private static Constructor<?> getConstructorByClass(Class<?> clazz) throws NoSuchMethodException, SecurityException{
-		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "").toString();
+		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "");
 		Constructor<?> constructor = null;
 		switch (name) {
 			case "EsUserInformation":
@@ -130,7 +117,7 @@ public class SimpleUtils {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
-	public static List<?> getObjectBySearchHit(SearchHit [] searchHits, Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public static List<?> getObjectBySearchHit(@NonNull SearchHit [] searchHits, @NonNull Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if(getConstructorByClass(clazz) == null) {
 			throw new NoSuchMethodException("无此构造方法");
 		}
@@ -190,7 +177,7 @@ public class SimpleUtils {
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 */
-	public static Object getObjectByMapAndClass(Map<String, Object> map, Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
+	public static Object getObjectByMapAndClass(@NonNull Map<String, Object> map, Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
 		if(getConstructorByClass(clazz) == null) {
 			throw new NoSuchMethodException("无此构造方法");
 		}
@@ -202,7 +189,7 @@ public class SimpleUtils {
 	 * @param str
 	 * @return
 	 */
-	public static String getAsteriskForString(String str) {
+	public static String getAsteriskForString(@NonNull String str) {
 		StringBuilder builder = new StringBuilder(str);
 		builder.replace(2, 8, "******");
 		return builder.toString();
@@ -264,7 +251,7 @@ public class SimpleUtils {
 	 * 	当时间差值大于一月时返回: startDate, 
 	 *  当时间差值位于两者之间时返回: xxx前.
 	 */
-	public static String getSimpleDateDifferenceFormat(final String startDate) {
+	public static String getSimpleDateDifferenceFormat(@NonNull final String startDate) {
 		long t = getSimpleDateDifference(startDate, getSimpleDateSecond());
 		StringBuilder builder = new StringBuilder();
 		if (t < CSC_MINUTE) {

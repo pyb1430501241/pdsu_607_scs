@@ -1,5 +1,8 @@
 package com.pdsu.scs.bean;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -15,17 +18,21 @@ public class WebInformation implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	private Integer id;
-	
+
+	@NotBlank(message = "文章标题必须为 30 个字符以内")
+    @Size(min = 1, max = 30, message = "文章标题必须为 30 个字符以内")
     private String title;
 
     private Integer uid;
 
+    @NotNull(message = "文章类型不可为空")
     private Integer contype;
 
     private String subTime;
 
     private byte[] webData;
-    
+
+    @NotBlank(message = "文章主题内容不可为空")
     private String webDataString;
     
     public WebInformation(Integer id, String title, Integer uid, Integer contype, String subTime, byte[] webData,
@@ -113,5 +120,17 @@ public class WebInformation implements Serializable{
 	}
     
     public WebInformation() {
+	}
+
+
+    public static WebInformation getWebInformation(WebInformation web) {
+        WebInformation webInformation = new WebInformation();
+        webInformation.setUid(web.getUid());
+        webInformation.setTitle(web.getTitle());
+        webInformation.setId(web.getId());
+        webInformation.setSubTime(web.getSubTime());
+        webInformation.setWebDataString(web.getWebDataString());
+        webInformation.setContype(web.getContype());
+        return webInformation;
 	}
 }

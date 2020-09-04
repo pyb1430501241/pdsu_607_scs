@@ -1,12 +1,5 @@
 package com.pdsu.scs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
 import com.pdsu.scs.bean.WebComment;
 import com.pdsu.scs.bean.WebCommentExample;
 import com.pdsu.scs.bean.WebCommentExample.Criteria;
@@ -16,6 +9,12 @@ import com.pdsu.scs.dao.WebCommentMapper;
 import com.pdsu.scs.dao.WebInformationMapper;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.scs.service.WebCommentService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -35,9 +34,9 @@ public class WebCommentServiceImpl implements WebCommentService{
 	@Override
 	public boolean insert(@NonNull WebComment webComment) throws NotFoundBlobIdException {
 		if(!countByWebid(webComment.getWid())) {
-			throw new NotFoundBlobIdException("该博客不存在");
+			throw new NotFoundBlobIdException();
 		}
-		return webCommentMapper.insertSelective(webComment) == 0 ? false : true;
+		return webCommentMapper.insertSelective(webComment) != 0;
 	}
 
 	@Override
@@ -45,7 +44,7 @@ public class WebCommentServiceImpl implements WebCommentService{
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
-		return webInformationMapper.countByExample(example) == 0 ? false : true;
+		return webInformationMapper.countByExample(example) != 0;
 	}
 
 	@Override
@@ -64,7 +63,6 @@ public class WebCommentServiceImpl implements WebCommentService{
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.scs.bean.WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		System.out.println(uid);
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
 		List<Integer> webids = new ArrayList<Integer>();
 		for (WebInformation webInformation : list) {

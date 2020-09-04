@@ -37,5 +37,20 @@
 	            diskPersistent="false"
 	            timeToIdleSeconds="1800"
 	            timeToLiveSeconds="259200"/>
-   
+	            
+	     <cache name="code"
+           maxElementsInMemory="10000"
+           eternal="false"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="0"
+           overflowToDisk="false"
+           memoryStoreEvictionPolicy="LRU"/>
+
+		<cache name="shiro"
+		   maxElementsInMemory="10000"
+		   eternal="false"
+		   timeToIdleSeconds="300"
+		   timeToLiveSeconds="0"
+		   overflowToDisk="false"
+		   memoryStoreEvictionPolicy="LRU"/>
 </ehcache>

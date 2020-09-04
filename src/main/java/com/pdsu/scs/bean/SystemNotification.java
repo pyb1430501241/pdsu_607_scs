@@ -1,10 +1,12 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 系统通知
  * @author 半梦
  */
-public class SystemNotification {
+public class SystemNotification implements Serializable {
     private Integer id;
 
     private Integer uid;

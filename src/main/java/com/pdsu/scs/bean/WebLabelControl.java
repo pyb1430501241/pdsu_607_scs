@@ -1,11 +1,13 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 文章标签对照
  * @author Admin
  *
  */
-public class WebLabelControl {
+public class WebLabelControl implements Serializable {
     private Integer id;
 
     private Integer wid;

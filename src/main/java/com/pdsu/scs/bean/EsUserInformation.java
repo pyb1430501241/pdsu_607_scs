@@ -1,11 +1,13 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 搜索引擎所保存的数据
  * @author 半梦
  *
  */
-public class EsUserInformation {
+public class EsUserInformation implements Serializable {
 	
 	private Integer uid;
 	

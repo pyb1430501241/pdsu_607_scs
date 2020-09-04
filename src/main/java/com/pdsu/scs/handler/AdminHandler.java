@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import com.pdsu.scs.bean.Result;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 半梦
@@ -69,62 +70,43 @@ public class AdminHandler extends ParentHandler{
 	@ResponseBody
 	@GetMapping("/getuserinformationlist")
 	@CrossOrigin
-	public Result getUserInformationList(@RequestParam(value = "p", defaultValue = "1") Integer p) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			if(!userRoleService.isAdmin(user.getUid())) {
-				log.info("用户: " + user.getUid() + " 无权限");
-				return Result.permission();
-			}
-			log.info("管理员: " + user.getUid() + " 获取所有用户信息");
-			PageHelper.startPage(p, 15);
-			PageInfo<UserInformation> userList = new PageInfo<>(
-					userInformationService.selectUserInformations()
-			, 5);
-			return Result.success().add("userList", userList);
-		} catch (Exception e) {
-			if(user == null) {
-				log.info("获取用户列表失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("管理员获取用户信息失败, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result getUserInformationList(@RequestParam(value = "p", defaultValue = "1") Integer p) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		if(!userRoleService.isAdmin(user.getUid())) {
+			log.info("用户: " + user.getUid() + " 无权限");
+			return Result.permission();
 		}
+		log.info("管理员: " + user.getUid() + " 获取所有用户信息");
+		PageHelper.startPage(p, 15);
+		PageInfo<UserInformation> userList = new PageInfo<>(
+				userInformationService.selectUserInformations(),5);
+		return Result.success().add("userList", userList);
 	}
 
 	@ResponseBody
 	@CrossOrigin
 	@PostMapping("/applyclass")
-	public Result createClazz(String clazzName, @RequestParam(required = false) List<Integer> uids) {
-		UserInformation user = null;
-		try {
-			user = ShiroUtils.getUserInformation();
-			if (!userRoleService.isTeacher(user.getUid())) {
-				log.info("用户: " + user.getUid() + "无权限");
-				return Result.permissionByTeacher();
-			}
-			log.info("教师或管理员: " + user.getUid() + "开始创建班级");
-			ClazzInformation clazzInformation = new ClazzInformation(clazzName);
-			boolean b = clazzInformationService.insert(clazzInformation);
-			if (b) {
-				log.info("创建班级成功, 班级ID为: " + clazzInformation.getId());
-				if(uids != null && uids.size() > 0) {
-					log.info("");
-					userClazzInformationService.insertByList(uids, clazzInformation.getId());
-				}
-				return Result.success().add("clazzId", clazzInformation.getId());
-			}
-			log.warn("创建班级失败, 原因为: " + "连接数据库失败");
-			return Result.fail().add(EXCEPTION, "网络连接超时, 请稍候重试");
-		} catch (Exception e) {
-			if (user == null) {
-				log.info("用户创建班级失败, 原因: 用户未登录");
-				return Result.fail().add(EXCEPTION, NOT_LOGIN);
-			}
-			log.error("用户创建班级发生未知错误, 原因: " + e.getMessage());
-			return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+	public Result createClazz(String clazzName, @RequestParam(required = false) List<Integer> uids) throws Exception{
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
+		if (!userRoleService.isTeacher(user.getUid())) {
+			log.info("用户: " + user.getUid() + "无权限");
+			return Result.permissionByTeacher();
 		}
+		log.info("教师或管理员: " + user.getUid() + "开始创建班级");
+		ClazzInformation clazzInformation = new ClazzInformation(clazzName);
+		boolean b = clazzInformationService.insert(clazzInformation);
+		if (b) {
+			log.info("创建班级成功, 班级ID为: " + clazzInformation.getId());
+			if(!Objects.isNull(uids) && uids.size() > 0) {
+				log.info("");
+				userClazzInformationService.insertByList(uids, clazzInformation.getId());
+			}
+			return Result.success().add("clazzId", clazzInformation.getId());
+		}
+		log.warn("创建班级失败, 原因为: " + "连接数据库失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 
 }

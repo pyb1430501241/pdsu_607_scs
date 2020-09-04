@@ -2,7 +2,7 @@ package com.pdsu.scs.exception.web.user;
 
 /**
  * 
- * @author Admin
+ * @author 半梦
  *
  */
 public class NotFoundUidException extends UserExpection{

@@ -40,6 +40,12 @@
 		<!-- 指定 Mapper 文件的位置 -->
 		<property name="mapperLocations" value="classpath:mybatis/mapper/*.xml"></property>
 	</bean>
+
+	<bean id = "myabtisEhcache" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="classpath:ehcache/ehcache.xml"></property>
+		<property name="cacheManagerName" value="mybatis"></property>
+	</bean>
+
 	<!-- 配置扫描器, 将所有 Mybatis 接口添加到 IOC 容器 -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
 		<!-- 扫描 Dao 接口, 把所有接口添加进 IOC 容器 -->
@@ -69,7 +75,7 @@
 	<!-- ================================================================================== -->
 	<!-- 配置 cacheManager -->
 	<bean id="shiroCacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-		<property name="configLocation" value="classpath:shiro/ehcache.xml"></property>
+		<property name="configLocation" value="classpath:ehcache/ehcache.xml"></property>
 		<property name="cacheManagerName" value="shiro"></property>
 	</bean>
 	<bean id = "ehcacheManager" class = "org.apache.shiro.cache.ehcache.EhCacheManager">
@@ -134,11 +140,12 @@
 	<!-- ================================================================================== -->
 	<!-- 配置 ehcache 缓存 -->
 	<bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">  
-		<property name="configLocation" value="classpath:shiro/ehcache.xml"></property>
+		<property name="configLocation" value="classpath:ehcache/ehcache.xml"></property>
 		<property name="cacheManagerName" value="code"></property>
-	</bean>  
-	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">  
-		<property name="cacheManager" ref="cacheManagerFactory"></property>   
+	</bean>
+
+	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+		<property name="cacheManager" ref="cacheManagerFactory"></property>
 	</bean>
 	
 	<!-- 使 Aspectj 注解起作用 : 自动为匹配的类生成代理对象 -->

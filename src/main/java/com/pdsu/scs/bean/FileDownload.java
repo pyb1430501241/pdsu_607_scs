@@ -1,11 +1,13 @@
 package com.pdsu.scs.bean;
 
+import java.io.Serializable;
+
 /**
  * 文件下载数据
  * @author 半梦
  *
  */
-public class FileDownload {
+public class FileDownload implements Serializable {
     private Integer id;
 
     private Integer fileid;
