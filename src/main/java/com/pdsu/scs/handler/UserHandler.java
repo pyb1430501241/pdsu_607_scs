@@ -138,7 +138,6 @@ public class UserHandler extends ParentHandler{
 		loginOrNotLogin(user);
 		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
 		return Result.success().add("user", user);
-
 	}
 	
 	/**
