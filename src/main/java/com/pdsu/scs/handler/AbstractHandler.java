@@ -25,19 +25,19 @@ import java.io.UnsupportedEncodingException;
  * @author 半梦
  * @create 2020-08-29 15:19
  */
-public abstract class AbstractHandler {
+public interface AbstractHandler {
 
-    protected static final String DEFAULT_BLOB_IMG_FILEPATH = "/pdsu/web/blob/img/";
+    String DEFAULT_BLOB_IMG_FILEPATH = "/pdsu/web/blob/img/";
 
-    protected static final String DEFAULT_FILE_FILEPATH = "/pdsu/web/file/";
+    String DEFAULT_FILE_FILEPATH = "/pdsu/web/file/";
 
-    protected static final String DEFAULT_USER_IMG_FILEPATH = "/pdsu/web/img/";
+    String DEFAULT_USER_IMG_FILEPATH = "/pdsu/web/img/";
 
-    protected static final String DEFAULT_IMG_SUFFIX = ".jpg";
+    String DEFAULT_IMG_SUFFIX = ".jpg";
 
-    protected static final String DEFAULT_IMG_SUFFIX_EXCEPT_POINT = "jpg";
+    String DEFAULT_IMG_SUFFIX_EXCEPT_POINT = "jpg";
 
-    protected static final String DEFAULT_USER_IMG_NAME = "422696839bb3222a73a48d7c97b1bba4.jpg";
+    String DEFAULT_USER_IMG_NAME = "422696839bb3222a73a48d7c97b1bba4.jpg";
 
     /**
      * 处理 NotFoundBlobIdException 异常
@@ -46,7 +46,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(NotFoundBlobIdException.class)
     @ResponseBody
-    public abstract Result processNotFoundBlobIdException(NotFoundBlobIdException e);
+    public Result processNotFoundBlobIdException(NotFoundBlobIdException e);
 
     /**
      * 处理 UnsupportedEncodingException 异常
@@ -55,7 +55,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(UnsupportedEncodingException.class)
     @ResponseBody
-    public abstract Result processUnsupportedEncodingException(UnsupportedEncodingException e);
+    public Result processUnsupportedEncodingException(UnsupportedEncodingException e);
 
     /**
      * 处理 Exception 异常, 优先级最低
@@ -64,7 +64,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public abstract Result processException(Exception e);
+    public Result processException(Exception e);
 
     /**
      * 处理 UserNotLoginException 异常
@@ -73,7 +73,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(UserNotLoginException.class)
     @ResponseBody
-    public abstract Result processUserNotLoginException(UserNotLoginException e);
+    public Result processUserNotLoginException(UserNotLoginException e);
 
     /**
      * 处理 UidAndWebIdRepetitionException 异常
@@ -82,7 +82,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(UidAndWebIdRepetitionException.class)
     @ResponseBody
-    public abstract Result processUidAndWebIdRepetitionException(UidAndWebIdRepetitionException e);
+    public Result processUidAndWebIdRepetitionException(UidAndWebIdRepetitionException e);
 
     /**
      * 处理 DeleteInforException 异常
@@ -91,7 +91,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(DeleteInforException.class)
     @ResponseBody
-    public abstract Result processDeleteInforException(DeleteInforException e);
+    public Result processDeleteInforException(DeleteInforException e);
 
     /**
      * 处理 NotFoundCommentIdException 异常
@@ -100,7 +100,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(NotFoundCommentIdException.class)
     @ResponseBody
-    public abstract Result processNotFoundCommentIdException(NotFoundCommentIdException e);
+    public Result processNotFoundCommentIdException(NotFoundCommentIdException e);
 
     /**
      * 处理 NotFoundUidException 异常
@@ -109,7 +109,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(NotFoundUidException.class)
     @ResponseBody
-    public abstract Result processNotFoundUidException(NotFoundUidException e);
+    public Result processNotFoundUidException(NotFoundUidException e);
 
     /**
      * 处理 RepetitionThumbsException 异常
@@ -118,7 +118,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(RepetitionThumbsException.class)
     @ResponseBody
-    public abstract Result processRepetitionThumbsException(RepetitionThumbsException e);
+    public Result processRepetitionThumbsException(RepetitionThumbsException e);
 
     /**
      * 处理 IOException 异常
@@ -127,7 +127,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(IOException.class)
     @ResponseBody
-    public abstract Result processIOException(IOException e);
+    public Result processIOException(IOException e);
 
     /**
      * 处理 AuthenticationException 异常
@@ -136,7 +136,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(AuthenticationException.class)
     @ResponseBody
-    public abstract Result processAuthenticationException(AuthenticationException e);
+    public Result processAuthenticationException(AuthenticationException e);
 
     /**
      * 处理 EmailException 异常
@@ -145,7 +145,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(EmailException.class)
     @ResponseBody
-    public abstract Result processEmailException(EmailException e);
+    public Result processEmailException(EmailException e);
 
     /**
      * 处理 UidRepetitionException 异常
@@ -154,7 +154,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(UidRepetitionException.class)
     @ResponseBody
-    public abstract Result processUidRepetitionException(UidRepetitionException e);
+    public Result processUidRepetitionException(UidRepetitionException e);
 
     /**
      * 处理 NotFoundEmailException 异常
@@ -163,7 +163,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(NotFoundEmailException.class)
     @ResponseBody
-    public abstract Result processNotFoundEmailException(NotFoundEmailException e);
+    public Result processNotFoundEmailException(NotFoundEmailException e);
 
     /**
      * 处理 UidAndLikeIdRepetitionException 异常
@@ -172,7 +172,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(UidAndLikeIdRepetitionException.class)
     @ResponseBody
-    public abstract Result processUidAndLikeIdRepetitionException(UidAndLikeIdRepetitionException e);
+    public Result processUidAndLikeIdRepetitionException(UidAndLikeIdRepetitionException e);
 
     /**
      * 处理 NotFoundUidAndLikeIdException 异常
@@ -181,7 +181,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(NotFoundUidAndLikeIdException.class)
     @ResponseBody
-    public abstract Result processNotFoundUidAndLikeIdException(NotFoundUidAndLikeIdException e);
+    public Result processNotFoundUidAndLikeIdException(NotFoundUidAndLikeIdException e);
 
     /**
      * 处理 QueryException 异常
@@ -199,7 +199,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(UidAndTitleRepetitionException.class)
     @ResponseBody
-    public abstract Result processUidAndTitleRepetitionException(UidAndTitleRepetitionException e);
+    public Result processUidAndTitleRepetitionException(UidAndTitleRepetitionException e);
 
     /**
      * 处理 InsertException 异常
@@ -217,7 +217,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseBody
-    public abstract Result processMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e);
+    public Result processMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e);
 
     /**
      * 处理 BindException 异常
@@ -227,7 +227,7 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(BindException.class)
     @ResponseBody
-    public abstract Result processBindException(BindException e);
+    public Result processBindException(BindException e);
 
     /**
      * 处理 BindException 异常
@@ -236,5 +236,5 @@ public abstract class AbstractHandler {
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseBody
-    public abstract Result processMissingServletRequestParameterException(MissingServletRequestParameterException e);
+    public Result processMissingServletRequestParameterException(MissingServletRequestParameterException e);
 }

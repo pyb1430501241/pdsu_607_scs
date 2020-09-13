@@ -1,3 +1,14 @@
+/*
+“最最喜欢你，绿子。”
+“什么程度？”
+“像喜欢春天的熊一样。”
+“春天的熊？”绿子再次扬起脸，“什么春天的熊？”
+“春天的原野里，你一个人正走着，对面走来一只可爱的小熊，浑身的毛活像天鹅绒，眼睛圆鼓鼓的。
+ 它这么对你说到：‘你好，小姐，和我一块打滚玩好么？’接着，你就和小熊抱在一起，顺着长满三叶
+ 草的山坡咕噜咕噜滚下去，整整玩了一大天。你说棒不棒？”
+“太棒了。”
+“我就这么喜欢你。”
+ */
 package com.pdsu.scs.handler;
 
 import com.github.pagehelper.PageHelper;
@@ -114,7 +125,6 @@ public class UserHandler extends ParentHandler{
 	 */
 	private Cache cache = null;
 	
-	
 	/**
 	 * @return  用户的登录状态
 	 * 如登录, 返回用户信息
@@ -144,7 +154,7 @@ public class UserHandler extends ParentHandler{
 	@CrossOrigin
 	public Result login(@RequestParam String uid, @RequestParam String password,
 						@RequestParam String hit, @RequestParam String code,
-						@RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception{
+						@RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception {
 		log.info("账号: " + uid + "登录开始");
 		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
 		if(Objects.isNull(cache.get(hit))) {
@@ -158,31 +168,27 @@ public class UserHandler extends ParentHandler{
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		Subject subject = SecurityUtils.getSubject();
-		/**
-		 * 如果未认证
-		 */
-		if(Objects.isNull(ShiroUtils.getUserInformation())) {
-			log.info("账号: " + uid + "开始登录认证");
-			UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
-			//是否记住
-			if(flag == 0) {
-				token.setRememberMe(false);
-			}else {
-				token.setRememberMe(true);
-			}
-			subject.login(token);
-			UserInformation uu = (UserInformation) subject.getPrincipal();
-			uu.setPassword(null);
-			log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
-			uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
-			uu.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(uu.getUid()));
-			uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
-			return Result.success()
+		if(!Objects.isNull(ShiroUtils.getUserInformation())) {
+		    subject.logout();
+        }
+        log.info("账号: " + uid + "开始登录认证");
+        UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
+        //是否记住
+        if(flag == 0) {
+            token.setRememberMe(false);
+        } else {
+            token.setRememberMe(true);
+        }
+        subject.login(token);
+        UserInformation uu = (UserInformation) subject.getPrincipal();
+        uu.setPassword(null);
+        log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
+        uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
+        uu.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(uu.getUid()));
+        uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
+        return Result.success()
 					.add("user", uu)
 					.add("AccessToken", subject.getSession().getId());
-		}
-		log.info("账号: " + uid + "已登录");
-		return Result.fail().add(EXCEPTION, ALREADY_LOGIN);
 	}
 	
 	/**

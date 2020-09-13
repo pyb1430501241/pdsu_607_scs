@@ -35,7 +35,7 @@ public class Result{
 	public static Result fail() {
 		Result result = new Result();
 		result.add("code", 500);
-		result.add("msg", "fail");
+		result.add("msg", "大丈夫, どんな未来でも, 太陽は昇るからきっと");
 		return result;
 	}
 

@@ -38,7 +38,7 @@ import java.util.Properties;
  * @author 半梦
  * @create 2020-08-19 19:51
  */
-public abstract class ParentHandler extends AbstractHandler{
+public abstract class ParentHandler implements AbstractHandler {
 
     protected static final String EXCEPTION = "exception";
 

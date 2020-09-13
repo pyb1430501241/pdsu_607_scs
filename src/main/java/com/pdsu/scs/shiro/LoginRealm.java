@@ -32,6 +32,7 @@ public class LoginRealm extends AuthorizingRealm{
 			throw new UnknownAccountException("账号不存在");
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
+		UserInformation userInformation = UserInformation.createUserInformationByUser(user);
 		if(user.getAccountStatus() == 2) {
 			throw new UserAbnormalException("账号被冻结");
 		}
@@ -41,10 +42,10 @@ public class LoginRealm extends AuthorizingRealm{
 		if(user.getAccountStatus() == 4) {
 			throw new UserAbnormalException("账号已注销");
 		}
-		Object credentials = user.getPassword();
+		Object credentials = userInformation.getPassword();
 		String realmName = getName();
 		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");
-		return new SimpleAuthenticationInfo(user, credentials, credentialsSalt, realmName);
+		return new SimpleAuthenticationInfo(userInformation, credentials, credentialsSalt, realmName);
 	}
 	
 	/**

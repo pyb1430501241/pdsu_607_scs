@@ -41,7 +41,23 @@ public class UserInformation implements Serializable {
 
     private Integer systemNotifications;
 
-	@Override
+    public static UserInformation createUserInformationByUser(UserInformation user) {
+    	UserInformation userInformation = new UserInformation();
+    	userInformation.setId(user.getId());
+    	userInformation.setUid(user.getUid());
+    	userInformation.setPassword(user.getPassword());
+    	userInformation.setUsername(user.getUsername());
+    	userInformation.setCollege(user.getCollege());
+    	userInformation.setClazz(user.getClazz());
+    	userInformation.setAccountStatus(user.getAccountStatus());
+    	userInformation.setSystemNotifications(user.getSystemNotifications());
+    	userInformation.setEmail(user.getEmail());
+    	userInformation.setImgpath(user.getImgpath());
+    	userInformation.setTime(user.getTime());
+    	return userInformation;
+    }
+
+    @Override
 	public String toString() {
 		return "UserInformation{" +
 				"id=" + id +

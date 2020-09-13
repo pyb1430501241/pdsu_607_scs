@@ -154,7 +154,8 @@
       </if>
     </trim>
   </insert>
-  <select id="countByExample" parameterType="com.pdsu.scs.bean.SystemNotificationExample" resultType="java.lang.Long">
+  <select id="countByExample" parameterType="com.pdsu.scs.bean.SystemNotificationExample" resultType="java.lang.Long"
+    useCache="false">
     select count(*) from db_system_notification
     <if test="_parameter != null">
       <include refid="Example_Where_Clause" />
