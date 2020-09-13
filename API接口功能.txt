@@ -326,7 +326,7 @@
 																		
 									
 				
-2. WebHandler API相关
+2. UserHandler API相关
 
 	1)用户退出登录 API
 		路径: 域名(ip)/项目名称/user/logout
@@ -820,7 +820,7 @@
 				 		json{"code" : "404" , "msg" : "fail" , "exception" : "异常原因"}
 				 		
 				 		
-				 	
+				 
 
 3: FileHandler API相关
 
@@ -895,6 +895,21 @@
 				如：http://121.199.27.93/admin/getuserinformationlist?p=1
 				返回值：
 					 成功：json{"code" : "200" , "msg" : "success" , "userList" : "用户信息"}
+					 失败：
+					 	json{"code" : "404/403" , "msg" : "fail" , "exception" : "失败原因"}
+					 异常：
+				 		json{"code" : "404", "msg" : "fail" , "exception" : "异常原因"}
+				 		
+	2)创建班级api
+		请求路径：域名(ip)/项目名称/admin/applyclass
+		请求方式：POST
+		请求头: Authorization
+			请求参数：
+				clazzName ： 班级名
+				uids ： 用户id（非必须）
+				如：http://121.199.27.93/admin/applyclass?clazzName=xxx
+				返回值：
+					 成功：json{"code" : "200" , "msg" : "success" , "clazzId" : "班级id"}
 					 失败：
 					 	json{"code" : "404/403" , "msg" : "fail" , "exception" : "失败原因"}
 					 异常：
