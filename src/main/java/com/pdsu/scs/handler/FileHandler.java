@@ -1,3 +1,7 @@
+/*
+jenkins总是无法触发...
+ */
+
 package com.pdsu.scs.handler;
 
 import com.github.pagehelper.PageHelper;
@@ -30,7 +34,7 @@ import java.util.Objects;
  */
 @Controller
 @RequestMapping("/file")
-public class FileHandler extends ParentHandler{
+public class FileHandler extends ParentHandler {
 	
 	/**
 	 * 文件操作相关
