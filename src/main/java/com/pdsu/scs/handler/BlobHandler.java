@@ -3,12 +3,10 @@ package com.pdsu.scs.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.service.*;
 import com.pdsu.scs.shiro.WebSessionManager;
-import com.pdsu.scs.utils.HashUtils;
-import com.pdsu.scs.utils.RandomUtils;
-import com.pdsu.scs.utils.ShiroUtils;
-import com.pdsu.scs.utils.SimpleUtils;
+import com.pdsu.scs.utils.*;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -134,7 +132,7 @@ public class BlobHandler extends ParentHandler{
 	@RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getWebForIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
+	public Result getWebIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
 			, @RequestParam(defaultValue = "0") Integer lid) throws Exception {
 		List<WebInformation> webList;
 		switch (lid) {
@@ -199,17 +197,7 @@ public class BlobHandler extends ParentHandler{
 			}
 			blobList.add(blobInformation);
 		}
-		blobList.sort((o1, o2) -> {
-			Integer hint1 = o1.getCollection()*50000 + o1.getThumbs()*30000 + o1.getVisit()*10000
-					- (int)SimpleUtils.getSimpleDateDifference(o1.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
-			Integer hint2 = o2.getCollection()*50000 + o2.getThumbs()*30000 + o2.getVisit()*10000
-					- (int)SimpleUtils.getSimpleDateDifference(o2.getWeb().getSubTime(), SimpleUtils.getSimpleDateSecond());
-				if(hint1 > hint2) {
-					return 1;
-				} else if(hint1 == hint2)
-					return 0;
-				return -1;
-		});
+		blobList.sort(SortUtils.getBlobComparator());
 		PageInfo<BlobInformation> pageInfo = new PageInfo<>(blobList);
 		return Result.success().add("blobList", pageInfo);
 	}
@@ -400,7 +388,12 @@ public class BlobHandler extends ParentHandler{
 		//设置文章投稿时间
 		web.setSubTime(SimpleUtils.getSimpleDateSecond());
 		//发布文章
-		int flag = webInformationService.insert(web);
+		int flag = -1;
+		try {
+			flag = webInformationService.insert(web);
+		} catch (InsertException e) {
+			log.info("ES进行插入操作时出现未知错误, 原因: " + e.getMessage());
+		}
 		if(flag > 0) {
 			if(!Objects.isNull(labelList)) {
 				boolean b = webLabelControlService.insert(web.getId(), labelList);
@@ -415,8 +408,6 @@ public class BlobHandler extends ParentHandler{
 		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
-	
-
 	/**
 	 * 删除文章
 	 * @param webid  文章id

@@ -1,25 +1,20 @@
 package com.pdsu.scs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
-import com.pdsu.scs.bean.EsUserInformation;
-import com.pdsu.scs.bean.MyImage;
-import com.pdsu.scs.bean.MyImageExample;
+import com.pdsu.scs.bean.*;
 import com.pdsu.scs.bean.MyImageExample.Criteria;
-import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.dao.MyImageMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.utils.SimpleUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -83,7 +78,7 @@ public class MyImageServiceImpl implements MyImageService {
 		if(!countByUid(myImage.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}
-		return myImageMapper.insertSelective(myImage) == 0 ? false : true;
+		return myImageMapper.insertSelective(myImage) != 0;
 	}
 
 	@Override

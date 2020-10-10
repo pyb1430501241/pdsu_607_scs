@@ -22,7 +22,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.http.Cookie;
 import java.io.FileInputStream;
 import java.time.Duration;
 import java.time.Instant;
@@ -61,8 +60,8 @@ public class HandlerTest {
 	
 	@Test
 	public void testLike() throws Exception {
-		MvcResult result = mvc.perform(MockMvcRequestBuilders.post("/user/like")
-					.param("uid", "181360226"))
+		MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/index")
+					)
 				.andReturn();
 		MockHttpServletResponse response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
@@ -83,12 +82,11 @@ public class HandlerTest {
 		t.add("password", "pyb***20000112");
 		t.add("hit", list.get(list.indexOf("token") + 1));
 		t.add("code", list.get(list.indexOf("vicode") + 1));
+		t.add("flag", "1");
 		result = mvc.perform(MockMvcRequestBuilders.post("/user/login").params(t)).andReturn();
 		response = result.getResponse();
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
-		Cookie[] cookies = response.getCookies();
-		System.out.println(cookies.length);
 	}
 	
 	@Test

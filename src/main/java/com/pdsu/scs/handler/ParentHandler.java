@@ -97,6 +97,7 @@ public abstract class ParentHandler implements AbstractHandler {
     }
 
     private static void initProperties() {
+        log.info("系统配置初始化...");
         Properties properties = new Properties();
         try {
             ClassLoader classLoader = ParentHandler.class.getClassLoader();
@@ -127,10 +128,13 @@ public abstract class ParentHandler implements AbstractHandler {
                 }
             }
         } catch (IOException e) {
+            log.warn("初始化配置失败...");
         }
+        log.info("系统初始化成功...");
     }
 
     private static void mkdirs(){
+        log.info("创建系统所需文件...");
         File file = new File(User_Img_FilePath);
         if(!file.exists()) {
             file.mkdirs();
@@ -143,6 +147,7 @@ public abstract class ParentHandler implements AbstractHandler {
         if(!file.exists()) {
             file.mkdirs();
         }
+        log.info("文件创建成功...");
     }
 
     static {
@@ -164,7 +169,7 @@ public abstract class ParentHandler implements AbstractHandler {
 
     @Override
     public Result processException(Exception e) {
-        log.error("项目运行发生未知错误, 原因: " + e.getMessage());
+        log.error("项目运行发生未知错误, 原因: " + e);
         return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
     }
 

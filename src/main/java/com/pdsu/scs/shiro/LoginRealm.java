@@ -1,8 +1,13 @@
 package com.pdsu.scs.shiro;
 
 import com.pdsu.scs.bean.UserInformation;
+import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UserAbnormalException;
+import com.pdsu.scs.service.MyEmailService;
+import com.pdsu.scs.service.MyImageService;
+import com.pdsu.scs.service.SystemNotificationService;
 import com.pdsu.scs.service.UserInformationService;
+import com.pdsu.scs.utils.SimpleUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -19,6 +24,15 @@ public class LoginRealm extends AuthorizingRealm{
 
 	@Autowired
 	private UserInformationService userInformationService;
+
+	@Autowired
+	private MyImageService myImageService;
+
+	@Autowired
+	private MyEmailService myEmailService;
+
+	@Autowired
+	private SystemNotificationService systemNotificationService;
 	
 	/**
 	 * 登录认证
@@ -45,6 +59,12 @@ public class LoginRealm extends AuthorizingRealm{
 		Object credentials = userInformation.getPassword();
 		String realmName = getName();
 		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");
+		try {
+			userInformation.setImgpath(myImageService.selectImagePathByUid(userInformation.getUid()).getImagePath());
+		} catch (NotFoundUidException e) {
+		}
+		userInformation.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(userInformation.getUid()));
+		userInformation.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(userInformation.getUid()).getEmail()));
 		return new SimpleAuthenticationInfo(userInformation, credentials, credentialsSalt, realmName);
 	}
 	

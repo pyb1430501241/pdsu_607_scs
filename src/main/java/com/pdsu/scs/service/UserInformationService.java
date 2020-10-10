@@ -1,13 +1,13 @@
 package com.pdsu.scs.service;
 
-import java.util.List;
-
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 /**
  * 与用户信息相关的方法
@@ -23,7 +23,7 @@ public interface UserInformationService {
 	 * @throws UidRepetitionException
 	 * @throws InsertException
 	 */
-	public boolean inset(@NonNull UserInformation information) throws UidRepetitionException, InsertException;
+	public boolean insert(@NonNull UserInformation information) throws UidRepetitionException;
 
 	/**
 	 * 根据学号删除用户

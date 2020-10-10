@@ -1,39 +1,8 @@
 package com.pdsu.scs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
-
-import com.pdsu.scs.bean.EsUserInformation;
-import com.pdsu.scs.bean.MyCollectionExample;
-import com.pdsu.scs.bean.MyEmailExample;
-import com.pdsu.scs.bean.MyImageExample;
-import com.pdsu.scs.bean.MyLikeExample;
-import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.UserInformationExample;
+import com.pdsu.scs.bean.*;
 import com.pdsu.scs.bean.UserInformationExample.Criteria;
-import com.pdsu.scs.bean.VisitInformationExample;
-import com.pdsu.scs.bean.WebCommentExample;
-import com.pdsu.scs.bean.WebCommentReplyExample;
-import com.pdsu.scs.bean.WebFileExample;
-import com.pdsu.scs.bean.WebInformationExample;
-import com.pdsu.scs.bean.WebThumbsExample;
-import com.pdsu.scs.dao.MyCollectionMapper;
-import com.pdsu.scs.dao.MyEmailMapper;
-import com.pdsu.scs.dao.MyImageMapper;
-import com.pdsu.scs.dao.MyLikeMapper;
-import com.pdsu.scs.dao.UserInformationMapper;
-import com.pdsu.scs.dao.VisitInformationMapper;
-import com.pdsu.scs.dao.WebCommentMapper;
-import com.pdsu.scs.dao.WebCommentReplyMapper;
-import com.pdsu.scs.dao.WebFileMapper;
-import com.pdsu.scs.dao.WebInformationMapper;
-import com.pdsu.scs.dao.WebThumbsMapper;
+import com.pdsu.scs.dao.*;
 import com.pdsu.scs.es.dao.EsDao;
 import com.pdsu.scs.exception.web.DeleteInforException;
 import com.pdsu.scs.exception.web.es.InsertException;
@@ -42,6 +11,13 @@ import com.pdsu.scs.exception.web.user.UidRepetitionException;
 import com.pdsu.scs.service.UserInformationService;
 import com.pdsu.scs.utils.HashUtils;
 import com.pdsu.scs.utils.SimpleUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 该类继承 UserInformationService 接口, 用于处理与用户有关的逻辑
@@ -93,7 +69,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws InsertException 
 	 */
 	@Override
-	public boolean inset(@NonNull UserInformation information) throws UidRepetitionException, InsertException {
+	public boolean insert(@NonNull UserInformation information) throws UidRepetitionException {
 		Integer uid = information.getUid();
 		if(countByUid(uid) != 0) {
 			throw new UidRepetitionException("学号不可重复");
@@ -101,11 +77,15 @@ public class UserInformationServiceImpl implements UserInformationService {
 		String password = information.getPassword();
 		password = HashUtils.getPasswordHash(uid, password);
 		information.setPassword(password);
-		if(userInformationMapper.insertSelective(information) > 0) {
+		if(userInformationMapper.insertSelective(information) != 0) {
 			Integer id = information.getId();
 			EsUserInformation user = new EsUserInformation(information.getUid(),
 					0, information.getImgpath(), 0, information.getUsername());
-			return esDao.insert(user, id);
+			try {
+				esDao.insert(user, id);
+			} catch (InsertException e) {
+			}
+			return true;
 		}
 		return false;
 	}

@@ -74,17 +74,16 @@ public class FileHandler extends ParentHandler{
 		if(b) {
 			log.info("上传成功");
 			return Result.success();
-		} else {
-			log.error("上传失败");
-			return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 		}
+		log.error("上传失败");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
 	/**
 	 * 下载文件
-	 * @param uid 
-	 * @param title
-	 * @param response
+	 * @param uid 作者 uid
+	 * @param title 文件名
+	 * @param response HttpServletResponse
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/download", method = RequestMethod.GET)
@@ -92,15 +91,17 @@ public class FileHandler extends ParentHandler{
 	public void download(@RequestParam Integer uid, @RequestParam String title, HttpServletResponse response) throws Exception{
 		OutputStream out = null;
 		InputStream in = null;
+		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
 		try {
-			log.info("开始下载文件, 下载人 UID 为: " + ShiroUtils.getUserInformation().getUid());
+			log.info("开始下载文件, 下载人 UID 为: " + user.getUid());
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String name = webfile.getFilePath();
 			String url = File_FilePath + name;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
-			String filename = title + SimpleUtils.getSuffixName(name);
+			String filename = title + "_" + uid + SimpleUtils.getSuffixName(name);
 			response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
 			out = response.getOutputStream(); 
 			out.write(in.readAllBytes()); 
@@ -153,6 +154,8 @@ public class FileHandler extends ParentHandler{
 			fileInformation.setWebfile(list.get(i));
 			fileInformation.setDownloads(downloads.get(i));
 			for (UserInformation user : users) {
+				UserInformation u = user;
+				user.setPassword(null);
 				if(user.getUid().equals(list.get(i).getUid())) {
 					fileInformation.setUser(user);
 					break;

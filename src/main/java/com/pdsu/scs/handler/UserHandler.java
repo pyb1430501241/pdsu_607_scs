@@ -138,7 +138,6 @@ public class UserHandler extends ParentHandler{
 		loginOrNotLogin(user);
 		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
 		return Result.success().add("user", user);
-
 	}
 	
 	/**
@@ -184,9 +183,6 @@ public class UserHandler extends ParentHandler{
         UserInformation uu = (UserInformation) subject.getPrincipal();
         uu.setPassword(null);
         log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
-        uu.setImgpath(myImageService.selectImagePathByUid(uu.getUid()).getImagePath());
-        uu.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(uu.getUid()));
-        uu.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(uu.getUid()).getEmail()));
         return Result.success()
 					.add("user", uu)
 					.add("AccessToken", subject.getSession().getId());
@@ -255,7 +251,6 @@ public class UserHandler extends ParentHandler{
 	/**
 	 * 申请账号
 	 * @param user  POJO 类
-	 * @param email 邮箱
 	 * @param token 获取验证码的 key
 	 * @param code  前端输入验证码
 	 * @return json字符串
@@ -263,8 +258,9 @@ public class UserHandler extends ParentHandler{
 	@RequestMapping(value = "/applynumber", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result applyforAccountNumber(@Valid UserInformation user, @RequestParam String email,
-										@RequestParam String token, @RequestParam String code)
+	public Result applyforAccountNumber(@Valid UserInformation user,
+										@RequestParam String token,
+										@RequestParam String code)
 			throws Exception {
 		log.info("申请账号: " + user.getUid() + "开始");
 		//验证验证码
@@ -279,7 +275,7 @@ public class UserHandler extends ParentHandler{
 		if(userInformationService.countByUid(user.getUid()) != 0) {
 			return Result.fail().add(EXCEPTION, "该账号已存在,是否忘记密码?");
 		}
-		if(myEmailService.countByEmail(email)) {
+		if(myEmailService.countByEmail(user.getEmail())) {
 			return Result.fail().add(EXCEPTION, "此邮箱已被绑定, 忘记密码?");
 		}
 		if(userInformationService.countByUserName(user.getUsername()) != 0) {
@@ -287,17 +283,17 @@ public class UserHandler extends ParentHandler{
 		}
 		user.setAccountStatus(1);
 		user.setTime(SimpleUtils.getSimpleDate());
-		user.setImgpath(Default_User_Img_Name);
-		boolean flag = userInformationService.inset(user);
+		boolean flag = userInformationService.insert(user);
 		if(flag) {
 			myImageService.insert(new MyImage(user.getUid(), Default_User_Img_Name));
-			myEmailService.insert(new MyEmail(null, user.getUid(), email));
+			myEmailService.insert(new MyEmail(null, user.getUid(), user.getEmail()));
 			userRoleService.insert(new UserRole(user.getUid(), 1));
 			log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 			return Result.success();
+		} else {
+			log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
+			return Result.fail().add(EXCEPTION, "申请失败");
 		}
-		log.error("申请账号: " + user.getUid() + "失败, 此账号已存在");
-		return Result.fail().add(EXCEPTION, "申请失败");
 	}
 	
 	/**
@@ -523,11 +519,12 @@ public class UserHandler extends ParentHandler{
 	 * @param uid
 	 * @return
 	 */
-	@RequestMapping(value = "/delike", method = RequestMethod.POST)
+	@RequestMapping(value = "/dislike", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result delike(@RequestParam Integer uid) throws Exception{
+	public Result disLike(@RequestParam Integer uid) throws Exception {
 		UserInformation user = ShiroUtils.getUserInformation();
+		loginOrNotLogin(user);
 		Integer likeId = user.getUid();
 		log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
 		boolean b = myLikeService.deleteByLikeIdAndUid(likeId, uid);

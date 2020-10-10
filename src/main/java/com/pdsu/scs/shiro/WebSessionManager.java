@@ -25,7 +25,7 @@ public class WebSessionManager extends DefaultWebSessionManager{
 
 	public WebSessionManager() {
 		Cookie cookie = new SimpleCookie(AUTHORIZATION);
-		cookie.setHttpOnly(true);
+		cookie.setHttpOnly(false);
 		setSessionIdCookieEnabled(true);
 		setSessionIdUrlRewritingEnabled(true);
 		setSessionIdCookie(cookie);

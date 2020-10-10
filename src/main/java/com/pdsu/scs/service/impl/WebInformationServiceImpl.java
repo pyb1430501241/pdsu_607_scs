@@ -84,9 +84,8 @@ public class WebInformationServiceImpl implements WebInformationService {
 					} catch (Exception e) {
 					}
 				}).start();
-				return information.getId();
 			}
-			return -1;
+			return information.getId();
 		}
 		return -1;
 	}
