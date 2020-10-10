@@ -89,7 +89,6 @@ public class WebInformationServiceImpl implements WebInformationService {
 		}
 		return -1;
 	}
-
 	/*
 	 * 删除一个网页信息
 	 */
