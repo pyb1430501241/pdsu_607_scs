@@ -125,7 +125,8 @@ public class FileHandler extends ParentHandler{
 			}
 		}
 	}
-	
+
+
 	/**
 	 * 
 	 * @param p
@@ -165,7 +166,6 @@ public class FileHandler extends ParentHandler{
 		}
 		PageInfo<FileInformation> fileList = new PageInfo<FileInformation>(files);
 		return Result.success().add("fileList", fileList);
-
 	}
 
 }
