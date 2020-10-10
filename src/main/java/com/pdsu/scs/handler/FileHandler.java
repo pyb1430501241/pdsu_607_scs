@@ -1,5 +1,5 @@
 /*
-jenkins总是无法触发...难受...
+jenkins真难配
  */
 
 package com.pdsu.scs.handler;
