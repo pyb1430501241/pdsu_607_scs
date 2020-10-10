@@ -1,6 +1,3 @@
-/*
-代码难优化吗？
- */
 package com.pdsu.scs.handler;
 
 import com.github.pagehelper.PageHelper;

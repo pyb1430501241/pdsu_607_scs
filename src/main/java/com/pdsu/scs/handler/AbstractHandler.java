@@ -1,3 +1,6 @@
+/*
+代码瞎写的
+ */
 package com.pdsu.scs.handler;
 
 import com.pdsu.scs.bean.Result;
