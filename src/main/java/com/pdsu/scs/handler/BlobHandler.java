@@ -1,3 +1,6 @@
+/*
+代码难优化吗？
+ */
 package com.pdsu.scs.handler;
 
 import com.github.pagehelper.PageHelper;
@@ -31,7 +34,7 @@ import java.util.Objects;
  */
 @Controller
 @RequestMapping("/blob")
-public class BlobHandler extends ParentHandler{
+public class BlobHandler extends ParentHandler {
 
 	/**
 	 * 博客相关逻辑处理
