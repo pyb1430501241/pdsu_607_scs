@@ -127,7 +127,7 @@
 	<dependency>
 	    <groupId>junit</groupId>
 	    <artifactId>junit</artifactId>
-	    <version>4.12</version>
+	    <version>4.13.1</version>
 	</dependency>
 	<!-- myBatis 逆向工程 -->
 	<!-- https://mvnrepository.com/artifact/org.mybatis.generator/mybatis-generator-core -->
