@@ -49,7 +49,7 @@ public class BlobHandler extends ParentHandler {
 	 * 点赞相关逻辑处理
 	 */
 	@Autowired
-	private WebThumbsService webThubmsService;
+	private WebThumbsService webThumbsService;
 	
 	/**
 	 * 头像相关逻辑处理
@@ -156,7 +156,7 @@ public class BlobHandler extends ParentHandler {
 		}
 		if(webList == null || webList.size() == 0) {
 			log.info("首页没有数据");
-			return Result.accepted();
+			return Result.accepted().add(EXCEPTION, "暂无此类标签的文章");
 		}
 		List<Integer> uids = new ArrayList<Integer>();
 		List<Integer> webids = new ArrayList<Integer>();
@@ -178,7 +178,7 @@ public class BlobHandler extends ParentHandler {
 			}
 		}
 		log.info("获取首页文章点赞量");
-		List<Integer> thumbsList = webThubmsService.selectThumbssForWebId(webids);
+		List<Integer> thumbsList = webThumbsService.selectThumbssForWebId(webids);
 		log.info("获取首页文章访问量");
 		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
 		log.info("获取首页文章收藏量");
@@ -233,7 +233,7 @@ public class BlobHandler extends ParentHandler {
 		log.info("获取网页访问量");
 		Integer visits = visitInformationService.selectvisitByWebId(web.getId());
 		log.info("获取文章点赞数");
-		Integer thubms = webThubmsService.selectThumbsForWebId(web.getId());
+		Integer thubms = webThumbsService.selectThumbsForWebId(web.getId());
 		log.info("获取文章收藏量");
 		Integer collections = myCollectionService.selectCollectionsByWebId(web.getId());
 		log.info("获取文章评论");
@@ -554,7 +554,7 @@ public class BlobHandler extends ParentHandler {
 		Integer fans = (int) myLikeService.countByLikeId(uid);
 		author.setFans(fans);
 		log.info("获取作者文章被点赞数");
-		Integer thumbs = webThubmsService.countThumbsByUid(uid);
+		Integer thumbs = webThumbsService.countThumbsByUid(uid);
 		author.setThumbs(thumbs);
 		log.info("获取作者文章总评论数");
 		Integer comment = webCommentService.countByUid(uid);
@@ -618,7 +618,7 @@ public class BlobHandler extends ParentHandler {
 		log.info("获取作者信息");
 		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
 		log.info("获取点赞量");
-		List<Integer> thumbs = webThubmsService.selectThumbssForWebId(webids);
+		List<Integer> thumbs = webThumbsService.selectThumbssForWebId(webids);
 		List<BlobInformation> blobInformations = new ArrayList<BlobInformation>();
 		for (Integer i = 0; i < webs.size(); i++) {
 			BlobInformation blob = new BlobInformation();
@@ -649,7 +649,7 @@ public class BlobHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
-		boolean b = webThubmsService.insert(new WebThumbs(user.getUid(), bid, webid));
+		boolean b = webThumbsService.insert(new WebThumbs(user.getUid(), bid, webid));
 		if(b) {
 			log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
 			return Result.success();
@@ -668,7 +668,7 @@ public class BlobHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "取消点赞文章: " + webid);
-		boolean b = webThubmsService.deletebyWebIdAndUid(webid, user.getUid());
+		boolean b = webThumbsService.deletebyWebIdAndUid(webid, user.getUid());
 		if(b) {
 			log.info("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
 			return Result.success();
@@ -689,7 +689,7 @@ public class BlobHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("获取用户是否点赞此篇文章");
-		boolean b = webThubmsService.countByWebIdAndUid(webid, user.getUid());
+		boolean b = webThumbsService.countByWebIdAndUid(webid, user.getUid());
 		return Result.success().add("thumbsStatus", b);
 	}
 	
