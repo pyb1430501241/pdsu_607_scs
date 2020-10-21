@@ -282,13 +282,13 @@ public class BlobHandler extends ParentHandler {
 		}
 		for(WebComment webcomment : commentList) {
 			WebComment b = webcomment;
-			List<WebCommentReply> webcommentReplyList = new ArrayList<>();
+			List<WebCommentReply> webCommentReplyList = new ArrayList<>();
 			for(WebCommentReply reply : commentReplyList) {
 				if(reply.getCid().equals(b.getId())) {
-					webcommentReplyList.add(reply);
+					webCommentReplyList.add(reply);
 				}
 			}
-			b.setCommentReplyList(webcommentReplyList);
+			b.setCommentReplyList(webCommentReplyList);
 		}
 		log.info("获取文章标签");
 		List<Integer> labelids = webLabelControlService.selectLabelIdByWebId(id);
@@ -396,10 +396,8 @@ public class BlobHandler extends ParentHandler {
 		}
 		if(flag > 0) {
 			if(!Objects.isNull(labelList)) {
-				boolean b = webLabelControlService.insert(web.getId(), labelList);
-				if(!b) {
-					log.info("插入文章标签失败");
-				}
+				log.info("开始插入文章标签");
+				webLabelControlService.insert(web.getId(), labelList);
 			}
 			log.info("用户: " + user.getUid() + "发布文章成功, 文章标题为: " + web.getTitle());
 			return Result.success().add("webid", web.getId());
@@ -458,6 +456,7 @@ public class BlobHandler extends ParentHandler {
 		if(b) {
 			log.info("更新文章成功");
 			if (!Objects.isNull(labelList)) {
+				log.info("开始插入文章标签");
 				webLabelControlService.deleteByWebId(web.getId());
 				webLabelControlService.insert(web.getId(), labelList);
 			}
