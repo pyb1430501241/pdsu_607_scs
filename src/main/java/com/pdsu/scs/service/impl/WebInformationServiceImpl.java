@@ -68,22 +68,25 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 插入一个网页信息
 	 */
 	@Override
-	public int insert(@NonNull WebInformation information) throws InsertException {
+	public int insert(@NonNull WebInformation information) {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
 						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
-			if(esDao.insert(blob, information.getId())) {
-				new Thread(()->{
-					try {
-						UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
-						Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-						EsUserInformation esuser = (EsUserInformation) SimpleUtils.
-								getObjectByMapAndClass(map, EsUserInformation.class);
-						esuser.setBlobnum(esuser.getBlobnum() + 1);
-						esDao.update(esuser, user.getId());
-					} catch (Exception e) {
-					}
-				}).start();
+			try {
+				if(esDao.insert(blob, information.getId())) {
+					new Thread(()->{
+						try {
+							UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
+							Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+							EsUserInformation esUser = (EsUserInformation) SimpleUtils.
+									getObjectByMapAndClass(map, EsUserInformation.class);
+							esUser.setBlobnum(esUser.getBlobnum() + 1);
+							esDao.update(esUser, user.getId());
+						} catch (Exception e) {
+						}
+					}).start();
+				}
+			} catch (InsertException e) {
 			}
 			return information.getId();
 		}

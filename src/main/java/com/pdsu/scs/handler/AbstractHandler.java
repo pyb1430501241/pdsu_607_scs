@@ -42,6 +42,8 @@ public interface AbstractHandler {
 
     String DEFAULT_USER_IMG_NAME = "422696839bb3222a73a48d7c97b1bba4.jpg";
 
+    String HAS_NEXT_PAGE = "hasNextPage";
+
     /**
      * 处理 NotFoundBlobIdException 异常
      * @param e

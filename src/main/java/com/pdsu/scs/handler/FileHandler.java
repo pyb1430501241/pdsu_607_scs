@@ -167,8 +167,8 @@ public class FileHandler extends ParentHandler {
 			}
 			files.add(fileInformation);
 		}
-		PageInfo<FileInformation> fileList = new PageInfo<FileInformation>(files);
-		return Result.success().add("fileList", fileList);
+		PageInfo<WebFile> fileList = new PageInfo<>(list);
+		return Result.success().add("fileList", files).add(HAS_NEXT_PAGE, fileList.isHasNextPage());
 	}
 
 }

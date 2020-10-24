@@ -3,7 +3,6 @@ package com.pdsu.scs.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
-import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.service.*;
 import com.pdsu.scs.shiro.WebSessionManager;
 import com.pdsu.scs.utils.*;
@@ -183,7 +182,7 @@ public class BlobHandler extends ParentHandler {
 		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
 		log.info("获取首页文章收藏量");
 		List<Integer> collectionList = myCollectionService.selectCollectionssByWebIds(webids);
-		List<BlobInformation> blobList = new ArrayList<BlobInformation>();
+		List<BlobInformation> blobList = new ArrayList<>();
 		for (int i = 0; i < webList.size(); i++) {
 			BlobInformation blobInformation = new BlobInformation(
 					webList.get(i), visitList.get(i),
@@ -198,8 +197,8 @@ public class BlobHandler extends ParentHandler {
 			blobList.add(blobInformation);
 		}
 		blobList.sort(SortUtils.getBlobComparator());
-		PageInfo<BlobInformation> pageInfo = new PageInfo<>(blobList);
-		return Result.success().add("blobList", pageInfo);
+		PageInfo<WebInformation> page = new PageInfo<>(webList);
+		return Result.success().add("blobList", blobList).add("hasNextPage", page.isHasNextPage());
 	}
 	
 	/**
@@ -388,12 +387,7 @@ public class BlobHandler extends ParentHandler {
 		//设置文章投稿时间
 		web.setSubTime(SimpleUtils.getSimpleDateSecond());
 		//发布文章
-		int flag = -1;
-		try {
-			flag = webInformationService.insert(web);
-		} catch (InsertException e) {
-			log.info("ES进行插入操作时出现未知错误, 原因: " + e.getMessage());
-		}
+		int flag = webInformationService.insert(web);
 		if(flag > 0) {
 			if(!Objects.isNull(labelList)) {
 				log.info("开始插入文章标签");
@@ -414,7 +408,7 @@ public class BlobHandler extends ParentHandler {
 	@RequestMapping(value = "/delete", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
-	public Result delete(@RequestParam Integer webid) throws Exception{
+	public Result delete(@RequestParam Integer webid) throws Exception {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
@@ -633,9 +627,9 @@ public class BlobHandler extends ParentHandler {
 			}
 			blobInformations.add(blob);
 		}
-		PageInfo<BlobInformation> bloList = new PageInfo<BlobInformation>(blobInformations);
+		PageInfo<MyCollection> bloList = new PageInfo<>(collections);
 		log.info("获取成功");
-		return Result.success().add("blobList", bloList);
+		return Result.success().add("blobList", blobInformations).add(HAS_NEXT_PAGE, bloList.isHasNextPage());
 	}
 	
 	/**
@@ -720,11 +714,13 @@ public class BlobHandler extends ParentHandler {
 	@ResponseBody
 	@CrossOrigin
 	@GetMapping("/getlabel")
-	public Result getLabel() throws Exception{
+	public Result getLabel(@RequestParam(defaultValue = "1") Integer p) throws Exception{
 		log.info("获取所有标签");
+		PageHelper.startPage(p, 16);
 		List<WebLabel> label = webLabelService.selectLabel();
+		PageInfo<WebLabel> labs = new PageInfo<>(label);
 		log.info("获取标签成功");
-		return Result.success().add("labelList", label);
+		return Result.success().add("labelList", labs);
 	}
 	
 	/**

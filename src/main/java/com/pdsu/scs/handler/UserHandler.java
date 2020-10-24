@@ -40,13 +40,32 @@ import java.util.Objects;
 
 
 /**
- * 
  * @author 半梦
- *
+ * @create
  */
 @Controller
 @RequestMapping("/user")
-public class UserHandler extends ParentHandler{
+public class UserHandler extends ParentHandler {
+
+	/**
+	 * 账号状态：正常
+	 */
+	public static final Integer USER_STATUS_NORMAL = 1;
+
+	/**
+	 * 账号状态：冻结
+	 */
+	public static final Integer USER_STATUS_FROZEN = 2;
+
+	/**
+	 * 账号状态：封禁
+	 */
+	public static final Integer USER_STATUS_BAN = 3;
+
+	/**
+	 * 账号状态：注销
+	 */
+	public static final Integer USER_STATUS_CANCELLED = 4;
 
 	/**
 	 * 用户信息相关
@@ -148,6 +167,8 @@ public class UserHandler extends ParentHandler{
 	 * @param code 输入的验证码
 	 * @param flag  是否记住密码 默认为不记住
 	 * @return
+	 * 	如登录成功, 返回用户信息及其对应的 sessionId
+	 * 	如失败则返回失败原因
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -192,6 +213,7 @@ public class UserHandler extends ParentHandler{
 	 * 获取验证码
 	 * 储存验证码到缓存区 cache
 	 * @return
+	 * 	验证码对应的 Base64 码
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/getcodeforlogin", method = RequestMethod.GET)
@@ -221,6 +243,7 @@ public class UserHandler extends ParentHandler{
 	 * @param email 前端输入邮箱
 	 * @param name  前端输入网名
 	 * @return
+	 * 	邮箱验证码所对应的 token
 	 */
 	@RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
 	@ResponseBody
@@ -281,7 +304,7 @@ public class UserHandler extends ParentHandler{
 		if(userInformationService.countByUserName(user.getUsername()) != 0) {
 			return Result.fail().add(EXCEPTION, "用户名已存在");
 		}
-		user.setAccountStatus(1);
+		user.setAccountStatus(USER_STATUS_NORMAL);
 		user.setTime(SimpleUtils.getSimpleDate());
 		boolean flag = userInformationService.insert(user);
 		if(flag) {
@@ -303,8 +326,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 *  该API为用户输入账号验证此用户是否存在
-	 * @param uid
+	 * @param uid 账号
 	 * @return
+	 * 	加密后的邮箱，以及解密所需的 token
 	 */
 	@RequestMapping(value = "/isexist", method = RequestMethod.GET)
 	@ResponseBody
@@ -332,8 +356,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 找回密码时发送验证码
-	 * @param token  前端传入
+	 * @param token 前端传入
 	 * @return
+	 * 	验证码所对应的 token
 	 */
 	@RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
 	@ResponseBody
@@ -360,10 +385,12 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 找回密码
-	 * @param uid
-	 * @param token
-	 * @param code
+	 * @param uid 账号
+	 * @param password 密码
+	 * @param token 验证码的 key
+	 * @param code 验证码
 	 * @return
+	 * 	是否修改成功
 	 */
 	@RequestMapping(value = "/retrieve", method = RequestMethod.POST)
 	@ResponseBody
@@ -403,6 +430,7 @@ public class UserHandler extends ParentHandler{
 	/**
 	 * 获取修改密码页面数据
 	 * @return
+	 * 	邮箱
 	 */
 	@RequestMapping(value = "/getmodify", method = RequestMethod.GET)
 	@ResponseBody
@@ -420,6 +448,7 @@ public class UserHandler extends ParentHandler{
 	 * 获取验证码
 	 * @param email 前端获取 
 	 * @return
+	 * 	验证码的 key
 	 */
 	@RequestMapping(value = "/getcodeformodify", method = RequestMethod.GET)
 	@ResponseBody
@@ -440,9 +469,10 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 验证码验证
-	 * @param token 取出验证码的 key 前端获取
+	 * @param token 取出验证码的 key
 	 * @param code  前端输入验证码
 	 * @return
+	 * 	验证码是否正确
 	 */
 	@RequestMapping(value = "/modifybefore", method = RequestMethod.GET)
 	@ResponseBody
@@ -452,11 +482,11 @@ public class UserHandler extends ParentHandler{
 		Cache.ValueWrapper valueWrapper = cache.get(token);
 		if(Objects.isNull(valueWrapper)) {
 			log.info("验证码已过期, key 为: " + token);
-			return Result.fail().add(EXCEPTION, "验证码已过期");
+			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
 		if(!valueWrapper.get().equals(code)) {
 			log.info("验证码错误, 服务器端验证码为: " + valueWrapper.get() + ", 用户输入为: " + code);
-			return Result.fail().add(EXCEPTION, "验证码错误");
+			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		log.info("验证码: " + code + "正确");
 		return Result.success();
@@ -466,6 +496,7 @@ public class UserHandler extends ParentHandler{
 	 * 修改密码
 	 * @param password 新密码
 	 * @return
+	 * 	密码是否修改成功
 	 */
 	@RequestMapping(value = "/modify", method = RequestMethod.POST)
 	@CrossOrigin
@@ -495,6 +526,7 @@ public class UserHandler extends ParentHandler{
 	 * 
 	 * @param uid  作者的学号
 	 * @return
+	 * 	是否关注成功
 	 */
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
 	@ResponseBody
@@ -516,8 +548,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 处理取消关注请求, 作者的学号由前端获取, 关注人学号从session里获取
-	 * @param uid
+	 * @param uid 被关注人 uid
 	 * @return
+	 * 	是否取消成功
 	 */
 	@RequestMapping(value = "/dislike", method = RequestMethod.POST)
 	@ResponseBody
@@ -538,8 +571,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 关注状态
-	 * @param uid
+	 * @param uid 被关注人学号
 	 * @return
+	 * 	是否关注
 	 */
 	@GetMapping("/likestatus")
 	@ResponseBody
@@ -558,6 +592,8 @@ public class UserHandler extends ParentHandler{
 	 * 更换头像
 	 * @param img  上传头像文件
 	 * @return
+	 * 	修改成功：返回新的头像名
+	 * 	修改失败：返回原因
 	 */
 	@RequestMapping(value = "/changeavatar", method = RequestMethod.POST)
 	@ResponseBody
@@ -592,8 +628,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 修改用户信息
-	 * @param user
+	 * @param user 用户所需要修改的信息---
 	 * @return
+	 * 	是否修改成功
 	 */
 	@RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
 	@ResponseBody
@@ -624,7 +661,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 获取自己的博客
+	 * @param p 第几页
 	 * @return
+	 * 	对应页面的文章信息
 	 */
 	@RequestMapping(value = "/getoneselfblobs", method = RequestMethod.GET)
 	@CrossOrigin
@@ -646,14 +685,15 @@ public class UserHandler extends ParentHandler{
 					user, weblist.get(i), visitList.get(i), null, null
 			));
 		}
-		PageInfo<BlobInformation> blobs = new PageInfo<>(blobList);
-		return Result.success().add("blobList", blobs);
+		PageInfo<WebInformation> blobs = new PageInfo<>(weblist);
+		return Result.success().add("blobList", blobList).add(HAS_NEXT_PAGE, blobs.isHasNextPage());
 	}
 	
 	/**
 	 * 获取自己的粉丝
-	 * @param p
+	 * @param p 第几页
 	 * @return
+	 * 	对应页面的粉丝信息
 	 */
 	@CrossOrigin
 	@GetMapping("/getoneselffans")
@@ -663,7 +703,7 @@ public class UserHandler extends ParentHandler{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
 		log.info("获取粉丝信息");
-		PageHelper.startPage(p, 30);
+		PageHelper.startPage(p, 20);
 		List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid());
 		List<Integer> uids = new ArrayList<>();
 		for(UserInformation userinfor : users) {
@@ -686,15 +726,16 @@ public class UserHandler extends ParentHandler{
 			}
 			fans.add(new FansInformation(u, islikes.get(i)));
 		}
-		PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
+		PageInfo<UserInformation> userList = new PageInfo<>(users);
 		log.info("获取粉丝信息成功");
-		return Result.success().add("fansList", userList);
+		return Result.success().add("fansList", fans).add(HAS_NEXT_PAGE, userList.isHasNextPage());
 	}
 	
 	/**
 	 * 获取自己的关注
-	 * @param p
+	 * @param p 第几页
 	 * @return
+	 * 	对应页面的关注人信息
 	 */
 	@CrossOrigin
 	@GetMapping("/getoneselficons")
@@ -704,7 +745,7 @@ public class UserHandler extends ParentHandler{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
 		log.info("获取关注人信息");
-		PageHelper.startPage(p, 30);
+		PageHelper.startPage(p, 20);
 		List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid());
 		log.info("获取关注人学号");
 		List<Integer> uids = new ArrayList<>();
@@ -726,12 +767,15 @@ public class UserHandler extends ParentHandler{
 		}
 		PageInfo<UserInformation> userList = new PageInfo<UserInformation>(users);
 		log.info("获取关注人信息成功");
-		return Result.success().add("userList", userList);
+		return Result.success().add("userList", userList).add(HAS_NEXT_PAGE, userList.isHasNextPage());
 	}
 	
 	/**
 	 * 获取用户的博客
+	 * @param p 第几页
+	 * @param uid 用户 uid
 	 * @return
+	 * 	对应用户对应页面的文章信息
 	 */
 	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
 	@CrossOrigin
@@ -759,14 +803,16 @@ public class UserHandler extends ParentHandler{
 					user, weblist.get(i), visitList.get(i), null, null
 					));
 		}
-		PageInfo<BlobInformation> blobs = new PageInfo<BlobInformation>(blobList);
-		return Result.success().add("blobList", blobs);
+		PageInfo<WebInformation> blobs = new PageInfo<>(weblist);
+		return Result.success().add("blobList", blobList).add(HAS_NEXT_PAGE, blobs.isHasNextPage());
 	}
 	
 	/**
 	 * 获取用户粉丝
-	 * @param p
+	 * @param p 第几页
+	 * @param uid 用户 uid
 	 * @return
+	 * 	对应用户对应页面的粉丝信息
 	 */
 	@CrossOrigin
 	@GetMapping("/getfans")
@@ -774,7 +820,7 @@ public class UserHandler extends ParentHandler{
 	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
 		log.info("用户: " + uid + " 获取自己的粉丝信息");
 		log.info("获取粉丝信息");
-		PageHelper.startPage(p, 30);
+		PageHelper.startPage(p, 20);
 		List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
 		log.info("获取粉丝学号");
 		List<Integer> uids = new ArrayList<>();
@@ -798,15 +844,17 @@ public class UserHandler extends ParentHandler{
 			}
 			fans.add(new FansInformation(u, islikes.get(i)));
 		}
-		PageInfo<FansInformation> userList = new PageInfo<FansInformation>(fans);
+		PageInfo<UserInformation> userList = new PageInfo<>(users);
 		log.info("获取粉丝信息成功");
-		return Result.success().add("fansList", userList);
+		return Result.success().add("fansList", fans).add(HAS_NEXT_PAGE, userList.isHasNextPage());
 	}
 	
 	/**
 	 * 获取用户的关注
-	 * @param p
+	 * @param p 第几页
+	 * @param uid 用户 uid
 	 * @return
+	 * 	对应页面对应用户的关注人信息
 	 */
 	@CrossOrigin
 	@GetMapping("/geticons")
@@ -814,7 +862,7 @@ public class UserHandler extends ParentHandler{
 	public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
 		log.info("获取用户: " + uid + " 的关注人信息");
 		log.info("获取关注人信息");
-		PageHelper.startPage(p, 30);
+		PageHelper.startPage(p, 20);
 		List<UserInformation> users = userInformationService.selectUsersByUid(uid);
 		log.info("获取关注人学号");
 		List<Integer> uids = new ArrayList<>();
@@ -842,6 +890,7 @@ public class UserHandler extends ParentHandler{
 	/**
 	 * 获取登录状态用户的邮箱
 	 * @return
+	 * 	当前登录用户的邮箱（已加密）
 	 */
 	@RequestMapping("/loginemail")
 	@ResponseBody
@@ -869,6 +918,7 @@ public class UserHandler extends ParentHandler{
 	 * 			3. password 校验密码
 	 * 			4. email 校验邮箱
 	 * @return
+	 * 	是否通过校验
 	 */
 	@ResponseBody
 	@GetMapping("/datacheck")
@@ -924,7 +974,9 @@ public class UserHandler extends ParentHandler{
 	
 	/**
 	 * 获取自己的浏览记录
+	 * @param p 第几页
 	 * @return
+	 * 	浏览记录
 	 */
 	@ResponseBody
 	@GetMapping("/getoneselfbrowsingrecord")
@@ -939,9 +991,9 @@ public class UserHandler extends ParentHandler{
 		List<Integer> fileids = new ArrayList<>();
 		log.info("获取访问过的博客或文件ID");
 		for (UserBrowsingRecord brows : userBrowsingRecords) {
-			if(brows.getTpye() == 1) {
+			if(brows.getTpye().equals(BLOB)) {
 				webids.add(brows.getWfid());
-			} else {
+			} else if(brows.getTpye().equals(FILE)){
 				fileids.add(brows.getWfid());
 			}
 		}
@@ -963,8 +1015,8 @@ public class UserHandler extends ParentHandler{
 			UserBrowsingRecord record = userBrowsingRecords.get(i);
 			browsingRecordInformation.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(record.getCreatetime()));
 			browsingRecordInformation.setWfid(record.getWfid());
-			if(record.getTpye() == 1) {
-				browsingRecordInformation.setType(1);
+			if(record.getTpye().equals(BLOB)) {
+				browsingRecordInformation.setType(BLOB);
 				for(WebInformation webInformation : webs) {
 					if(webInformation.getId().equals(record.getWfid())) {
 						browsingRecordInformation.setTitle(webInformation.getTitle());
@@ -979,7 +1031,7 @@ public class UserHandler extends ParentHandler{
 					}
 				}
 			} else {
-				browsingRecordInformation.setType(2);
+				browsingRecordInformation.setType(FILE);
 				for(WebFile file : files) {
 					if(file.getId().equals(record.getWfid())) {
 						browsingRecordInformation.setTitle(file.getTitle());
@@ -991,14 +1043,15 @@ public class UserHandler extends ParentHandler{
 			browsingRecordInformations.add(browsingRecordInformation);
 		}
 		log.info("获取浏览历史信息成功");
-		PageInfo<BrowsingRecordInformation> pageInfo = new PageInfo<>(browsingRecordInformations);
-		return Result.success().add("brows", pageInfo);
+		PageInfo<UserBrowsingRecord> pageInfo = new PageInfo<>(userBrowsingRecords);
+		return Result.success().add("brows", browsingRecordInformations).add(HAS_NEXT_PAGE, pageInfo.isHasNextPage());
 	}
 
 	/**
 	 * 获取自己的通知
-	 * @param p
+	 * @param p 第几页
 	 * @return
+	 * 	通知信息
 	 */
 	@GetMapping("/getnotification")
 	@ResponseBody
@@ -1033,8 +1086,8 @@ public class UserHandler extends ParentHandler{
 		if (b) {
 			user.setSystemNotifications(0);
 		}
-		PageInfo<SystemNotificationInformation> pageInfo = new PageInfo<>(list);
-		return Result.success().add("notificationList", pageInfo);
+		PageInfo<SystemNotification> pageInfo = new PageInfo<>(systemNotifications);
+		return Result.success().add("notificationList", list).add(HAS_NEXT_PAGE, pageInfo.isHasNextPage());
 	}
 
 }

@@ -3,6 +3,7 @@ package com.pdsu.scs.shiro;
 import com.pdsu.scs.bean.UserInformation;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UserAbnormalException;
+import com.pdsu.scs.handler.UserHandler;
 import com.pdsu.scs.service.MyEmailService;
 import com.pdsu.scs.service.MyImageService;
 import com.pdsu.scs.service.SystemNotificationService;
@@ -47,13 +48,13 @@ public class LoginRealm extends AuthorizingRealm{
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
 		UserInformation userInformation = UserInformation.createUserInformationByUser(user);
-		if(user.getAccountStatus() == 2) {
+		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_FROZEN)) {
 			throw new UserAbnormalException("账号被冻结");
 		}
-		if(user.getAccountStatus() == 3) {
+		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_BAN)) {
 			throw new UserAbnormalException("账号被封禁");
 		}
-		if(user.getAccountStatus() == 4) {
+		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_CANCELLED)) {
 			throw new UserAbnormalException("账号已注销");
 		}
 		Object credentials = userInformation.getPassword();

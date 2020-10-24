@@ -40,25 +40,64 @@ import java.util.Properties;
 /**
  * @author 半梦
  * @create 2020-08-19 19:51
+ *
+ * 该类用于提供子类一些常用的关键字, 错误提示, 异常处理方案
  */
 public abstract class ParentHandler implements AbstractHandler {
 
+    /**
+     * 错误提示名
+     */
     protected static final String EXCEPTION = "exception";
 
+    /**
+     * 最大错误, 用于无需用户知道错误原因时
+     */
     protected static final String DEFAULT_ERROR_PROMPT = "未定义类型错误";
 
+    /**
+     * 用户未登录
+     */
     protected static final String NOT_LOGIN = "未登录";
 
+    /**
+     * 用户已登录
+     */
     protected static final String ALREADY_LOGIN = "已登录";
 
+    /**
+     * 验证码过期
+     */
     protected static final String CODE_EXPIRED = "验证码已过期, 请重新获取";
 
+    /**
+     * 验证码错误
+     */
     protected static final String CODE_ERROR = "验证码错误";
 
+    /**
+     * 常用于请求数据库失败时
+     */
     protected static final String NETWORK_BUSY = "网络繁忙, 请稍候重试";
 
+    /**
+     * 用户权限不足
+     */
     protected static final String INSUFFICIENT_PERMISSION = "权限不足";
 
+    /**
+     * 博客
+     */
+    public static final Integer BLOB = 1;
+
+    /**
+     * 文件
+     */
+    public static final Integer FILE = 2;
+
+    /**
+     * 日志
+     */
     private static final Logger log = LoggerFactory.getLogger("异常处理日志");
 
     /**
@@ -93,12 +132,21 @@ public abstract class ParentHandler implements AbstractHandler {
      */
     protected static String Default_User_Img_Name = DEFAULT_USER_IMG_NAME;
 
+    /**
+     *
+     * @param user 用户信息
+     * @throws UserNotLoginException
+     *  用户未登录时抛出对应异常
+     */
     protected void loginOrNotLogin(UserInformation user) throws UserNotLoginException {
         if(Objects.isNull(user)) {
             throw new UserNotLoginException();
         }
     }
 
+    /**
+     * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties
+     */
     private static void initProperties() {
         log.info("系统配置初始化...");
         Properties properties = new Properties();
@@ -136,6 +184,9 @@ public abstract class ParentHandler implements AbstractHandler {
         log.info("系统初始化成功...");
     }
 
+    /**
+     * 创建程序运行的必要文件
+     */
     private static void mkdirs(){
         log.info("创建系统所需文件...");
         File file = new File(User_Img_FilePath);
