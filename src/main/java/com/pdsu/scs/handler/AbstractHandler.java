@@ -1,6 +1,3 @@
-/*
-代码瞎写的
- */
 package com.pdsu.scs.handler;
 
 import com.pdsu.scs.bean.Result;
@@ -27,27 +24,53 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author 半梦
  * @create 2020-08-29 15:19
+ * 该接口提供一些系统所需的默认参数和异常处理方案
+ * 异常的抛出逻辑有很多不合理之处, 懒得改了, 如果想优化
+ * 查询不到时, 不要抛出异常, 返回 null即可
+ * 只有在进行插入, 修改, 删除操作时, 抛出异常
  */
 public interface AbstractHandler {
 
+    /**
+     * 默认博客图片储存地址
+     */
     String DEFAULT_BLOB_IMG_FILEPATH = "/pdsu/web/blob/img/";
 
+    /**
+     * 默认上传文件储存地址
+     */
     String DEFAULT_FILE_FILEPATH = "/pdsu/web/file/";
 
+    /**
+     * 默认头像储存地址
+     */
     String DEFAULT_USER_IMG_FILEPATH = "/pdsu/web/img/";
 
+    /**
+     * 默认图片后缀名
+     */
     String DEFAULT_IMG_SUFFIX = ".jpg";
 
+    /**
+     * 默认图片后缀名
+     */
     String DEFAULT_IMG_SUFFIX_EXCEPT_POINT = "jpg";
 
+    /**
+     * 默认头像
+     */
     String DEFAULT_USER_IMG_NAME = "422696839bb3222a73a48d7c97b1bba4.jpg";
 
+    /**
+     * 是否有下一页的参数名
+     */
     String HAS_NEXT_PAGE = "hasNextPage";
 
     /**
      * 处理 NotFoundBlobIdException 异常
-     * @param e
+     * @param e 异常名
      * @return
+     *  错误信息
      */
     @ExceptionHandler(NotFoundBlobIdException.class)
     @ResponseBody

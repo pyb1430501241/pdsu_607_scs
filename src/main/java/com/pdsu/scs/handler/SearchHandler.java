@@ -16,10 +16,23 @@ import java.util.List;
 /**
  * 搜索相关
  * @author 半梦
- *
+ * @create 2020
+ *	1. ES 服务器过于垃圾！查询日常不可用！甚至影响了账号申请和博客发布！
+ *	故无论在申请或发布文章中，插入 ES 索引是否成功，只要插入数据库成
+ *	功，均按成功，可能导致的结果为搜索中找不到这个 人/文章。
+ *	2. 查询时关键字标红貌似有bug，但暂未知晓bug的解决方案
+ *优化方案：
+ * 	1. 换个好的 ES服务器集群！
+ * 	2. 优化处理逻辑，在 ES 插入失败后抛出的异常里进行再次插入处理
+ * 		（题外话：插入都出异常了，尝试几遍都不太可能成功吧？？？
+ *  3. 开启线程模式，直到插入成功为止....
+ *  	抛弃的方案，第一过于浪费资源，第二同 2
+ *  4. 别急着优化了，听歌放松下
+ *  	歌曲名：桜咲く (樱花开)，歌手名：ClariS (クラリス)，专辑名：STEP
+ *  by 庞亚彬 2020-10-30
  */
 @Controller
-public class SearchHandler extends ParentHandler{
+public class SearchHandler extends ParentHandler {
 	
 	@Resource(name = "esUserService")
 	private EsService<EsUserInformation> esUserService;

@@ -42,9 +42,11 @@ import java.util.Objects;
 /**
  * @author 半梦
  * @create
+ * 该类负责和用户相关的请求处理,
  */
 @Controller
 @RequestMapping("/user")
+@SuppressWarnings("unchecked")
 public class UserHandler extends ParentHandler {
 
 	/**
@@ -70,61 +72,51 @@ public class UserHandler extends ParentHandler {
 	/**
 	 * 用户信息相关
 	 */
-	@Autowired
 	private UserInformationService userInformationService;
 	
 	/**
 	 * 用户邮箱相关
 	 */
-	@Autowired
 	private MyEmailService myEmailService;
 	
 	/**
 	 * 关注相关
 	 */
-	@Autowired
 	private MyLikeService myLikeService;
 	
 	/**
 	 * 用户头像相关
 	 */
-	@Autowired
 	private MyImageService myImageService;
 	
 	/**
 	 * 用户博客相关
 	 */
-	@Autowired
 	private WebInformationService webInformationService;
 	
 	/**
 	 * 用户访问相关
 	 */
-	@Autowired
 	private VisitInformationService visitInformationService;
 
 	/**
 	 * 浏览记录
 	 */
-	@Autowired
 	private UserBrowsingRecordService userBrowsingRecordService;
 
 	/**
 	 * 文件
 	 */
-	@Autowired
 	private WebFileService webFileService;
 
 	/**
 	 * 通知
 	 */
-	@Autowired
 	private SystemNotificationService systemNotificationService;
 
 	/**
 	 * 管理
 	 */
-	@Autowired
 	private UserRoleService userRoleService;
 	
 	/**
@@ -135,10 +127,8 @@ public class UserHandler extends ParentHandler {
 	/**
 	 * 缓存管理器
 	 */
-	@Autowired
-	private CacheManager cacheManager; 
+	private CacheManager cacheManager;
 	
-	/**
 	/**
 	 * 缓存区
 	 */
@@ -148,6 +138,8 @@ public class UserHandler extends ParentHandler {
 	 * @return  用户的登录状态
 	 * 如登录, 返回用户信息
 	 * 反之返回提示语
+	 *  loginOrNotLogin(user) 通过异常的方式避免了 user 为 null
+	 *  所以下一句提醒的 user 可能为 null 的提示可以直接无视
 	 */
 	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
 	@ResponseBody
@@ -156,6 +148,9 @@ public class UserHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
+		if(!Objects.isNull(user.getPassword())) {
+			user.setPassword(null);
+		}
 		return Result.success().add("user", user);
 	}
 	
@@ -167,7 +162,7 @@ public class UserHandler extends ParentHandler {
 	 * @param code 输入的验证码
 	 * @param flag  是否记住密码 默认为不记住
 	 * @return
-	 * 	如登录成功, 返回用户信息及其对应的 sessionId
+	 * 	如登录成功, 返回用户信息及其对应的 sessionId;
 	 * 	如失败则返回失败原因
 	 */
 	@ResponseBody
@@ -194,7 +189,7 @@ public class UserHandler extends ParentHandler {
         }
         log.info("账号: " + uid + "开始登录认证");
         UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
-        //是否记住
+        //是否记住我
         if(flag == 0) {
             token.setRememberMe(false);
         } else {
@@ -1010,7 +1005,7 @@ public class UserHandler extends ParentHandler {
 		List<WebFile> files = webFileService.selectFilesByFileIds(fileids);
 		log.info("拼装访问信息");
 		List<BrowsingRecordInformation> browsingRecordInformations = new ArrayList<>();
-		for (Integer i = 0; i < userBrowsingRecords.size(); i++) {
+		for (int i = 0; i < userBrowsingRecords.size(); i++) {
 			BrowsingRecordInformation browsingRecordInformation = new BrowsingRecordInformation();
 			UserBrowsingRecord record = userBrowsingRecords.get(i);
 			browsingRecordInformation.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(record.getCreatetime()));
@@ -1090,4 +1085,32 @@ public class UserHandler extends ParentHandler {
 		return Result.success().add("notificationList", list).add(HAS_NEXT_PAGE, pageInfo.isHasNextPage());
 	}
 
+
+	/**
+	 * 这些参数是运行此类的必要参数
+	 */
+	@Autowired
+	public UserHandler(UserInformationService userInformationService,
+					   MyEmailService myEmailService,
+					   MyLikeService myLikeService,
+					   MyImageService myImageService,
+					   WebInformationService webInformationService,
+					   VisitInformationService visitInformationService,
+					   UserBrowsingRecordService userBrowsingRecordService,
+					   WebFileService webFileService,
+					   SystemNotificationService systemNotificationService,
+					   UserRoleService userRoleService,
+					   CacheManager cacheManager) {
+		this.userInformationService = userInformationService;
+		this.myEmailService = myEmailService;
+		this.myLikeService = myLikeService;
+		this.myImageService = myImageService;
+		this.webInformationService = webInformationService;
+		this.visitInformationService = visitInformationService;
+		this.userBrowsingRecordService = userBrowsingRecordService;
+		this.webFileService = webFileService;
+		this.systemNotificationService = systemNotificationService;
+		this.userRoleService = userRoleService;
+		this.cacheManager = cacheManager;
+	}
 }

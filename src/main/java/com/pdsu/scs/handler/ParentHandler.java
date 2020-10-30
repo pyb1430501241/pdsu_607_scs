@@ -41,7 +41,7 @@ import java.util.Properties;
  * @author 半梦
  * @create 2020-08-19 19:51
  *
- * 该类用于提供子类一些常用的关键字, 错误提示, 异常处理方案
+ * 该类用于提供子类一些常用的关键字, 错误提示, 异常处理方案的实现
  */
 public abstract class ParentHandler implements AbstractHandler {
 
@@ -145,7 +145,8 @@ public abstract class ParentHandler implements AbstractHandler {
     }
 
     /**
-     * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties
+     * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
+     * 详细信息请参考 csc.properties
      */
     private static void initProperties() {
         log.info("系统配置初始化...");

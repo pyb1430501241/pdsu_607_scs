@@ -47,7 +47,10 @@ public class LoginRealm extends AuthorizingRealm{
 			throw new UnknownAccountException("账号不存在");
 		}
 		UserInformation user = userInformationService.selectByUid(uid);
-		UserInformation userInformation = UserInformation.createUserInformationByUser(user);
+		UserInformation userInformation = user.createUserInformationByThis();
+		if(userInformation == null) {
+			throw new UserAbnormalException("未知错误, 请稍候重试");
+		}
 		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_FROZEN)) {
 			throw new UserAbnormalException("账号被冻结");
 		}

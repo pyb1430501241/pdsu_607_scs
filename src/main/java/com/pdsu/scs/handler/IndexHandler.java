@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -18,33 +19,50 @@ import java.util.List;
 /**
  * @author 半梦
  * @create 2020-09-21 20:14
+ * 首页相关，前端罢工，举步维艰
  */
 @RestController
 @CrossOrigin
 public class IndexHandler extends ParentHandler {
 
-    @Autowired
+    /**
+     * 博客相关
+     */
     private WebInformationService webInformationService;
 
-    @Autowired
+    /**
+     * 文件相关
+     */
     private WebFileService webFileService;
 
-    @Autowired
+    /**
+     * 用户相关
+     */
     private UserInformationService userInformationService;
 
-    @Autowired
+    /**
+     * 用户头像相关
+     */
     private MyImageService myImageService;
 
-    @Autowired
+    /**
+     * 点赞相关
+     */
     private WebThumbsService webThumbsService;
 
-    @Autowired
+    /**
+     * 访问量相关
+     */
     private VisitInformationService visitInformationService;
 
-    @Autowired
+    /**
+     * 收藏相关
+     */
     private MyCollectionService myCollectionService;
 
-    @Autowired
+    /**
+     * 文件下载相关
+     */
     private FileDownloadService fileDownloadService;
 
     public static final Logger log = LoggerFactory.getLogger(IndexHandler.class);
@@ -130,4 +148,35 @@ public class IndexHandler extends ParentHandler {
         return Result.success().add("blobList", pageInfo).add("fileList", fileList);
     }
 
+
+    /**
+     * 预留： 广告相关
+     * @return
+     */
+    @GetMapping()
+    @CrossOrigin
+    @ResponseBody
+    public Result advertising() {
+        return Result.success();
+    }
+
+
+    @Autowired
+    public IndexHandler(WebInformationService webInformationService,
+                        WebFileService webFileService,
+                        UserInformationService userInformationService,
+                        MyImageService myImageService,
+                        WebThumbsService webThumbsService,
+                        VisitInformationService visitInformationService,
+                        MyCollectionService myCollectionService,
+                        FileDownloadService fileDownloadService) {
+        this.webInformationService = webInformationService;
+        this.webFileService = webFileService;
+        this.userInformationService = userInformationService;
+        this.myImageService = myImageService;
+        this.webThumbsService = webThumbsService;
+        this.visitInformationService = visitInformationService;
+        this.myCollectionService = myCollectionService;
+        this.fileDownloadService = fileDownloadService;
+    }
 }

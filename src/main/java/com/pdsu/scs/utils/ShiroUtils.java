@@ -8,6 +8,7 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.apache.shiro.web.session.mgt.WebSessionKey;
+import org.springframework.lang.Nullable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +21,7 @@ import java.util.Objects;
  */
 public class ShiroUtils {
 
+    @Nullable
 	public static UserInformation getUserInformation() {
         Subject subject = SecurityUtils.getSubject();
         //取出身份信息

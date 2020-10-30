@@ -30,22 +30,26 @@ import java.util.Objects;
 /**
  *  文件相关API
  * @author 半梦
- *
+ *	提供文件下载，上传，文件列表等
  */
 @Controller
 @RequestMapping("/file")
+@SuppressWarnings("unchecked")
 public class FileHandler extends ParentHandler {
 	
 	/**
 	 * 文件操作相关
 	 */
-	@Autowired
 	private WebFileService webFileService;
-	
-	@Autowired
+
+	/**
+	 * 下载相关
+	 */
 	private FileDownloadService fileDownloadService;
-	
-	@Autowired
+
+	/**
+	 * 用户相关
+	 */
 	private UserInformationService userInformationService;
 	
 	/**
@@ -171,4 +175,13 @@ public class FileHandler extends ParentHandler {
 		return Result.success().add("fileList", files).add(HAS_NEXT_PAGE, fileList.isHasNextPage());
 	}
 
+
+	@Autowired
+	public FileHandler(WebFileService webFileService,
+					   FileDownloadService fileDownloadService,
+					   UserInformationService userInformationService) {
+		this.webFileService = webFileService;
+		this.fileDownloadService = fileDownloadService;
+		this.userInformationService = userInformationService;
+	}
 }

@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @author Admin
  *
  */
-public class UserInformation implements Serializable {
+public class UserInformation implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -41,23 +41,15 @@ public class UserInformation implements Serializable {
 
     private Integer systemNotifications;
 
-    public static UserInformation createUserInformationByUser(UserInformation user) {
-    	UserInformation userInformation = new UserInformation();
-    	userInformation.setId(user.getId());
-    	userInformation.setUid(user.getUid());
-    	userInformation.setPassword(user.getPassword());
-    	userInformation.setUsername(user.getUsername());
-    	userInformation.setCollege(user.getCollege());
-    	userInformation.setClazz(user.getClazz());
-    	userInformation.setAccountStatus(user.getAccountStatus());
-    	userInformation.setSystemNotifications(user.getSystemNotifications());
-    	userInformation.setEmail(user.getEmail());
-    	userInformation.setImgpath(user.getImgpath());
-    	userInformation.setTime(user.getTime());
-    	return userInformation;
-    }
+	public UserInformation createUserInformationByThis() {
+		try {
+			return (UserInformation) clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
 
-    @Override
+	@Override
 	public String toString() {
 		return "UserInformation{" +
 				"id=" + id +

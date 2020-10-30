@@ -26,102 +26,92 @@ import java.util.Objects;
 /**
  * 
  * @author 半梦
+ * @create 2020-04-26 11:26
  *
  */
 @Controller
 @RequestMapping("/blob")
+@SuppressWarnings("unchecked")
 public class BlobHandler extends ParentHandler {
 
 	/**
 	 * 博客相关逻辑处理
 	 */
-	@Autowired
 	private WebInformationService webInformationService;
 
 	/**
 	 * 用户相关逻辑处理
 	 */
-	@Autowired
 	private UserInformationService userInformationService;
 	
 	/**
 	 * 点赞相关逻辑处理
 	 */
-	@Autowired
 	private WebThumbsService webThumbsService;
 	
 	/**
 	 * 头像相关逻辑处理
 	 */
-	@Autowired
 	private MyImageService myImageService;
 	
 	/**
 	 * 访问相关逻辑处理
 	 */
-	@Autowired
 	private VisitInformationService visitInformationService;
 	
 	/**
 	 * 收藏相关逻辑处理
 	 */
-	@Autowired
 	private MyCollectionService myCollectionService;
 	
 	/**
 	 * 评论相关
 	 */
-	@Autowired
 	private WebCommentService webCommentService;
 	
 	/**
 	 * 回复评论相关
 	 */
-	@Autowired
 	private WebCommentReplyService webCommentReplyService;
 	
 	/**
 	 * 文件相关
 	 */
-	@Autowired
 	private WebFileService webFileService;
 	
 	/**
 	 * 关注相关
 	 */
-	@Autowired
 	private MyLikeService myLikeService;
 	
 	/**
 	 * 标签相关
 	 */
-	@Autowired
 	private WebLabelService webLabelService;
 	
 	/**
 	 * 标签文章对照
 	 */
-	@Autowired
 	private WebLabelControlService webLabelControlService;
 	
 	/**
 	 * 文件下载记录相关
 	 */
-	@Autowired
 	private FileDownloadService fileDownloadService;
 
 	/**
 	 * 浏览记录
 	 */
-	@Autowired
 	private UserBrowsingRecordService userBrowsingRecordService;
 	
 	/**
 	 * 文章类型
 	 */
-	@Autowired
 	private ContypeService contypeService;
-	
+
+	/**
+	 * 日志
+	 */
 	private static final Logger log = LoggerFactory.getLogger(BlobHandler.class);
 	
 	/**
@@ -134,24 +124,15 @@ public class BlobHandler extends ParentHandler {
 	public Result getWebIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
 			, @RequestParam(defaultValue = "0") Integer lid) throws Exception {
 		List<WebInformation> webList;
-		switch (lid) {
-			case 0:
-				log.info("获取首页数据");
-				PageHelper.startPage(p, 10);
-				webList = webInformationService.selectWebInformationOrderByTimetest();
-				break;
-			case 1: case 2: case 3:
-			case 4: case 5: case 6:
-			case 7: case 8: case 9:
-			case 10: case 11:
-				log.info("按标签获取首页数据");
-				List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
-				PageHelper.startPage(p, 10);
-				webList = webInformationService.selectWebInformationsByIds(wids, true);
-				break;
-			default:
-				log.warn("无此类标签");
-				return Result.fail().add(EXCEPTION, "无此类标签数据");
+		if (lid.equals(0)) {
+			log.info("获取首页数据");
+			PageHelper.startPage(p, 10);
+			webList = webInformationService.selectWebInformationOrderByTimetest();
+		} else {
+			log.info("按标签获取首页数据");
+			List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
+			PageHelper.startPage(p, 10);
+			webList = webInformationService.selectWebInformationsByIds(wids, true);
 		}
 		if(webList == null || webList.size() == 0) {
 			log.info("首页没有数据");
@@ -198,7 +179,7 @@ public class BlobHandler extends ParentHandler {
 		}
 		blobList.sort(SortUtils.getBlobComparator());
 		PageInfo<WebInformation> page = new PageInfo<>(webList);
-		return Result.success().add("blobList", blobList).add("hasNextPage", page.isHasNextPage());
+		return Result.success().add("blobList", blobList).add(HAS_NEXT_PAGE, page.isHasNextPage());
 	}
 	
 	/**
@@ -218,6 +199,7 @@ public class BlobHandler extends ParentHandler {
 			web.setWebData(null);
 		}
 		UserInformation user = ShiroUtils.getUserInformation();
+		// 如果未登录, 默认访问人
 		if(Objects.isNull(user)) {
 			user = new UserInformation(181360226);
 		}
@@ -319,7 +301,7 @@ public class BlobHandler extends ParentHandler {
 			return Result.success();
 		}
 		log.warn("收藏失败, 连接数据库失败");
-		return Result.fail().add(EXCEPTION, "网络延迟, 请稍候重试");
+		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 
 	/**
@@ -339,7 +321,7 @@ public class BlobHandler extends ParentHandler {
 			return Result.success();
 		}else {
 			log.warn("取消收藏失败, 原因: 连接服务器失败");
-			return Result.fail().add(EXCEPTION, "连接服务器失败, 请稍候重试");
+			return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 		}
 	}
 	
@@ -375,9 +357,9 @@ public class BlobHandler extends ParentHandler {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "发布文章开始");
 		if(!Objects.isNull(labelList)) {
-			if(labelList.size() > 3) {
-				log.info("发布文章失败, 文章只可添加至多三个标签");
-				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
+			if(labelList.size() > 5) {
+				log.info("发布文章失败, 文章只可添加至多五个标签");
+				return Result.fail().add(EXCEPTION, "文章最多添加五个标签");
 			}
 		}
 		//设置作者UID
@@ -735,5 +717,39 @@ public class BlobHandler extends ParentHandler {
 		List<Contype> contypes = contypeService.selectContypes();
 		log.info("获取文章类型列表成功");
 		return Result.success().add("contypeList", contypes);
+	}
+
+
+	@Autowired
+	public BlobHandler(WebInformationService webInformationService,
+					   UserInformationService userInformationService,
+					   WebThumbsService webThumbsService,
+					   MyImageService myImageService,
+					   VisitInformationService visitInformationService,
+					   MyCollectionService myCollectionService,
+					   WebCommentService webCommentService,
+					   WebCommentReplyService webCommentReplyService,
+					   WebFileService webFileService,
+					   MyLikeService myLikeService,
+					   WebLabelService webLabelService,
+					   WebLabelControlService webLabelControlService,
+					   FileDownloadService fileDownloadService,
+					   ContypeService contypeService,
+					   UserBrowsingRecordService userBrowsingRecordService) {
+		this.webInformationService = webInformationService;
+		this.userInformationService = userInformationService;
+		this.webThumbsService = webThumbsService;
+		this.myImageService = myImageService;
+		this.visitInformationService = visitInformationService;
+		this.myCollectionService = myCollectionService;
+		this.webCommentService = webCommentService;
+		this.webCommentReplyService = webCommentReplyService;
+		this.webFileService = webFileService;
+		this.myLikeService = myLikeService;
+		this.webLabelService = webLabelService;
+		this.webLabelControlService = webLabelControlService;
+		this.fileDownloadService = fileDownloadService;
+		this.contypeService = contypeService;
+		this.userBrowsingRecordService = userBrowsingRecordService;
 	}
 }

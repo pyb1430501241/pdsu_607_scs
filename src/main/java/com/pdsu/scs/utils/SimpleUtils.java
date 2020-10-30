@@ -2,7 +2,6 @@ package com.pdsu.scs.utils;
 
 import org.elasticsearch.search.SearchHit;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -22,6 +21,7 @@ public class SimpleUtils {
 	 * 返回当前时间
 	 * @return
 	 */
+	@NonNull
 	public static String getSimpleDate() {
 		return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 	}
@@ -30,6 +30,7 @@ public class SimpleUtils {
 	 * 返回当前时间, 带时分秒
 	 * @return
 	 */
+	@NonNull
 	public static String getSimpleDateSecond() {
 		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 	}
@@ -41,7 +42,7 @@ public class SimpleUtils {
 	 * @param endDate   结束的时间
 	 * @return
 	 */
-	public static long getSimpleDateDifference(@NonNull String startDate, @NonNull String endDate) {
+	public static long getSimpleDateDifference(@NonNull final String startDate, @NonNull final String endDate) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		long diff = -1;
 		try {
@@ -58,7 +59,7 @@ public class SimpleUtils {
 	 * @param args
 	 * @return
 	 */
-	public static String toString(@Nullable Object... args) {
+	public static String toString(@NonNull Object... args) {
 		List<Object> list = Arrays.asList(args);
 		return list.toString();
 	}
@@ -90,7 +91,7 @@ public class SimpleUtils {
 	 */
 	private static Constructor<?> getConstructorByClass(Class<?> clazz) throws NoSuchMethodException, SecurityException{
 		String name = getSuffixName(clazz.getName()).replaceFirst("[.]", "");
-		Constructor<?> constructor = null;
+		Constructor<?> constructor;
 		switch (name) {
 			case "EsUserInformation":
 				constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, String.class, Integer.class, String.class);

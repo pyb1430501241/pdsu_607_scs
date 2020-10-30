@@ -29,6 +29,10 @@ import java.util.Objects;
 
 /**
  * @author 半梦
+ * 班级方案已被舍弃
+ * 1. 该页面负责管理员的相关操作
+ * 	如, 封号, 修改用户信息, 删除用户文章等等
+ *
  */
 @Controller
 @RequestMapping("/admin")
@@ -37,25 +41,23 @@ public class AdminHandler extends ParentHandler{
 	/**
 	 * 权限
 	 */
-	@Autowired
 	private UserRoleService userRoleService;
 
 	/**
 	 * 用户
 	 */
-	@Autowired
 	private UserInformationService userInformationService;
 
 	/**
 	 *班级信息
 	 */
-	@Autowired
+	@Deprecated
 	private ClazzInformationService clazzInformationService;
 
 	/**
 	 * 用户班级对应
 	 */
-	@Autowired
+	@Deprecated
 	private UserClazzInformationService userClazzInformationService;
 
 
@@ -84,6 +86,14 @@ public class AdminHandler extends ParentHandler{
 		return Result.success().add("userList", userList);
 	}
 
+	/**
+	 *
+	 * @param clazzName
+	 * @param uids
+	 * @return
+	 * @throws Exception
+	 */
+	@Deprecated
 	@ResponseBody
 	@CrossOrigin
 	@PostMapping("/applyclass")
@@ -109,4 +119,15 @@ public class AdminHandler extends ParentHandler{
 		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 
+
+	@Autowired
+	public AdminHandler(UserRoleService userRoleService,
+						UserInformationService userInformationService,
+						ClazzInformationService clazzInformationService,
+						UserClazzInformationService userClazzInformationService) {
+		this.userRoleService = userRoleService;
+		this.userInformationService = userInformationService;
+		this.clazzInformationService = clazzInformationService;
+		this.userClazzInformationService = userClazzInformationService;
+	}
 }
