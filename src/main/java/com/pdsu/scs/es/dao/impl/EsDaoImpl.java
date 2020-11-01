@@ -72,7 +72,7 @@ public class EsDaoImpl implements EsDao{
 			return true;
 		} catch (IOException e) {
 			log.error(e.getMessage());
-			throw new InsertException("请求服务器失败");
+			throw new InsertException("请求服务器失败", Integer.parseInt(request.id()));
 		} 
 	}
 	
@@ -98,7 +98,7 @@ public class EsDaoImpl implements EsDao{
 			request.source(file.toString(), XContentType.JSON);
 			return indexUtil(request);
 		}else {
-			throw new InsertException("类型转换异常");
+			throw new InsertException("类型转换异常", id);
 		}
 	}
 

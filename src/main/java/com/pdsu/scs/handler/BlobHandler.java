@@ -3,6 +3,7 @@ package com.pdsu.scs.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.scs.bean.*;
+import com.pdsu.scs.exception.web.es.InsertException;
 import com.pdsu.scs.service.*;
 import com.pdsu.scs.shiro.WebSessionManager;
 import com.pdsu.scs.utils.*;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -351,6 +353,7 @@ public class BlobHandler extends ParentHandler {
 	@RequestMapping(value = "/contribution", method = RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin
+	@Transactional(rollbackFor = InsertException.class)
 	public Result insert(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList)
 			throws Exception {
 		UserInformation user = ShiroUtils.getUserInformation();

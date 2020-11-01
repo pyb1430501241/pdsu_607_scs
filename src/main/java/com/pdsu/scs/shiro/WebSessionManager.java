@@ -29,6 +29,7 @@ public class WebSessionManager extends DefaultWebSessionManager{
 		setSessionIdCookieEnabled(true);
 		setSessionIdUrlRewritingEnabled(true);
 		setSessionIdCookie(cookie);
+		// 本系统默认 1 为 1 秒, 而 Shiro 框架默认以毫秒为单位, 故乘以 1000
 		setGlobalSessionTimeout(SimpleUtils.CSC_WEEK * 1000);
 	}
 	

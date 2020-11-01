@@ -125,6 +125,7 @@ public class HandlerTest {
 			result = mvc.perform(MockMvcRequestBuilders.post("/blob/contribution")
 					.header("Authorization", loginlist.get(loginlist.indexOf("AccessToken") + 1))
 					.param("contype", "1")
+					.param("title", "Hello World")
 					.param("webDataString", "System.out.println(\"Hello World\");\nSystem.out.println(\"Hello World\");\nSystem.out.println(\"Hello World\");"
 							+ "\nSystem.out.println(\"Hello World\");")
 					).andReturn();

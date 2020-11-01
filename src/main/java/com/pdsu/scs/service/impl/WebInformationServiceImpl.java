@@ -64,29 +64,35 @@ public class WebInformationServiceImpl implements WebInformationService {
 		return str.length() > 100 ? str.substring(0, 100) : str;
 	}
 	
-	/*
+	/**
 	 * 插入一个网页信息
+	 * 	由于 ES 服务器太辣鸡！日常GG, 所以无奈直接摒弃 ES 出错时的
+	 * 	事务相关操作, 如发生 ES 相关异常, 但数据库插入成功, 即认为
+	 * 	插入成功, 虽抛出 InsertException 异常, 但在异常中添加博客
+	 * 	的 ID, 即无论 ES 插入是否成功, 对于返回值无任何影响, 表面
+	 * 	上的成功。
+	 *
+	 * 	如想修复, 只需在 ES 插入失败时, 执行事务 rollback
+	 * 	然后修改 ParentHandler 里处理 InsertException 异常
+	 * 	的方法。
 	 */
 	@Override
-	public int insert(@NonNull WebInformation information) {
+	public int insert(@NonNull WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(), 
 						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
-			try {
-				if(esDao.insert(blob, information.getId())) {
-					new Thread(()->{
-						try {
-							UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
-							Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-							EsUserInformation esUser = (EsUserInformation) SimpleUtils.
-									getObjectByMapAndClass(map, EsUserInformation.class);
-							esUser.setBlobnum(esUser.getBlobnum() + 1);
-							esDao.update(esUser, user.getId());
-						} catch (Exception e) {
-						}
-					}).start();
-				}
-			} catch (InsertException e) {
+			if(esDao.insert(blob, information.getId())) {
+				new Thread(()->{
+					try {
+						UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
+						Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
+						EsUserInformation esUser = (EsUserInformation) SimpleUtils.
+								getObjectByMapAndClass(map, EsUserInformation.class);
+						esUser.setBlobnum(esUser.getBlobnum() + 1);
+						esDao.update(esUser, user.getId());
+					} catch (Exception e) {
+					}
+				}).start();
 			}
 			return information.getId();
 		}

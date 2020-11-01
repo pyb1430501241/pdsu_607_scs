@@ -105,16 +105,16 @@ public class FileHandler extends ParentHandler {
 			log.info("开始下载文件, 下载人 UID 为: " + user.getUid());
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
-			String name = webfile.getFilePath();
-			String url = File_FilePath + name;
+			String filePath = webfile.getFilePath();
+			String url = File_FilePath + filePath;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
-			String filename = title + "_" + uid + SimpleUtils.getSuffixName(name);
+			String filename = title + "_" + uid + SimpleUtils.getSuffixName(filePath);
 			response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
 			out = response.getOutputStream(); 
 			out.write(in.readAllBytes()); 
 			out.flush();
-			fileDownloadService.insert(new FileDownload(webfile.getId(), uid, ShiroUtils.getUserInformation().getUid()));
+			fileDownloadService.insert(new FileDownload(webfile.getId(), uid, user.getUid()));
 			log.info("下载成功");
 		} finally {
 			if(!Objects.isNull(out)) {

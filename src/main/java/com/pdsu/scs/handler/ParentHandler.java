@@ -41,7 +41,7 @@ import java.util.Properties;
  * @author 半梦
  * @create 2020-08-19 19:51
  *
- * 该类用于提供子类一些常用的关键字, 错误提示, 异常处理方案的实现
+ * 该类用于提供子类一些常用的常量, 错误提示, 异常处理方案的实现
  */
 public abstract class ParentHandler implements AbstractHandler {
 
@@ -144,70 +144,76 @@ public abstract class ParentHandler implements AbstractHandler {
         }
     }
 
-    /**
-     * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
-     * 详细信息请参考 csc.properties
-     */
-    private static void initProperties() {
-        log.info("系统配置初始化...");
-        Properties properties = new Properties();
-        try {
-            ClassLoader classLoader = ParentHandler.class.getClassLoader();
-            InputStream in = classLoader.getResourceAsStream("properties/csc.properties");
-            properties.load(in);
-            Enumeration enumeration = properties.propertyNames();
-            while (enumeration.hasMoreElements()) {
-                String key = (String) enumeration.nextElement();
-                String value = properties.getProperty(key);
-                switch (HandlerValueEnum.getByKey(key)) {
-                    case IMG_SUFFIX :
-                        Img_Suffix = value;
-                        Img_Suffix_Except_Point = SimpleUtils.getSuffixNameExceptPoint(value);
-                        break;
-                    case FILE_FILEPATH :
-                        File_FilePath = value;
-                        break;
-                    case USER_IMG_FILEPATH:
-                        User_Img_FilePath = value;
-                        break;
-                    case BLOB_IMG_FILEPATH:
-                        Blob_Img_FilePath = value;
-                        break;
-                    case USER_IMG_NAME:
-                        Default_User_Img_Name = value;
-                        break;
-                    default:
-                }
-            }
-        } catch (IOException e) {
-            log.warn("初始化配置失败...");
-        }
-        log.info("系统初始化成功...");
-    }
-
-    /**
-     * 创建程序运行的必要文件
-     */
-    private static void mkdirs(){
-        log.info("创建系统所需文件...");
-        File file = new File(User_Img_FilePath);
-        if(!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(Blob_Img_FilePath);
-        if(!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(File_FilePath);
-        if(!file.exists()) {
-            file.mkdirs();
-        }
-        log.info("文件创建成功...");
-    }
-
     static {
-        initProperties();
-        mkdirs();
+        InitSystem.init();
+    }
+
+    private static class InitSystem {
+        /**
+         * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
+         * 详细信息请参考 csc.properties
+         */
+        private static void initProperties() {
+            log.info("系统配置初始化...");
+            Properties properties = new Properties();
+            try {
+                ClassLoader classLoader = ParentHandler.class.getClassLoader();
+                InputStream in = classLoader.getResourceAsStream("properties/csc.properties");
+                properties.load(in);
+                Enumeration enumeration = properties.propertyNames();
+                while (enumeration.hasMoreElements()) {
+                    String key = (String) enumeration.nextElement();
+                    String value = properties.getProperty(key);
+                    switch (HandlerValueEnum.getByKey(key)) {
+                        case IMG_SUFFIX :
+                            Img_Suffix = value;
+                            Img_Suffix_Except_Point = SimpleUtils.getSuffixNameExceptPoint(value);
+                            break;
+                        case FILE_FILEPATH :
+                            File_FilePath = value;
+                            break;
+                        case USER_IMG_FILEPATH:
+                            User_Img_FilePath = value;
+                            break;
+                        case BLOB_IMG_FILEPATH:
+                            Blob_Img_FilePath = value;
+                            break;
+                        case USER_IMG_NAME:
+                            Default_User_Img_Name = value;
+                            break;
+                        default:
+                    }
+                }
+            } catch (IOException e) {
+                log.warn("初始化配置失败...");
+            }
+            log.info("系统初始化成功...");
+        }
+
+        /**
+         * 创建程序运行的必要文件
+         */
+        private static void mkdirs(){
+            log.info("创建系统所需文件...");
+            File file = new File(User_Img_FilePath);
+            if(!file.exists()) {
+                file.mkdirs();
+            }
+            file = new File(Blob_Img_FilePath);
+            if(!file.exists()) {
+                file.mkdirs();
+            }
+            file = new File(File_FilePath);
+            if(!file.exists()) {
+                file.mkdirs();
+            }
+            log.info("文件创建成功...");
+        }
+
+        public static void init() {
+            initProperties();
+            mkdirs();
+        }
     }
 
     @Override
@@ -332,7 +338,7 @@ public abstract class ParentHandler implements AbstractHandler {
     @Override
     public Result processInsertException(InsertException e) {
         log.info("ES进行插入操作时出现未知错误, 原因: " + e.getMessage());
-        return Result.success();
+        return Result.success().add("webid", e.getWebId());
     }
 
     @Override

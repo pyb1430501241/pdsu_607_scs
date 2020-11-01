@@ -7,8 +7,19 @@ package com.pdsu.scs.exception.web.es;
  */
 public class InsertException extends EsException{
 
+	private Integer webId;
+
 	public InsertException(String exception) {
 		super(exception);
+	}
+
+	public InsertException(String exception, Integer webId) {
+		super(exception);
+		this.webId = webId;
+	}
+
+	public Integer getWebId() {
+		return webId;
 	}
 
 	/**

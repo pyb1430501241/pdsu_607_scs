@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  * @create 2020-08-21 14:46
  */
+@Deprecated
 public interface ClazzInformationService {
 
     /**
@@ -14,6 +15,7 @@ public interface ClazzInformationService {
      * @param clazzInformation
      * @return
      */
+    @Deprecated
     public boolean insert(@NonNull ClazzInformation clazzInformation);
 
 }

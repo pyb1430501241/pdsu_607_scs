@@ -13,6 +13,7 @@ import java.util.List;
  * @create 2020-08-21 18:30
  */
 @Service("userClazzInformationService")
+@Deprecated
 public class UserClazzInformationServiceImpl implements UserClazzInformationService {
 
     @Autowired

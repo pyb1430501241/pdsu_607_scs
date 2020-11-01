@@ -8,6 +8,7 @@ import java.util.List;
  * @author 半梦
  * @create 2020-08-21 18:29
  */
+@Deprecated
 public interface UserClazzInformationService {
 
     /**
@@ -15,6 +16,7 @@ public interface UserClazzInformationService {
      * @param uids
      * @return
      */
+    @Deprecated
     public boolean insertByList (@NonNull List<Integer> uids, @NonNull Integer clazzId);
 
 }
