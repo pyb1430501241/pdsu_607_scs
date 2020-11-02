@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -110,6 +111,11 @@ public class BlobHandler extends ParentHandler {
 	 * 文章类型
 	 */
 	private ContypeService contypeService;
+
+	/**
+	 * 系统通知
+	 */
+	private SystemNotificationService systemNotificationService;
 
 	/**
 	 * 日志
@@ -300,6 +306,11 @@ public class BlobHandler extends ParentHandler {
 		boolean flag = myCollectionService.insert(new MyCollection(null, user.getUid(), webid, bid));
 		if(flag) {
 			log.info("用户: " + user.getUid() + ", 收藏 " + webid + " 成功");
+			WebInformation w = webInformationService.selectById(webid);
+			systemNotificationService.insert(Arrays.asList(new SystemNotification(
+					bid, StringFactory.getCollectionString(user.getUsername(), w.getTitle()), user.getUid(),
+					SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+			)));
 			return Result.success();
 		}
 		log.warn("收藏失败, 连接数据库失败");
@@ -462,6 +473,11 @@ public class BlobHandler extends ParentHandler {
 				content, 0, SimpleUtils.getSimpleDateSecond(), 0));
 		if(b) {
 			log.info("用户发布评论成功");
+			WebInformation u = webInformationService.selectById(webid);
+			systemNotificationService.insert(Arrays.asList(new SystemNotification(
+					u.getUid(), StringFactory.getCommentString(user.getUsername(), u.getTitle(), content),
+					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+			)));
 			return Result.success().add("username", user.getUsername())
 					.add("createtime", SimpleUtils.getSimpleDateSecond())
 					.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
@@ -491,6 +507,11 @@ public class BlobHandler extends ParentHandler {
 					0, SimpleUtils.getSimpleDateSecond()));
 		if(b) {
 			log.info("用户回复评论成功");
+			WebComment c = webCommentService.selectCommentById(cid);
+			systemNotificationService.insert(Arrays.asList(new SystemNotification(
+					bid, StringFactory.getCommentReplyString(user.getUsername(), c.getContent(), content),
+					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+			)));
 			return Result.success().add("username", user.getUsername())
 					.add("createtime", SimpleUtils.getSimpleDateSecond())
 					.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
@@ -630,6 +651,11 @@ public class BlobHandler extends ParentHandler {
 		boolean b = webThumbsService.insert(new WebThumbs(user.getUid(), bid, webid));
 		if(b) {
 			log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
+			WebInformation w = webInformationService.selectById(webid);
+			systemNotificationService.insert(Arrays.asList(new SystemNotification(
+					bid, StringFactory.getThumbsString(user.getUsername(), w.getTitle()),
+					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+			)));
 			return Result.success();
 		}
 		log.warn("用户点赞文章失败, 连接数据库失败");
@@ -738,7 +764,8 @@ public class BlobHandler extends ParentHandler {
 					   WebLabelControlService webLabelControlService,
 					   FileDownloadService fileDownloadService,
 					   ContypeService contypeService,
-					   UserBrowsingRecordService userBrowsingRecordService) {
+					   UserBrowsingRecordService userBrowsingRecordService,
+					   SystemNotificationService systemNotificationService) {
 		this.webInformationService = webInformationService;
 		this.userInformationService = userInformationService;
 		this.webThumbsService = webThumbsService;
@@ -754,5 +781,6 @@ public class BlobHandler extends ParentHandler {
 		this.fileDownloadService = fileDownloadService;
 		this.contypeService = contypeService;
 		this.userBrowsingRecordService = userBrowsingRecordService;
+		this.systemNotificationService = systemNotificationService;
 	}
 }

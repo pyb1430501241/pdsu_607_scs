@@ -239,4 +239,5 @@
                 (#{p.uid}, #{p.content}, #{p.sid}, #{p.unread}, #{p.createtime})
             </foreach>
   </insert>
+
 </mapper>

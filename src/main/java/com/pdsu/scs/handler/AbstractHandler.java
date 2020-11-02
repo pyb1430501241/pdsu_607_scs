@@ -67,6 +67,11 @@ public interface AbstractHandler {
     String HAS_NEXT_PAGE = "hasNextPage";
 
     /**
+     * 默认通知用户名
+     */
+    String SYSTEM_NAME = "平顶山学院——信息工程学院";
+
+    /**
      * 处理 NotFoundBlobIdException 异常
      * @param e 异常名
      * @return

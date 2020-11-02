@@ -70,6 +70,11 @@ public class UserHandler extends ParentHandler {
 	public static final Integer USER_STATUS_CANCELLED = 4;
 
 	/**
+	 * 记住我
+	 */
+	private static final Integer REMEMBER_ME = 1;
+
+	/**
 	 * 用户信息相关
 	 */
 	private UserInformationService userInformationService;
@@ -190,7 +195,7 @@ public class UserHandler extends ParentHandler {
         log.info("账号: " + uid + "开始登录认证");
         UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
         //是否记住我
-        if(flag == 0) {
+        if(!flag.equals(REMEMBER_ME)) {
             token.setRememberMe(false);
         } else {
             token.setRememberMe(true);
@@ -393,8 +398,7 @@ public class UserHandler extends ParentHandler {
 	public Result retrieveThePassword(@RequestParam Integer uid,
 									  @RequestParam String password,
 									  @RequestParam String token,
-									  @RequestParam String code)
-			throws Exception {
+									  @RequestParam String code) throws Exception {
 		log.info("账号: " + uid + "开始找回密码");
 		Cache.ValueWrapper valueWrapper = cache.get(token);
 		if(Objects.isNull(valueWrapper)) {
@@ -711,7 +715,7 @@ public class UserHandler extends ParentHandler {
 		log.info("获取粉丝头像");
 		List<MyImage> imgs = myImageService.selectImagePathByUids(uids);
 		List<FansInformation> fans = new ArrayList<>();
-		for(Integer i = 0; i < users.size(); i++) {
+		for(int i = 0; i < users.size(); i++) {
 			UserInformation u = users.get(i);
 			for(MyImage img : imgs) {
 				if(img.getUid().equals(u.getUid())) {
@@ -1058,23 +1062,12 @@ public class UserHandler extends ParentHandler {
 		log.info("获取通知");
 		PageHelper.startPage(p, 10);
 		List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid());
-		List<Integer> uids = new ArrayList<>();
-		log.info("获取通知人信息");
-		for (SystemNotification s : systemNotifications) {
-			uids.add(s.getSid());
-		}
-		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-		log.info("拼装信息");
 		List<SystemNotificationInformation> list = new ArrayList<>();
 		for (SystemNotification s : systemNotifications) {
 			SystemNotificationInformation information = new SystemNotificationInformation();
 			information.setSystemNotification(s);
-			for (UserInformation u : users) {
-				if (s.getSid().equals(u.getUid())) {
-					information.setUsername(u.getUsername());
-					information.setIdentity("管理员");
-				}
-			}
+			information.setUsername(SYSTEM_NAME);
+			information.setIdentity(Role.SYSTEM_ADMIN);
 			list.add(information);
 		}
 		boolean b = systemNotificationService.updateSystemNotificationsByUid(user.getUid());

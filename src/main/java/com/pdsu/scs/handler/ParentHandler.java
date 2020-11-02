@@ -96,6 +96,16 @@ public abstract class ParentHandler implements AbstractHandler {
     public static final Integer FILE = 2;
 
     /**
+     * 系统通知已读
+     */
+    public static final Integer SYSTEM_NOTIFICATION_READ = 2;
+
+    /**
+     * 系统通知未读
+     */
+    public static final Integer SYSTEM_NOTIFICATION_UNREAD = 1;
+
+    /**
      * 日志
      */
     private static final Logger log = LoggerFactory.getLogger("异常处理日志");

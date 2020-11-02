@@ -77,4 +77,9 @@ public class WebCommentServiceImpl implements WebCommentService{
 		return (int) webCommentMapper.countByExample(example2);
 	}
 
+	@Override
+	public WebComment selectCommentById(Integer cid) {
+		return webCommentMapper.selectByPrimaryKey(cid);
+	}
+
 }

@@ -680,6 +680,5 @@ public class HandlerTest {
 		response.setCharacterEncoding("UTF-8");
 		System.out.println(response.getContentAsString());
 	}
-
 }
 

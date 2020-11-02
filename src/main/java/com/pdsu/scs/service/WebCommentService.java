@@ -1,10 +1,10 @@
 package com.pdsu.scs.service;
 
-import java.util.List;
-
 import com.pdsu.scs.bean.WebComment;
 import com.pdsu.scs.exception.web.blob.NotFoundBlobIdException;
 import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 /**
  * 评论
@@ -40,5 +40,11 @@ public interface WebCommentService {
 	 * @return
 	 */
 	public Integer countByUid(@NonNull Integer uid);
-	
+
+	/**
+	 *  获取评论
+	 * @param cid
+	 * @return
+	 */
+    public WebComment selectCommentById(Integer cid);
 }

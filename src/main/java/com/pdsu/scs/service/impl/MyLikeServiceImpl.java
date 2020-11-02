@@ -1,19 +1,7 @@
 package com.pdsu.scs.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Service;
-
-import com.pdsu.scs.bean.EsUserInformation;
-import com.pdsu.scs.bean.MyLike;
-import com.pdsu.scs.bean.MyLikeExample;
+import com.pdsu.scs.bean.*;
 import com.pdsu.scs.bean.MyLikeExample.Criteria;
-import com.pdsu.scs.bean.UserInformation;
-import com.pdsu.scs.bean.UserInformationExample;
 import com.pdsu.scs.dao.MyLikeMapper;
 import com.pdsu.scs.dao.UserInformationMapper;
 import com.pdsu.scs.es.dao.EsDao;
@@ -22,6 +10,13 @@ import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.scs.service.MyLikeService;
 import com.pdsu.scs.utils.SimpleUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 处理关注相关
@@ -29,7 +24,7 @@ import com.pdsu.scs.utils.SimpleUtils;
  *
  */
 @Service("myLikeService")
-public class MyLikeServiceImpl implements MyLikeService{
+public class MyLikeServiceImpl implements MyLikeService {
 
 	@Autowired
 	private MyLikeMapper myLikeMapper;
@@ -77,7 +72,7 @@ public class MyLikeServiceImpl implements MyLikeService{
 					esuser.setLikenum(esuser.getLikenum()+1);
 					esDao.update(esuser, user.getId());
 				} catch (Exception e) {
-					e.printStackTrace();
+
 				}
 			}).start();
 			return true;

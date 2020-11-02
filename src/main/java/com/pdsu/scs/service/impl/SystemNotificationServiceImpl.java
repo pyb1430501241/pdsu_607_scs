@@ -3,6 +3,7 @@ package com.pdsu.scs.service.impl;
 import com.pdsu.scs.bean.SystemNotification;
 import com.pdsu.scs.bean.SystemNotificationExample;
 import com.pdsu.scs.dao.SystemNotificationMapper;
+import com.pdsu.scs.handler.ParentHandler;
 import com.pdsu.scs.service.SystemNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -48,7 +49,7 @@ public class SystemNotificationServiceImpl implements SystemNotificationService 
         SystemNotificationExample example = new SystemNotificationExample();
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         SystemNotification systemNotification = new SystemNotification();
-        systemNotification.setUnread(2);
+        systemNotification.setUnread(ParentHandler.SYSTEM_NOTIFICATION_READ);
         criteria.andUidEqualTo(uid);
         return systemNotificationMapper.countByExample(example)
                        == systemNotificationMapper.updateByExampleSelective(systemNotification, example);
@@ -59,7 +60,7 @@ public class SystemNotificationServiceImpl implements SystemNotificationService 
         SystemNotificationExample example = new SystemNotificationExample();
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        criteria.andUnreadEqualTo(1);
+        criteria.andUnreadEqualTo(ParentHandler.SYSTEM_NOTIFICATION_UNREAD);
         return (int) systemNotificationMapper.countByExample(example);
     }
 }

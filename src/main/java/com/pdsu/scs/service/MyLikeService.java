@@ -1,12 +1,12 @@
 package com.pdsu.scs.service;
 
-import java.util.List;
-
 import com.pdsu.scs.bean.MyLike;
 import com.pdsu.scs.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.scs.exception.web.user.NotFoundUidException;
 import com.pdsu.scs.exception.web.user.UidAndLikeIdRepetitionException;
 import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 /**
  * 该接口提供关注相关的方法
